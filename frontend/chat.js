@@ -43,6 +43,111 @@ function toggleChat(open) {
 if (launcher) launcher.addEventListener('click', () => toggleChat());
 if (closeBtn) closeBtn.addEventListener('click', () => toggleChat(false));
 
+// Order flow: delegate clicks from bot HTML bubbles
+chatLog.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.order-ui .btn[data-action="start-order"]');
+  if (!btn) return;
+  e.preventDefault();
+  startOrderInChat();
+});
+
+async function startOrderInChat(){
+  try{
+    const res = await fetch('/api/products');
+    if (!res.ok) throw new Error('Products unavailable');
+    const data = await res.json();
+    const items = (data.items || []).slice(0, 12);
+    if (!items.length){ addBot('Ordering is not available right now.'); return; }
+    const rows = items.map(it => `
+      <div class="of-row" data-id="${it.id||''}" data-sku="${it.sku||''}">
+        <div class="of-name">${escapeHtml(it.name)}</div>
+        <input type="number" min="0" step="1" value="0" class="of-qty" aria-label="Quantity" />
+      </div>`).join('');
+    const html = `
+      <form class="order-form">
+        <div class="of-title">Tilaa chatissa (nouto, maksu myymälässä)</div>
+        <div class="of-list">${rows}</div>
+        <div class="of-field"><label>Nimi</label><input type="text" class="of-name-input" required /></div>
+        <div class="of-field"><label>Puhelin</label><input type="tel" class="of-phone-input" required /></div>
+        <div class="of-field"><label>Sähköposti (valinnainen)</label><input type="email" class="of-email-input" /></div>
+        <div class="of-field"><label>Noutoaika</label><input type="datetime-local" class="of-pickup-input" /></div>
+        <div class="of-field"><label>Lisätieto</label><input type="text" class="of-note-input" /></div>
+        <div class="of-actions">
+          <button type="submit" class="btn-send">Lähetä tilaus</button>
+        </div>
+      </form>`;
+    addBotHtml(html);
+    const form = chatLog.querySelector('.order-form:last-of-type');
+    if (form) bindOrderForm(form);
+  }catch(err){
+    console.error(err);
+    addBot('Ordering is not available right now.');
+  }
+}
+
+function bindOrderForm(form){
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const rows = [...form.querySelectorAll('.of-row')];
+    const items = rows.map(r=>{
+      const qty = parseInt(r.querySelector('.of-qty').value||'0',10);
+      const id = r.getAttribute('data-id');
+      const sku = r.getAttribute('data-sku');
+      const it = { quantity: qty };
+      if (id) it.productId = parseInt(id,10);
+      if (sku) it.sku = sku;
+      return it;
+    }).filter(it=>it.quantity>0);
+    if (!items.length){ addBot('Valitse vähintään yksi tuote.'); return; }
+    const payload = {
+      items,
+      name: form.querySelector('.of-name-input').value.trim(),
+      phone: form.querySelector('.of-phone-input').value.trim(),
+      email: form.querySelector('.of-email-input').value.trim() || null,
+      pickup_time: form.querySelector('.of-pickup-input').value.trim() || null,
+      note: form.querySelector('.of-note-input').value.trim() || null,
+    };
+    try{
+      // Validate pickup time (if provided)
+      const pickup = payload.pickup_time;
+      if (pickup) {
+        const chk = await fetch('/api/check_pickup?iso=' + encodeURIComponent(pickup));
+        if (!chk.ok) {
+          const txt = await chk.text().catch(()=> '');
+          addBot('Valittu noutoaika ei ole mahdollinen: ' + (txt || 'tarkista muoto YYYY-MM-DDTHH:MM'));
+          setTyping(false); return;
+        }
+        const cj = await chk.json();
+        if (!cj.ok) {
+          addBot('Valittu noutoaika ei ole mahdollinen: ' + (cj.reason || ''));
+          setTyping(false); return;
+        }
+      }
+      setTyping(true);
+      const res = await fetch('/api/order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const text = await res.text();
+      let data = {};
+      try { data = JSON.parse(text); } catch {}
+      setTyping(false);
+      if (res.ok && (data.orderNumber || data.id)){
+        addBot(`Tilaus vastaanotettu! Tilauksen numero: ${data.orderNumber}. Nouto myymälästä, maksu paikan päällä.`);
+        form.closest('.msg')?.remove();
+      } else {
+        const detail = (data && (data.detail || data.error || data.message)) || text || '';
+        addBot('Valitettavasti tilauksen luonti epäonnistui. ' + (detail ? ('Syy: ' + detail) : 'Yritä hetken päästä uudelleen.'));
+      }
+    }catch(err){
+      setTyping(false);
+      console.error(err);
+      addBot('Valitettavasti tilauksen luonti epäonnistui.');
+    }
+  });
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
 function addMsg(text, who='bot', typing=false) {
   const wrap = document.createElement('div');
   wrap.className = `msg ${who}`;

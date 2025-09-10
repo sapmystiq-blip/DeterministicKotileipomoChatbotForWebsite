@@ -15,6 +15,8 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from difflib import SequenceMatcher
+from datetime import datetime, timedelta
+import httpx
 
 # Optional LLM (OpenAI) client
 OPENAI_CLIENT = None
@@ -25,6 +27,17 @@ PRIMARY_LANG = os.getenv("PRIMARY_LANG", "fi")
 LANGUAGE_POLICY = os.getenv("LANGUAGE_POLICY", "always_primary")  # always_primary | match_user
 SUPPORTED_LANG_HINT = "fi, en, sv, no, de, fr, es, it"
 ECWID_STORE_URL = os.getenv("ECWID_STORE_URL", "https://rakaskotileipomo.fi/verkkokauppa")
+ECWID_STORE_ID = os.getenv("ECWID_STORE_ID")
+ECWID_API_TOKEN = os.getenv("ECWID_API_TOKEN")
+LOCAL_TZ = os.getenv("LOCAL_TZ", "Europe/Helsinki")
+
+# Weekly pickup hours (local time). Python weekday: Mon=0 .. Sun=6
+# Thu 11–17, Fri 11–17, Sat 11–15
+SHOP_HOURS: Dict[int, List[Tuple[str, str]]] = {
+    3: [("11:00", "17:00")],
+    4: [("11:00", "17:00")],
+    5: [("11:00", "15:00")],
+}
 
 # Optional: load .env (OPENAI_API_KEY, HOST, PORT, etc.)
 try:
@@ -477,6 +490,7 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
   <div class=\"order-sub\">Hämta i butiken, betalning på plats.</div>
   <div class=\"order-buttons\">
     <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Öppna webbutiken</a>
+    <button class=\"btn\" data-action=\"start-order\">Beställ i chatten</button>
   </div>
 </div>
 """
@@ -489,6 +503,7 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
   <div class=\"order-sub\">Nouto myymälästä, maksu paikan päällä.</div>
   <div class=\"order-buttons\">
     <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Avaa verkkokauppa</a>
+    <button class=\"btn\" data-action=\"start-order\">Tilaa chatissa</button>
   </div>
 </div>
 """
@@ -500,32 +515,77 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
   <div class=\"order-sub\">Pickup in store, pay at pickup.</div>
   <div class=\"order-buttons\">
     <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Open Online Shop</a>
+    <button class=\"btn\" data-action=\"start-order\">Order in chat</button>
   </div>
 </div>
 """
         )
 
-    # booking intent (Finnish-first)
-    if any(k in text for k in BOOKING_KEYWORDS):
-        return (
-            "Voin auttaa varauksen aloittamisessa. Kerrothan: \n"
-            "• Saapumispäivä\n• Lähtöpäivä\n• Vieraat (aikuiset/lapset)\n"
-            "• Huonetyyppitoive (esim. twin, double, perhe)"
-        )
+# ============================================================
+# Ecwid helpers (server-side only)
+# ============================================================
+def _ecwid_base() -> str:
+    if not ECWID_STORE_ID:
+        raise RuntimeError("ECWID_STORE_ID is not set")
+    return f"https://app.ecwid.com/api/v3/{ECWID_STORE_ID}"
 
-    # callback intent (Finnish-first)
-    if any(k in text for k in CALLBACK_KEYWORDS):
-        return (
-            "Voin järjestää takaisinsoiton. Anna: \n"
-            "• Nimesi\n• Puhelinnumero (maatunnus)\n"
-            "• Toivottu aikaikkuna (aikavyöhyke)\n• Aihe (varaus, lasku, ryhmät)"
-        )
+def _ecwid_headers() -> Dict[str, str]:
+    if not ECWID_API_TOKEN:
+        raise RuntimeError("ECWID_API_TOKEN is not set")
+    return {"Authorization": f"Bearer {ECWID_API_TOKEN}", "Content-Type": "application/json"}
 
-    # help / human handoff (Finnish-first)
-    if any(k in text for k in HELP_KEYWORDS):
-        return "Autan mielelläni. Halutessasi voin ohjata tämän ihmiselle."
+def _ecwid_get_products(limit: int = 100) -> List[Dict[str, Any]]:
+    base = _ecwid_base()
+    headers = _ecwid_headers()
+    url = f"{base}/products"
+    params = {"limit": limit}
+    with httpx.Client(timeout=10.0) as client:
+        r = client.get(url, headers=headers, params=params)
+        r.raise_for_status()
+        data = r.json()
+    return data.get("items", [])
 
-    return None
+def _curate_products(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    keep = []
+    KEYWORDS = [
+        "karjalan", "karelian", "piirakka", "pie", "samosa", "curry", "twist",
+        "mustikkakukko", "blueberry", "marjapiirakka", "berry", "pulla", "bun"
+    ]
+    for it in items:
+        name = (it.get("name") or "").lower()
+        # Only offer enabled products to avoid API errors
+        if not it.get("enabled", True):
+            continue
+        if any(k in name for k in KEYWORDS):
+            keep.append({
+                "id": it.get("id"),
+                "sku": it.get("sku"),
+                "name": it.get("name"),
+                "price": it.get("price"),
+                "enabled": True,
+            })
+    # de-dup by id/sku
+    seen, out = set(), []
+    for it in keep:
+        key = it.get("id") or it.get("sku")
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(it)
+    return out[:25]
+
+class OrderItem(BaseModel):
+    productId: int | None = None
+    sku: str | None = None
+    quantity: int
+
+class OrderRequest(BaseModel):
+    items: List[OrderItem]
+    name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    pickup_time: str | None = None
+    note: str | None = None
 
 # ============================================================
 # Fallback composer (out-of-scope aware)
@@ -627,6 +687,7 @@ def health():
         "llm_model": LLM_MODEL if LLM_ENABLED else None,
         "langdetect": True,
         "lang_hint": SUPPORTED_LANG_HINT,
+        "ecwid_ready": bool(ECWID_STORE_ID and ECWID_API_TOKEN),
     }
 
 @app.post("/api/chat", response_model=ChatResponse)
@@ -715,6 +776,116 @@ def chat(req: ChatRequest, request: Request, response: Response):
     except Exception:
         pass
     return ChatResponse(reply=reply, source=src, match=best_score, session_id=session_id)
+
+# ============================================================
+# Ecwid endpoints
+# ============================================================
+@app.get("/api/products")
+def api_products():
+    if not (ECWID_STORE_ID and ECWID_API_TOKEN):
+        raise HTTPException(status_code=503, detail="In-chat ordering is not configured.")
+    try:
+        items = _ecwid_get_products(limit=100)
+        curated = _curate_products(items)
+        return {"items": curated}
+    except Exception as e:
+        logger.exception(f"Ecwid products error: {e}")
+        raise HTTPException(status_code=502, detail="Failed to fetch products.")
+
+@app.post("/api/order")
+def api_order(req: OrderRequest):
+    if not (ECWID_STORE_ID and ECWID_API_TOKEN):
+        raise HTTPException(status_code=503, detail="In-chat ordering is not configured.")
+    if not req.items:
+        raise HTTPException(status_code=400, detail="No items provided.")
+    items = []
+    for it in req.items:
+        if (not it.productId) and (not it.sku):
+            raise HTTPException(status_code=400, detail="Each item must have productId or sku.")
+        if it.quantity <= 0:
+            continue
+        entry = {"quantity": it.quantity}
+        if it.productId:
+            entry["productId"] = it.productId
+        if it.sku:
+            entry["sku"] = it.sku
+        items.append(entry)
+    if not items:
+        raise HTTPException(status_code=400, detail="All quantities are zero.")
+
+    # Validate pickup time if provided
+    if req.pickup_time:
+        ok, reason = _validate_pickup_time(req.pickup_time)
+        if not ok:
+            raise HTTPException(status_code=400, detail=f"Pickup time not available: {reason}")
+
+    body = {
+        "name": req.name or "Chat Customer",
+        "email": req.email or "",
+        "phone": req.phone or "",
+        "paymentMethod": "Pay at pickup",
+        "paymentStatus": "AWAITING_PAYMENT",
+        "shippingOption": {"shippingMethodName": "Pickup", "fulfillmentType": "PICKUP"},
+        "items": items,
+    }
+    comment_parts = []
+    if req.pickup_time:
+        comment_parts.append(f"Pickup: {req.pickup_time}")
+    if req.note:
+        comment_parts.append(req.note)
+    if comment_parts:
+        body["customerComment"] = " | ".join(comment_parts)
+
+    try:
+        base = _ecwid_base()
+        headers = _ecwid_headers()
+        url = f"{base}/orders"
+        with httpx.Client(timeout=10.0) as client:
+            r = client.post(url, headers=headers, json=body)
+            r.raise_for_status()
+            data = r.json()
+        return {"ok": True, "id": data.get("id"), "orderNumber": data.get("orderNumber")}
+    except httpx.HTTPStatusError as he:
+        logger.exception(f"Ecwid order HTTP error: {he.response.text}")
+        raise HTTPException(status_code=he.response.status_code, detail=he.response.text)
+    except Exception as e:
+        logger.exception(f"Ecwid order error: {e}")
+        raise HTTPException(status_code=502, detail="Failed to create order.")
+
+@app.get("/api/pickup_hours")
+def api_pickup_hours():
+    return {"timezone": LOCAL_TZ, "hours": SHOP_HOURS}
+
+@app.get("/api/check_pickup")
+def api_check_pickup(iso: str):
+    ok, reason = _validate_pickup_time(iso)
+    return {"ok": ok, "reason": reason}
+
+def _parse_pickup_iso(s: str) -> datetime | None:
+    """Parse 'YYYY-MM-DDTHH:MM' or 'YYYY-MM-DD HH:MM' as local naive datetime."""
+    s = s.strip()
+    for fmt in ("%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"):
+        try:
+            return datetime.strptime(s, fmt)
+        except Exception:
+            pass
+    return None
+
+def _validate_pickup_time(pickup_iso: str) -> Tuple[bool, str | None]:
+    dt = _parse_pickup_iso(pickup_iso)
+    if not dt:
+        return False, "Invalid time format. Use YYYY-MM-DDTHH:MM."
+    dow = dt.weekday()  # Mon=0
+    windows = SHOP_HOURS.get(dow) or []
+    if not windows:
+        return False, "Closed that day."
+    mins = dt.hour * 60 + dt.minute
+    for start, end in windows:
+        sh, sm = map(int, start.split(":"))
+        eh, em = map(int, end.split(":"))
+        if (sh * 60 + sm) <= mins <= (eh * 60 + em):
+            return True, None
+    return False, "Outside pickup hours."
 
 # ============================================================
 # Startup: load KB and build index (with logs)

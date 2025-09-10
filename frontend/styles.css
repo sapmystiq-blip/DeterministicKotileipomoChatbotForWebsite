@@ -249,6 +249,19 @@ body {
 }
 .order-ui .btn:hover{ box-shadow: var(--ring); }
 
+/* Order form */
+.order-form{ font-size: 14px; }
+.order-form .of-title{ font-weight: 800; margin: 4px 0 6px; }
+.order-form .of-list{ display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; margin: 8px 0; }
+.order-form .of-row{ display: contents; }
+.order-form .of-name{ align-self: center; }
+.order-form .of-qty{ width: 64px; padding: 6px 8px; border-radius: 8px; border: var(--border); }
+.order-form .of-field{ display: grid; grid-template-columns: 120px 1fr; gap: 8px; align-items: center; margin: 6px 0; }
+.order-form .of-field input{ padding: 8px 10px; border-radius: 10px; border: var(--border); }
+.order-form .of-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top: 8px; }
+.order-form .btn-send{ background: linear-gradient(135deg, var(--accent), var(--accent-strong)); color: var(--brand-white); border: 0; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+.order-form .btn-send:hover{ filter: brightness(1.05); }
+
 /* Mobile-only language picker: flags only, horizontal layout */
 .lang-picker.mobile{ max-width: none; }
 .lang-picker.mobile .lang-title{ display: none; }
