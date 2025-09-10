@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Opening Hours",
+    "question": "What are your opening hours?",
+    "answer": "Our shop is open Thu–Fri 11–17 and Sat 11–15. Please check our site or Instagram for holiday updates."
+  },
+  {
+    "question": "Mitä ovat aukioloajat?",
+    "answer": "Myymälä on auki To–Pe 11–17 ja La 11–15. Juhlapyhistä tiedotamme sivuillamme ja Instagramissa."
+  },
+  {
+    "title": "Location",
+    "question": "Where are you located?",
+    "answer": "We are in Vallila, Helsinki: Kumpulantie 15. Entrance at street level."
+  },
+  {
+    "question": "Missä sijaitsette?",
+    "answer": "Olemme Helsingin Vallilassa, osoitteessa Kumpulantie 15. Sisäänkäynti katutasossa."
+  },
+  {
+    "title": "Online Shop",
+    "question": "Do you have an online shop?",
+    "answer": "Yes, you can place preorders in our online shop. Pick up during opening hours."
+  },
+  {
+    "question": "Onko teillä verkkokauppa?",
+    "answer": "Kyllä, voit tehdä ennakkotilauksia verkkokaupassamme. Nouto aukioloaikoina."
+  }
+]
+

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Piirakkabotti</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- Floating chat bubble launcher (bottom-right) -->
+  <button id="chat-bubble" aria-label="Open chat" aria-expanded="false">💬</button>
+
+  <div id="chatWidget" class="chat-widget" aria-hidden="true">
+    <div class="chat-card">
+      <header class="chat-header">
+        <div class="chat-title">Piirakkabotti</div>
+        <button id="closeChat" class="icon-btn" aria-label="Close chat">✕</button>
+      </header>
+      <div id="chatLog" class="chat-log" role="log" aria-live="polite"></div>
+      <form id="chatForm" class="chat-form">
+        <textarea id="chatInput" rows="1" placeholder="Type your message…" aria-label="Chat input"></textarea>
+        <button id="sendBtn" class="send-btn" type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="./chat.js"></script>
+</body>
+</html>

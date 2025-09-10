@@ -1,0 +1,81 @@
+[
+  {
+    "title": "Products",
+    "question": "What products do you sell?",
+    "answer": "We bake Karelian pies plus a changing selection of savory and sweet bakes: samosas, curry twists, buns, berry pies and blueberry ‘mustikkakukko’. Products are available fresh in-store and some also as raw‑frozen to bake at home."
+  },
+  {
+    "question": "Mitä tuotteita myytte?",
+    "answer": "Leivomme karjalanpiirakoita sekä suolaisia ja makeita leivonnaisia: samosat, curry‑twistit, pullat, marjapiirakat ja mustikkakukko. Tuotteita on myymälässä uunituoreina, ja osaa saa myös kotona paistettavina raakapakasteina."
+  },
+
+  {
+    "title": "Karjalanpiirakat",
+    "question": "What are your Karelian pies like?",
+    "answer": "Our handmade pies have a 100% rye crust with no wheat. Fillings: rice, barley or potato. We also bake a vegan rice version. Available fresh in-store and as raw‑frozen for home baking."
+  },
+  {
+    "question": "Millaisia ovat teidän karjalanpiirakat?",
+    "answer": "Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Täytteet: riisi, ohra tai peruna. Leivomme myös vegaanisia riisipiirakoita. Kaikki saatavilla uunituoreina ja raakapakasteina."
+  },
+
+  {
+    "title": "Samosat",
+    "question": "What samosas do you offer?",
+    "answer": "Savory Indian pastries suitable for lunch or dinner. Our vegan gobi samosa recipe comes from Raka’s home in India; we also make chicken samosas."
+  },
+  {
+    "question": "Millaisia samosoja on tarjolla?",
+    "answer": "Samosat ovat suolaisia intialaisia leivonnaisia. Vegaanisen gobisamosamme resepti tulee Rakan kotoa Intiasta; teemme myös kanasamosoja."
+  },
+
+  {
+    "title": "Curry‑twistit",
+    "question": "What are curry twists?",
+    "answer": "An Indian‑style savory bake: naan‑like bread filled with spiced mung bean (vegan) or meat curry with a gentle chili heat."
+  },
+  {
+    "question": "Mitä ovat curry‑twistit?",
+    "answer": "Curry‑twistit ovat intialaisia suolaisia leivonnaisia. Naan‑tyyppisen leivän sisällä on mausteista mungpapu‑ (vegaaninen) tai lihacurrya, jossa on hieman chiliä."
+  },
+
+  {
+    "title": "Pullat",
+    "question": "What buns do you bake?",
+    "answer": "We grind cardamom fresh from pods. Typical bakes: cinnamon rolls, caramel (‘kinuski’) buns and ‘voisilmä’ buns; selection varies."
+  },
+  {
+    "question": "Millaisia pullia on?",
+    "answer": "Maustamme pullat tuorejauhetulla intialaisella kardemummalla. Vitriinissä on usein kanelipullaa, kinuskipullaa ja voisilmäpullaa – valikoima vaihtelee."
+  },
+
+  {
+    "title": "Marjapiirakat",
+    "question": "What berry pies do you have?",
+    "answer": "Often lingonberry, blueberry or redcurrant; selection changes. Great with vanilla sauce."
+  },
+  {
+    "question": "Mitä marjapiirakoita on?",
+    "answer": "Marjapiirakkaan käy kivasti puolukka, mustikka tai punaherukka; valikoima vaihtelee. Maistuu erinomaisesti vaniljakastikkeen kanssa."
+  },
+
+  {
+    "title": "Mustikkakukko",
+    "question": "What is your mustikkakukko like?",
+    "answer": "A small rye ‘blueberry pie’ filled with wild blueberries (also called ‘rättänä’). Especially good with vanilla ice cream or whipped cream."
+  },
+  {
+    "question": "Millainen on mustikkakukko?",
+    "answer": "Rukiista metsämustikoilla täytetty maltillisen kokoinen kukko (rättänä). Erityisen hyvää vaniljajäätelön tai kermavaahdon kanssa."
+  },
+
+  {
+    "title": "Prices (in‑store) — subject to change",
+    "question": "What are your prices?",
+    "answer": "Fresh: Karelian pies 1.40€ each (12€ /10 pcs); Samosas 2.90€ each (10€ /4); Curry‑twists 2.90€ each (10€ /4); Buns 2.90€ each (10€ /4); Berry pie 3.50€ per slice; Mustikkakukko 4.50€ each. Frozen for home baking: Karelian pies 19.90€ /20 pcs or 10.90€ /10 pcs; Samosas 11.90€ /5 pcs; Mustikkakukko 19.90€ /5 pcs."
+  },
+  {
+    "question": "Mitä hinnat ovat?",
+    "answer": "Uunituoreet: Karjalanpiirakat 1,40€/kpl (12€ /10 kpl); Samosat 2,90€/kpl (10€ /4); Curry‑twistit 2,90€/kpl (10€ /4); Pullat 2,90€/kpl (10€ /4); Marjapiirakka 3,50€/pala; Mustikkakukko 4,50€/kpl. Pakasteet: Karjalanpiirakat 19,90€ /20 kpl tai 10,90€ /10 kpl; Samosat 11,90€ /5 kpl; Mustikkakukko 19,90€ /5 kpl. (Hinnat voivat muuttua.)"
+  }
+]
