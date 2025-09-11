@@ -414,7 +414,8 @@ HELP_KEYWORDS = {"help","apua","support","human","agent"}
 # Bakery order intent keywords
 ORDER_KEYWORDS = {
     "order","preorder","tilaa","tilaus","ennakkotilaus","ennakkotilata","catering",
-    "pickup","nouto","verkkokauppa","shop","store"
+    "pickup","nouto","verkkokauppa","shop","store",
+    "tilata","tilaisin","tilaan","haluan tilata","haluaisin tilata","ostaa","teen tilauksen"
 }
 # Capability / identity intent (e.g., "what can you do", "who are you")
 CAPABILITY_PHRASES = {
