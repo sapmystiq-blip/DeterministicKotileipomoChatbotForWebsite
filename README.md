@@ -78,7 +78,69 @@ web: /app/venv/bin/uvicorn backend.app:app --host 0.0.0.0 --port $PORT
 
 On platforms that build images, ensure Python 3.10+ and install `backend/requirements.txt`.
 
+## Testing
+
+The repo uses Python's built‑in `unittest` (no extra deps).
+
+- Run all tests
+
+```
+python -m unittest discover -s tests -p "test_*.py" -v
+```
+
+- Run a single module
+
+```
+python -m unittest tests.test_constraints -v
+python -m unittest tests.test_order_validation -v
+```
+
+What’s covered
+- `tests/test_constraints.py` – Pure unit test for Ecwid constraint inference (`backend/order_constraints.py`).
+- `tests/test_order_validation.py` – Regression tests for `POST /api/order` using `FastAPI` TestClient. Tests patch `/api/order_constraints` so they do not hit Ecwid.
+
+Notes
+- Tests do not require network access or real Ecwid credentials.
+- The app loads `.env` at import time, but tests don’t depend on any env vars.
+
+Manual API checks (useful during dev)
+
+```
+# Health and readiness
+curl -sS http://localhost:8000/api/health | python3 -m json.tool
+
+# Ecwid‑derived constraints (min lead, max days, blackout dates)
+curl -sS "http://localhost:8000/api/order_constraints?debug=1" | python3 -m json.tool
+
+# Pickup hours used by the calendar (Thu/Fri/Sat in local time)
+curl -sS http://localhost:8000/api/pickup_hours | python3 -m json.tool
+
+# Create an order (example – replace productId/sku and use a valid pickup_time)
+curl -sS -X POST http://localhost:8000/api/order \
+  -H 'Content-Type: application/json' \
+  -d '{"items":[{"productId":123,"quantity":1}],"name":"Test","phone":"+358...","pickup_time":"2025-09-12T12:00"}'
+```
+
+Tip: generating a valid `pickup_time` (local ISO, future, within open hours)
+
+```
+python - <<'PY'
+import json, datetime as dt, urllib.request
+cons = json.load(urllib.request.urlopen('http://localhost:8000/api/order_constraints'))
+lead = int(cons.get('min_lead_minutes', 720))
+t = dt.datetime.now() + dt.timedelta(minutes=lead)
+t = (t.replace(minute=0, second=0, microsecond=0) + dt.timedelta(hours=1))
+print(t.strftime('%Y-%m-%dT%H:%M'))
+PY
+```
+
+If Ecwid doesn’t expose your “custom days” yet, you can override via `.env` for development:
+
+```
+ECWID_MIN_LEAD_MINUTES=720   # 12h
+ECWID_MAX_ORDER_DAYS=60      # days ahead
+```
+
 ## License
 
 Internal use – add a license of your choice if you plan to open source.
-

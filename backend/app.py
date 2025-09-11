@@ -17,6 +17,18 @@ from pydantic import BaseModel
 from difflib import SequenceMatcher
 from datetime import datetime, timedelta
 import httpx
+from .time_rules import SHOP_HOURS as TR_SHOP_HOURS, validate_pickup_time as tr_validate_pickup_time, parse_pickup_iso as tr_parse_pickup_iso, is_blackout as tr_is_blackout
+try:
+    from .routers.orders import router as orders_router
+except Exception:
+    orders_router = None
+
+# Load .env before reading any environment variables
+try:
+    from dotenv import load_dotenv  # python-dotenv
+    load_dotenv()
+except Exception:
+    pass
 
 # Optional LLM (OpenAI) client
 OPENAI_CLIENT = None
@@ -30,21 +42,12 @@ ECWID_STORE_URL = os.getenv("ECWID_STORE_URL", "https://rakaskotileipomo.fi/verk
 ECWID_STORE_ID = os.getenv("ECWID_STORE_ID")
 ECWID_API_TOKEN = os.getenv("ECWID_API_TOKEN")
 LOCAL_TZ = os.getenv("LOCAL_TZ", "Europe/Helsinki")
+# Ordering time constraints (fallbacks if not discoverable from Ecwid)
+ECWID_MAX_ORDER_DAYS = int(os.getenv("ECWID_MAX_ORDER_DAYS", "60"))
+ECWID_MIN_LEAD_MINUTES = int(os.getenv("ECWID_MIN_LEAD_MINUTES", "720"))
 
-# Weekly pickup hours (local time). Python weekday: Mon=0 .. Sun=6
-# Thu 11–17, Fri 11–17, Sat 11–15
-SHOP_HOURS: Dict[int, List[Tuple[str, str]]] = {
-    3: [("11:00", "17:00")],
-    4: [("11:00", "17:00")],
-    5: [("11:00", "15:00")],
-}
-
-# Optional: load .env (OPENAI_API_KEY, HOST, PORT, etc.)
-try:
-    from dotenv import load_dotenv  # python-dotenv
-    load_dotenv()
-except Exception:
-    pass
+# Weekly pickup hours (imported from shared time rules)
+SHOP_HOURS: Dict[int, List[Tuple[str, str]]] = TR_SHOP_HOURS
 
 # Initialize OpenAI client if key present (optional)
 try:
@@ -534,16 +537,53 @@ def _ecwid_headers() -> Dict[str, str]:
         raise RuntimeError("ECWID_API_TOKEN is not set")
     return {"Authorization": f"Bearer {ECWID_API_TOKEN}", "Content-Type": "application/json"}
 
-def _ecwid_get_products(limit: int = 100) -> List[Dict[str, Any]]:
+def _ecwid_get_products(limit: int = 100, category: int | None = None) -> List[Dict[str, Any]]:
     base = _ecwid_base()
     headers = _ecwid_headers()
     url = f"{base}/products"
-    params = {"limit": limit}
+    params: Dict[str, Any] = {"limit": limit}
+    if category is not None:
+        params["category"] = int(category)
     with httpx.Client(timeout=10.0) as client:
         r = client.get(url, headers=headers, params=params)
         r.raise_for_status()
         data = r.json()
     return data.get("items", [])
+
+def _ecwid_get_categories(limit: int = 200) -> List[Dict[str, Any]]:
+    base = _ecwid_base()
+    headers = _ecwid_headers()
+    url = f"{base}/categories"
+    params: Dict[str, Any] = {"limit": limit}
+    with httpx.Client(timeout=10.0) as client:
+        r = client.get(url, headers=headers, params=params)
+        r.raise_for_status()
+        data = r.json()
+    return data.get("items", [])
+
+def _ecwid_get_profile() -> Dict[str, Any]:
+    base = _ecwid_base()
+    headers = _ecwid_headers()
+    url = f"{base}/profile"
+    with httpx.Client(timeout=10.0) as client:
+        r = client.get(url, headers=headers)
+        r.raise_for_status()
+        return r.json()
+
+def _ecwid_get_shipping_options() -> List[Dict[str, Any]]:
+    base = _ecwid_base()
+    headers = _ecwid_headers()
+    url = f"{base}/profile/shippingOptions"
+    with httpx.Client(timeout=10.0) as client:
+        r = client.get(url, headers=headers)
+        r.raise_for_status()
+        data = r.json()
+    # Ecwid returns either list or {'items': [...]}
+    if isinstance(data, dict):
+        return data.get("items", [])
+    if isinstance(data, list):
+        return data
+    return []
 
 def _curate_products(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     keep = []
@@ -563,6 +603,15 @@ def _curate_products(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 "name": it.get("name"),
                 "price": it.get("price"),
                 "enabled": True,
+                # Best-effort image URL
+                "imageUrl": (
+                    it.get("thumbnailUrl")
+                    or it.get("imageUrl")
+                    or ((it.get("image") or {}).get("url"))
+                ),
+                # Stock information if available
+                "inStock": it.get("inStock"),
+                "quantity": it.get("quantity") or it.get("quantityAvailable"),
             })
     # de-dup by id/sku
     seen, out = set(), []
@@ -732,12 +781,19 @@ def chat(req: ChatRequest, request: Request, response: Response):
     if top:
         best_blend, bm25, fuzzy, jacc, best_item = top[0]
 
-        # Require some lexical evidence (BM25 or Jaccard). Fuzzy alone is not enough.
+        # Require some lexical evidence (BM25 or Jaccard).
+        # However, for very short queries (1–2 tokens or short strings), allow fuzzy‑only
+        # matches with a higher threshold so typos like "karjalanpiirakk" still hit.
+        q_tok_count = len(list(_tokens(user_msg)))
+        q_char_len = len((user_msg or '').strip())
         strong_enough = (
             best_blend >= MIN_ACCEPT_SCORE or
             (bm25 >= MIN_BM25_SIGNAL) or
             (jacc >= MIN_JACCARD) or
-            (fuzzy >= max(MIN_FUZZY, 0.55) and (bm25 > 0 or jacc > 0))
+            (fuzzy >= max(MIN_FUZZY, 0.55) and (bm25 > 0 or jacc > 0)) or
+            # Fuzzy‑only allowance for short queries
+            (q_tok_count <= 2 and fuzzy >= 0.72) or
+            (q_char_len <= 14 and fuzzy >= 0.74)
         )
 
         if strong_enough:
@@ -781,16 +837,37 @@ def chat(req: ChatRequest, request: Request, response: Response):
 # Ecwid endpoints
 # ============================================================
 @app.get("/api/products")
-def api_products():
+def api_products(category: int | None = None):
     if not (ECWID_STORE_ID and ECWID_API_TOKEN):
         raise HTTPException(status_code=503, detail="In-chat ordering is not configured.")
     try:
-        items = _ecwid_get_products(limit=100)
+        items = _ecwid_get_products(limit=100, category=category)
         curated = _curate_products(items)
         return {"items": curated}
     except Exception as e:
         logger.exception(f"Ecwid products error: {e}")
         raise HTTPException(status_code=502, detail="Failed to fetch products.")
+
+@app.get("/api/categories")
+def api_categories():
+    if not (ECWID_STORE_ID and ECWID_API_TOKEN):
+        raise HTTPException(status_code=503, detail="In-chat ordering is not configured.")
+    try:
+        cats = _ecwid_get_categories(limit=200)
+        # Return minimal fields
+        out = [
+            {
+                "id": c.get("id"),
+                "name": c.get("name"),
+                "parentId": c.get("parentId"),
+                "imageUrl": c.get("thumbnailUrl") or c.get("imageUrl"),
+            }
+            for c in cats if c.get("id") and c.get("name")
+        ]
+        return {"items": out}
+    except Exception as e:
+        logger.exception(f"Ecwid categories error: {e}")
+        raise HTTPException(status_code=502, detail="Failed to fetch categories.")
 
 @app.post("/api/order")
 def api_order(req: OrderRequest):
@@ -798,6 +875,9 @@ def api_order(req: OrderRequest):
         raise HTTPException(status_code=503, detail="In-chat ordering is not configured.")
     if not req.items:
         raise HTTPException(status_code=400, detail="No items provided.")
+    # Require pickup time for all orders so server can enforce lead/max/blackouts
+    if not (req.pickup_time and req.pickup_time.strip()):
+        raise HTTPException(status_code=400, detail="pickup_time is required in format YYYY-MM-DDTHH:MM.")
     items = []
     for it in req.items:
         if (not it.productId) and (not it.sku):
@@ -813,11 +893,37 @@ def api_order(req: OrderRequest):
     if not items:
         raise HTTPException(status_code=400, detail="All quantities are zero.")
 
-    # Validate pickup time if provided
-    if req.pickup_time:
-        ok, reason = _validate_pickup_time(req.pickup_time)
-        if not ok:
-            raise HTTPException(status_code=400, detail=f"Pickup time not available: {reason}")
+    # Validate pickup time (format, hours, min lead, max window, blackout)
+    ok, reason = _validate_pickup_time(req.pickup_time)
+    if not ok:
+        raise HTTPException(status_code=400, detail=f"Pickup time not available: {reason}")
+    try:
+        cons = api_order_constraints(debug=False)  # reuse same logic
+        min_lead = int(cons.get("min_lead_minutes", 0))
+        max_days = int(cons.get("max_days", 0))
+        blackouts = cons.get("blackout_dates") or []
+        now = datetime.now()
+        dt = _parse_pickup_iso(req.pickup_time)
+        if not dt:
+            raise HTTPException(status_code=400, detail="Invalid time format. Use YYYY-MM-DDTHH:MM.")
+        # Lead time
+        if min_lead > 0:
+            min_dt = now + timedelta(minutes=min_lead)
+            if dt < min_dt:
+                raise HTTPException(status_code=400, detail=f"Pickup must be at least {int(round(min_lead/60))} hours from now.")
+        # Max days window
+        if max_days > 0:
+            limit = now + timedelta(days=max_days)
+            if dt.date() > limit.date():
+                raise HTTPException(status_code=400, detail=f"Pickup cannot be more than {max_days} days ahead.")
+        # Blackout
+        if _is_blackout(dt, blackouts):
+            raise HTTPException(status_code=400, detail="Pickup date is not available (blackout).")
+    except HTTPException:
+        raise
+    except Exception:
+        # If constraint check fails unexpectedly, proceed (Ecwid will still validate)
+        pass
 
     body = {
         "name": req.name or "Chat Customer",
@@ -846,8 +952,35 @@ def api_order(req: OrderRequest):
             data = r.json()
         return {"ok": True, "id": data.get("id"), "orderNumber": data.get("orderNumber")}
     except httpx.HTTPStatusError as he:
-        logger.exception(f"Ecwid order HTTP error: {he.response.text}")
-        raise HTTPException(status_code=he.response.status_code, detail=he.response.text)
+        # Try to surface a meaningful error message from Ecwid
+        resp = he.response
+        status = resp.status_code
+        detail = ""
+        try:
+            payload = resp.json()
+            # Ecwid commonly returns fields like 'errorMessage' or 'message'
+            detail = (
+                payload.get("errorMessage")
+                or payload.get("message")
+                or payload.get("error")
+                or ""
+            )
+            # Include additional context if available
+            if not detail and isinstance(payload, dict):
+                # Sometimes errors are nested under a list like 'errors'
+                errs = payload.get("errors")
+                if isinstance(errs, list) and errs:
+                    detail = str(errs[0])
+        except Exception:
+            # Fall back to raw text if JSON parsing fails
+            detail = (resp.text or "").strip()
+
+        if not detail:
+            # Final fallback to a generic message
+            detail = f"Ecwid API error {status}"
+
+        logger.exception(f"Ecwid order HTTP error: {status} {detail}")
+        raise HTTPException(status_code=status, detail=detail)
     except Exception as e:
         logger.exception(f"Ecwid order error: {e}")
         raise HTTPException(status_code=502, detail="Failed to create order.")
@@ -856,36 +989,205 @@ def api_order(req: OrderRequest):
 def api_pickup_hours():
     return {"timezone": LOCAL_TZ, "hours": SHOP_HOURS}
 
+from fastapi import Query
+
+
+@app.get("/api/order_constraints")
+def api_order_constraints(debug: bool = Query(False, description="Include debug details")):
+    """Return min lead time and max advance days for orders.
+    Attempts to discover from Ecwid shipping/pickup settings; falls back to env defaults.
+    """
+    if not (ECWID_STORE_ID and ECWID_API_TOKEN):
+        # Without Ecwid, still provide useful defaults for the UI
+        out = {
+            "source": "defaults",
+            "min_lead_minutes": ECWID_MIN_LEAD_MINUTES,
+            "max_days": ECWID_MAX_ORDER_DAYS,
+        }
+        if debug:
+            out["details"] = {
+                "reason": "missing_credentials",
+            }
+        return out
+    # Start with None; only fall back to env defaults if not discovered from Ecwid
+    min_lead: int | None = None
+    max_days: int | None = None
+    found_min = False
+    found_max = False
+    debug_notes: Dict[str, Any] = {"sources": []}
+    blackout_ranges: list[Dict[str, Any]] = []
+    try:
+        def _availability_to_days(val: Any) -> int | None:
+            if not isinstance(val, str):
+                return None
+            s = val.upper().strip()
+            mapping = {
+                "ONE_WEEK": 7,
+                "TWO_WEEKS": 14,
+                "ONE_MONTH": 30,
+                "TWO_MONTHS": 60,
+                "THREE_MONTHS": 90,
+            }
+            return mapping.get(s)
+
+        # Try to infer from /profile/shippingOptions endpoint
+        opts = _ecwid_get_shipping_options()
+        for opt in opts:
+            name = (opt.get("title") or opt.get("name") or "").lower()
+            fulfill = (
+                opt.get("fulfillmentType")
+                or opt.get("fulfilmentType")
+                or opt.get("type")
+                or ""
+            ).upper()
+            settings = opt.get("settings") or {}
+
+            # Lead time (minutes)
+            prep_mins = (
+                settings.get("pickupPreparationTimeMinutes")
+                or settings.get("preparationTimeMinutes")
+                or settings.get("leadTimeMinutes")
+                or opt.get("pickupPreparationTimeMinutes")
+                or opt.get("fulfillmentTimeInMinutes")
+            )
+            # Some stores expose hours
+            if not prep_mins:
+                val_h = opt.get("pickupPreparationTimeHours")
+                if isinstance(val_h, (int, float)):
+                    prep_mins = int(val_h) * 60
+            if isinstance(prep_mins, (int, float)):
+                val = int(prep_mins)
+                min_lead = val if (min_lead is None or val > min_lead) else min_lead
+                found_min = True
+
+            # Max days in advance
+            md = (
+                settings.get("daysInAdvance")
+                or settings.get("maxAdvanceDays")
+                or settings.get("orderAheadDays")
+                or _availability_to_days(opt.get("availabilityPeriod"))
+            )
+            if isinstance(md, int) and md > 0:
+                val = int(md)
+                max_days = val if (max_days is None or val < max_days) else max_days
+                found_max = True
+
+            if debug:
+                debug_notes.setdefault("sources", []).append({
+                    "option": name,
+                    "fulfillmentType": fulfill,
+                    "preparation_minutes": prep_mins,
+                    "availabilityPeriod": opt.get("availabilityPeriod"),
+                    "max_days_candidate": md,
+                })
+
+            # Collect blackout date ranges if present
+            bl = opt.get("blackoutDates")
+            if isinstance(bl, list):
+                for it in bl:
+                    fd = it.get("fromDate") or it.get("from")
+                    td = it.get("toDate") or it.get("to")
+                    ra = bool(it.get("repeatedAnnually"))
+                    if fd and td:
+                        blackout_ranges.append({"from": fd, "to": td, "repeatedAnnually": ra})
+
+        # Also inspect /profile shipping settings directly (often richer)
+        try:
+            profile = _ecwid_get_profile()
+            pset = profile.get("settings") or {}
+            ship = pset.get("shipping") or {}
+            md_profile = ship.get("maxOrderAheadDays")
+            if isinstance(md_profile, int) and md_profile > 0:
+                val = int(md_profile)
+                max_days = val if (max_days is None or val < max_days) else max_days
+                found_max = True
+
+            prof_opts = ship.get("shippingOptions") or []
+            for opt in prof_opts:
+                name = (opt.get("title") or opt.get("name") or "").lower()
+                fulfill = (
+                    opt.get("fulfillmentType")
+                    or opt.get("fulfilmentType")
+                    or opt.get("type")
+                    or ""
+                ).upper()
+                # Lead time
+                prep_mins = (
+                    opt.get("pickupPreparationTimeMinutes")
+                    or opt.get("fulfillmentTimeInMinutes")
+                )
+                if not prep_mins:
+                    val_h = opt.get("pickupPreparationTimeHours")
+                    if isinstance(val_h, (int, float)):
+                        prep_mins = int(val_h) * 60
+                if isinstance(prep_mins, (int, float)):
+                    val = int(prep_mins)
+                    min_lead = val if (min_lead is None or val > min_lead) else min_lead
+                    found_min = True
+
+                # Max days via availabilityPeriod
+                md = _availability_to_days(opt.get("availabilityPeriod"))
+                if isinstance(md, int) and md > 0:
+                    val = int(md)
+                    max_days = val if (max_days is None or val < max_days) else max_days
+                    found_max = True
+
+                if debug:
+                    debug_notes.setdefault("profile_sources", []).append({
+                        "option": name,
+                        "fulfillmentType": fulfill,
+                        "preparation_minutes": prep_mins,
+                        "availabilityPeriod": opt.get("availabilityPeriod"),
+                    })
+                # Collect blackout dates from profile shippingOptions as well
+                bl = opt.get("blackoutDates")
+                if isinstance(bl, list):
+                    for it in bl:
+                        fd = it.get("fromDate") or it.get("from")
+                        td = it.get("toDate") or it.get("to")
+                        ra = bool(it.get("repeatedAnnually"))
+                        if fd and td:
+                            blackout_ranges.append({"from": fd, "to": td, "repeatedAnnually": ra})
+            if debug:
+                debug_notes["profile_checked"] = True
+                debug_notes["profile_shipping_maxOrderAheadDays"] = md_profile
+        except Exception:
+            pass
+    except Exception as e:
+        logger.warning(f"Failed to fetch Ecwid order constraints, using defaults: {e}")
+    # Apply fallbacks if nothing was discovered
+    if min_lead is None:
+        min_lead = ECWID_MIN_LEAD_MINUTES
+    if max_days is None:
+        max_days = ECWID_MAX_ORDER_DAYS
+    src = "ecwid" if (found_min or found_max) else "defaults"
+    out = {
+        "source": src,
+        "min_lead_minutes": int(min_lead),
+        "max_days": int(max_days),
+        "blackout_dates": blackout_ranges,
+    }
+    if debug:
+        out["details"] = {
+            "found_min": found_min,
+            "found_max": found_max,
+            **debug_notes,
+        }
+    return out
+
 @app.get("/api/check_pickup")
 def api_check_pickup(iso: str):
     ok, reason = _validate_pickup_time(iso)
     return {"ok": ok, "reason": reason}
 
 def _parse_pickup_iso(s: str) -> datetime | None:
-    """Parse 'YYYY-MM-DDTHH:MM' or 'YYYY-MM-DD HH:MM' as local naive datetime."""
-    s = s.strip()
-    for fmt in ("%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"):
-        try:
-            return datetime.strptime(s, fmt)
-        except Exception:
-            pass
-    return None
+    return tr_parse_pickup_iso(s)
 
 def _validate_pickup_time(pickup_iso: str) -> Tuple[bool, str | None]:
-    dt = _parse_pickup_iso(pickup_iso)
-    if not dt:
-        return False, "Invalid time format. Use YYYY-MM-DDTHH:MM."
-    dow = dt.weekday()  # Mon=0
-    windows = SHOP_HOURS.get(dow) or []
-    if not windows:
-        return False, "Closed that day."
-    mins = dt.hour * 60 + dt.minute
-    for start, end in windows:
-        sh, sm = map(int, start.split(":"))
-        eh, em = map(int, end.split(":"))
-        if (sh * 60 + sm) <= mins <= (eh * 60 + em):
-            return True, None
-    return False, "Outside pickup hours."
+    return tr_validate_pickup_time(pickup_iso, SHOP_HOURS)
+
+def _is_blackout(dt: datetime, blackouts: List[Dict[str, Any]]) -> bool:
+    return tr_is_blackout(dt, blackouts)
 
 # ============================================================
 # Startup: load KB and build index (with logs)
@@ -911,6 +1213,9 @@ if not INDEX_FILE.exists():
 def root():
     return FileResponse(INDEX_FILE)
 
+# Include API routers before mounting static files
+if orders_router is not None:
+    app.include_router(orders_router)
 # Mount ALL static assets at site root (keep AFTER API routes)
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
