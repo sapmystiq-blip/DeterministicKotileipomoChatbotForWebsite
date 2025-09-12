@@ -20,7 +20,14 @@ def ecwid_base() -> str:
 
 def ecwid_headers() -> Dict[str, str]:
     token = _require_env("ECWID_API_TOKEN")
-    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    # Some Ecwid deployments expect X-Ecwid-Api-Token, others accept Bearer auth.
+    # Send both headers (safe and supported) for maximum compatibility.
+    return {
+        "Authorization": f"Bearer {token}",
+        "X-Ecwid-Api-Token": token,
+        "X-Ecwid-Token": token,
+        "Content-Type": "application/json",
+    }
 
 
 def get_products(limit: int = 100, category: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -72,4 +79,3 @@ def get_shipping_options() -> List[Dict[str, Any]]:
     if isinstance(data, list):
         return data
     return []
-

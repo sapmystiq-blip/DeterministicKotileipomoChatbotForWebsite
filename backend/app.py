@@ -18,6 +18,7 @@ from difflib import SequenceMatcher
 from datetime import datetime, timedelta
 import httpx
 from .time_rules import SHOP_HOURS as TR_SHOP_HOURS, validate_pickup_time as tr_validate_pickup_time, parse_pickup_iso as tr_parse_pickup_iso, is_blackout as tr_is_blackout
+from . import intent_router as IR
 try:
     from .routers.orders import router as orders_router
 except Exception:
@@ -41,6 +42,7 @@ SUPPORTED_LANG_HINT = "fi, en, sv, no, de, fr, es, it"
 ECWID_STORE_URL = os.getenv("ECWID_STORE_URL", "https://rakaskotileipomo.fi/verkkokauppa")
 ECWID_STORE_ID = os.getenv("ECWID_STORE_ID")
 ECWID_API_TOKEN = os.getenv("ECWID_API_TOKEN")
+GOOGLE_REVIEW_URL = os.getenv("GOOGLE_REVIEW_URL", "https://www.google.com/search?q=Raka%27s+kotileipomo&sca_esv=6c7f7ca6e8ee6a34&rlz=1C5CHFA_enFI1167FI1167&hl=fi-FI&biw=1164&bih=754&tbm=lcl&ei=gxvEaJ7VH_G0wPAPhfyKqAY&ved=0ahUKEwjeos7mpdOPAxVxGhAIHQW-AmUQ4dUDCAo&uact=5&oq=Raka%27s+kotileipomo&gs_lp=Eg1nd3Mtd2l6LWxvY2FsIhJSYWthJ3Mga290aWxlaXBvbW8yBRAAGIAEMgUQABiABDIGEAAYFhgeMgYQABgWGB4yBhAAGBYYHjICECYyCBAAGIAEGKIEMggQABiABBiiBDIIEAAYogQYiQVIvAhQxAZYxAZwAHgAkAEAmAF-oAGmAqoBAzIuMbgBA8gBAPgBAZgCA6ACwAKYAwCIBgGSBwMxLjKgB64PsgcDMS4yuAfAAsIHBTItMi4xyAcW&sclient=gws-wiz-local#lkt=LocalPoiReviews&rlfi=hd:;si:7666209392203396731,l,ChJSYWthJ3Mga290aWxlaXBvbW9I2M7x8PS1gIAIWiQQABABGAAYASIScmFrYSdzIGtvdGlsZWlwb21vKgYIAhAAEAGSAQZiYWtlcnmqAUoKDS9nLzExcHk3MXN0dnMQATIfEAEiG12RikuLePke45zt2cmJ_CcYGIZmNEHDLSGmJzIWEAIiEnJha2EncyBrb3RpbGVpcG9tbw,y,n4xN2WK8BF4;mv:[[60.197882977319026,24.947339021027446],[60.19752302268097,24.946614778972545]]&lrd=0x468df9bf012e8049:0x6a63d8d32c0bf67b,3,,,,")
 LOCAL_TZ = os.getenv("LOCAL_TZ", "Europe/Helsinki")
 # Ordering time constraints (fallbacks if not discoverable from Ecwid)
 ECWID_MAX_ORDER_DAYS = int(os.getenv("ECWID_MAX_ORDER_DAYS", "60"))
@@ -91,10 +93,11 @@ REPO_ROOT = HERE.parent                          # repo/
 FRONTEND_DIR = REPO_ROOT / "frontend"            # index.html, styles.css, chat.js
 INDEX_FILE = FRONTEND_DIR / "index.html"
 
-# KB JSON files live under backend/knowledgebase
+# KB JSON files live under backend/knowledgebase. Legacy Q&A lists are under deprecated/.
 KB_DIR = HERE / "knowledgebase"
-# Discover all JSON KB files using glob (no hardcoding)
-KB_FILES = [p.name for p in sorted(KB_DIR.glob("*.json"))]
+LEGACY_KB_DIR = KB_DIR / "deprecated"
+# Discover only legacy Q&A JSON files (list of {question, answer})
+KB_FILES = [p.name for p in sorted(LEGACY_KB_DIR.glob("*.json"))]
 
 # ============================================================
 # Database (optional; e.g., Railway Postgres)
@@ -179,6 +182,12 @@ class ChatResponse(BaseModel):
     match: float | None = None
     session_id: str | None = None
 
+
+class FeedbackPayload(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    message: str
+
 # ============================================================
 # Text normalization / tokenization
 # ============================================================
@@ -252,9 +261,9 @@ AVG_LEN: float = 0.0
 def load_kb_clean() -> List[Dict[str, Any]]:
     kb: List[Dict[str, Any]] = []
     seen = set()
-    logger.info(f"Looking for KB files in: {KB_DIR.resolve()}")
+    logger.info(f"Looking for legacy KB files in: {LEGACY_KB_DIR.resolve()}")
     for fname in KB_FILES:
-        fpath = KB_DIR / fname
+        fpath = LEGACY_KB_DIR / fname
         if not fpath.exists():
             logger.warning(f"KB file not found, skipping: {fname}")
             continue
@@ -446,6 +455,20 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             return "Ole hyvä!"
         return "You're welcome!"
 
+    # opening hours fast-path (avoid misfiring capability phrase on "what are your opening hours")
+    HOURS_KWS = [
+        "opening hours", "open today", "open now",  # EN
+        "aukiolo", "aukioloajat",                    # FI
+        "öppettider",                                 # SV
+    ]
+    if any(k in text for k in HOURS_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        try:
+            return IR.resolve_hours(lang)
+        except Exception:
+            # let downstream handle if router not available
+            return None
+
     # capabilities / identity
     if any(p in text for p in CAPABILITY_PHRASES):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
@@ -481,6 +504,735 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             "• Allergies and ingredients\n"
             "• Pickup and delivery"
         )
+
+    # Delivery vs pickup clarification
+    DELIVERY_KWS = {"delivery","deliver","home delivery","toimitus","kotiinkuljetus","kuljetus","leverans"}
+    if any(k in text for k in DELIVERY_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        url = ECWID_STORE_URL
+        if lang == "sv":
+            msg = (
+                f"""
+<div class=\"order-ui\">
+  <div class=\"order-sub\">Vi erbjuder för närvarande ingen leverans. Avhämtning i butiken under öppettider.</div>
+  <div class=\"order-title\">Beställ i webbutiken</div>
+  <div class=\"order-sub\">Hämta i butiken, betalning på plats.</div>
+  <div class=\"order-buttons\">
+    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Öppna webbutiken</a>
+    <button class=\"btn\" data-action=\"start-order\">Beställ i chatten</button>
+  </div>
+</div>
+"""
+            )
+            return msg
+        if lang == "fi":
+            msg = (
+                f"""
+<div class=\"order-ui\">
+  <div class=\"order-sub\">Emme tarjoa toimitusta. Nouto myymälästä aukioloaikoina.</div>
+  <div class=\"order-title\">Tilaa verkkokaupasta</div>
+  <div class=\"order-sub\">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class=\"order-buttons\">
+    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Avaa verkkokauppa</a>
+    <button class=\"btn\" data-action=\"start-order\">Tilaa chatissa</button>
+  </div>
+</div>
+"""
+            )
+            return msg
+        # en
+        return (
+            f"""
+<div class=\"order-ui\">
+  <div class=\"order-sub\">We currently do not offer delivery. Pickup in-store during opening hours.</div>
+  <div class=\"order-title\">Order Online</div>
+  <div class=\"order-sub\">Pickup in store, pay at pickup.</div>
+  <div class=\"order-buttons\">
+    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Open Online Shop</a>
+    <button class=\"btn\" data-action=\"start-order\">Order in chat</button>
+  </div>
+</div>
+"""
+        )
+
+    # Seating availability (avoid substring collisions like "deposit")
+    SEATING_KWS = {"seating","seat","seats","dine","dine-in",
+                   "asiakaspaikka","asiakaspaikat","asiakaspaikkoja",
+                   "istumapaikka","istumapaikat","istumapaikkoja",
+                   "sittplats","sittplatser","servering"}
+    if any(k in text for k in SEATING_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "Vi har inga kundplatser i butiken. Beställ gärna för avhämtning."
+        if lang == "fi":
+            return "Meillä ei ole asiakaspaikkoja myymälässä. Voit tilata noudettavaksi."
+        return "We don’t have customer seating in-store. Please order for pickup."
+
+    # Custom cakes/pastries request → explain policy + show menu
+    CUSTOM_KWS = {
+        # EN
+        "custom cake","custom cakes","custom pastry","custom pastries","made to order","special order","birthday cake","wedding cake",
+        # FI
+        "tilauskakku","tilauskakut","tilausleivonnainen","tilausleivonnaiset","mittatilaus","räätälöity","räätälöityjä","kakku tilauksesta",
+        "tilaustyö","tilaustyönä","tilaustyöt",
+        # SV
+        "beställningstårta","tårta på beställning","specialtårta","beställningsbakverk",
+    }
+    if any(k in text for k in CUSTOM_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            msg = (
+                "För närvarande gör vi inte specialtårtor eller skräddarsydda bakverk. "
+                "Vi tar gärna förhandsbeställningar för större fester och evenemang – ur vårt ordinarie sortiment."
+            )
+            prompt = (
+                "<div class=\"suggest\">"
+                "<div class=\"title\">Vill du se menyn?</div>"
+                "<div class=\"buttons\">"
+                "<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"meny\">Ja</button>"
+                "<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"nej tack\">Nej</button>"
+                "</div></div>"
+            )
+            return f"<div class=\"info\">{msg}</div>" + prompt
+        if lang == "fi":
+            msg = (
+                "Tällä hetkellä emme tee tilauskakkuja tai räätälöityjä leivonnaisia. "
+                "Otamme kuitenkin ennakkotilauksia isompiin juhliin ja tilaisuuksiin – valikoimamme tuotteista."
+            )
+            prompt = (
+                "<div class=\"suggest\">"
+                "<div class=\"title\">Haluatko nähdä valikon?</div>"
+                "<div class=\"buttons\">"
+                "<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"ruokalista\">Kyllä</button>"
+                "<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"ei kiitos\">Ei</button>"
+                "</div></div>"
+            )
+            return f"<div class=\"info\">{msg}</div>" + prompt
+        # en
+        msg = (
+            "At the moment we don’t make custom cakes or pastries. "
+            "We do take pre‑orders for bigger parties and occasions – from items on our menu."
+        )
+        prompt = (
+            "<div class=\"suggest\">"
+            "<div class=\"title\">Would you like to see our menu?</div>"
+            "<div class=\"buttons\">"
+            "<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"menu\">Yes</button>"
+            "<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"no thanks\">No</button>"
+            "</div></div>"
+        )
+        return f"<div class=\"info\">{msg}</div>" + prompt
+
+    # Specific flavors/fillings/designs (no customizations)
+    CUSTOMIZE_KWS = {
+        # EN
+        "specific flavor", "specific flavours", "specific flavors", "specific filling", "fillings", "flavors", "flavours", "design", "designs", "custom flavor", "custom filling", "custom design",
+        # FI
+        "maku", "maut", "täyte", "täytteet", "suunnittelu", "koristelu", "oma maku", "oma täyte",
+        # SV
+        "smak", "smaker", "fyllning", "fyllningar", "design", "egen smak", "egen fyllning",
+    }
+    if any(k in text for k in CUSTOMIZE_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "Tyvärr tar vi inte emot önskemål om specifika smaker, fyllningar eller designer för tillfället."
+        if lang == "fi":
+            return "Valitettavasti emme tällä hetkellä ota vastaan pyyntöjä erityisistä mauista, täytteistä tai design‑koristeluista."
+        return "Sorry, we do not accept requests for specific flavors, fillings, or designs at the moment."
+
+    # Lead time (how far in advance)
+    LEAD_KWS = {
+        # EN
+        "how far in advance", "how early", "order ahead", "how many days in advance", "lead time",
+        # FI
+        "kuinka aikaisin", "montako päivää etukäteen", "ennakkoon", "ennakkoon kuinka", "ennakkoon paljonko",
+        # SV
+        "hur långt i förväg", "hur tidigt", "beställa i förväg", "hur många dagar i förväg",
+    }
+    if any(k in text for k in LEAD_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        url = ECWID_STORE_URL
+        if lang == "sv":
+            note = "Gör din beställning minst 1 dag i förväg och upp till en månad i förväg."
+            ui = (
+                f"""
+<div class=\"order-ui\">
+  <div class=\"order-title\">Beställ i webbutiken</div>
+  <div class=\"order-sub\">Hämta i butiken, betalning på plats.</div>
+  <div class=\"order-buttons\">
+    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Öppna webbutiken</a>
+    <button class=\"btn\" data-action=\"start-order\">Beställ i chatten</button>
+  </div>
+</div>
+"""
+            )
+            return f"<div class=\"info\">{note}</div>" + ui
+        if lang == "fi":
+            note = "Tee tilaus vähintään 1 päivä etukäteen ja enintään kuukauden päähän."
+            ui = (
+                f"""
+<div class=\"order-ui\">
+  <div class=\"order-title\">Tilaa verkkokaupasta</div>
+  <div class=\"order-sub\">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class=\"order-buttons\">
+    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Avaa verkkokauppa</a>
+    <button class=\"btn\" data-action=\"start-order\">Tilaa chatissa</button>
+  </div>
+</div>
+"""
+            )
+            return f"<div class=\"info\">{note}</div>" + ui
+        note = "Please place orders at least 1 day in advance and up to a month ahead."
+        ui = (
+            f"""
+<div class=\"order-ui\">
+  <div class=\"order-title\">Order Online</div>
+  <div class=\"order-sub\">Pickup in store, pay at pickup.</div>
+  <div class=\"order-buttons\">
+    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Open Online Shop</a>
+    <button class=\"btn\" data-action=\"start-order\">Order in chat</button>
+  </div>
+</div>
+"""
+        )
+        return f"<div class=\"info\">{note}</div>" + ui
+
+    # Deposit / prepayment policy
+    DEPOSIT_KWS = {
+        # EN
+        "deposit", "prepayment", "pre-payment", "advance payment",
+        # FI
+        "ennakkomaksu", "etukäteismaksu", "ennakko", "varausmaksu",
+        # SV
+        "förskottsbetalning", "deposition", "handpenning",
+    }
+    if any(k in text for k in DEPOSIT_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "För beställningar över 150 € kräver vi förskottsbetalning."
+        if lang == "fi":
+            return "Yli 150 €:n tilauksista edellytämme ennakkomaksun."
+        return "We require prepayment for orders over €150."
+
+    # Minimum order requirement
+    MIN_ORDER_KWS = {
+        # EN
+        "minimum order", "minimum spend", "min order", "minimum purchase",
+        # FI
+        "minimitilaus", "minimiosto", "minimiostos",
+        # SV
+        "minsta beställning", "minsta köp", "minimumorder",
+    }
+    if any(k in text for k in MIN_ORDER_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "Nej, vi har inget minsta orderbelopp."
+        if lang == "fi":
+            return "Ei, meillä ei ole minimitilausrajaa."
+        return "No, we do not have a minimum order requirement."
+
+    # Payment methods (cards/mobile/cash)
+    PAYMENT_KWS = {
+        # EN
+        "credit card", "debit card", "cards accepted", "visa", "mastercard", "amex", "mobile pay", "mobilepay", "cash", "checks", "contactless",
+        # FI
+        "kortti", "kortilla", "luottokortti", "pankkikortti", "lähimaksu", "mobilepay", "käteinen", "sekki", "sekkejä",
+        # SV
+        "kort", "kreditkort", "bankkort", "kontaktlös", "kontaktlöst", "mobilepay", "kontanter", "checkar",
+        "betalning", "pay", "payment",
+    }
+    if any(k in text for k in PAYMENT_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Vi accepterar ledande debit- och kreditkort med kontaktlös betalning. "
+                "Vi accepterar inte MobilePay, kontanter eller checkar."
+            )
+        if lang == "fi":
+            return (
+                "Hyväksymme yleisimmät pankki- ja luottokortit lähimaksulla. "
+                "Emme hyväksy MobilePayta, käteistä tai shekkejä."
+            )
+        return (
+            "We accept major debit and credit cards with contactless. "
+            "We do not accept MobilePay, cash or checks."
+        )
+
+    # Loyalty program / newsletter
+    LOYALTY_KWS = {
+        # EN
+        "loyalty", "rewards", "points", "membership", "members club", "newsletter", "mailing list",
+        # FI
+        "kanta-asiakas", "kantaasiakas", "pisteet", "jäsenyys", "jäsen", "uutiskirje",
+        # SV
+        "lojalitet", "bonus", "poäng", "medlemskap", "nyhetsbrev",
+    }
+    if any(k in text for k in LOYALTY_KWS):
+        email = "rakaskotileipomo@gmail.com"
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                f"Vi har inget lojalitetsprogram, men du kan mejla oss på {email} för att bli tillagd på vårt (sällan skickade) nyhetsbrev."
+            )
+        if lang == "fi":
+            return (
+                f"Meillä ei ole kanta-asiakasohjelmaa, mutta voit lähettää sähköpostia osoitteeseen {email} päästäksesi harvoin lähetettävään uutiskirjeeseemme."
+            )
+        return (
+            f"We do not have a loyalty program, but you can email {email} to be added to our very rarely sent newsletter."
+        )
+
+    # Classes / community events
+    CLASSES_KWS = {
+        # EN
+        "baking class", "baking classes", "class", "classes", "workshop", "community event", "events",
+        # FI
+        "kurssi", "kurssit", "leivontakurssi", "yhteisötilaisuus", "tapahtuma", "tapahtumat",
+        # SV
+        "kurs", "kurser", "bakningskurs", "evenemang",
+    }
+    if any(k in text for k in CLASSES_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "För närvarande ordnar vi inte bakningskurser eller evenemang."
+        if lang == "fi":
+            return "Tällä hetkellä emme järjestä leivontakursseja tai yhteisötapahtumia."
+        return "At the moment we do not host baking classes or community events."
+
+    # Feedback / reviews
+    FEEDBACK_KWS = {
+        # EN
+        "feedback", "review", "reviews", "google review", "leave feedback",
+        # FI
+        "palaute", "palautetta", "arvostelu", "arvostelut",
+        # SV
+        "feedback", "omdöme", "recension", "recensioner",
+    }
+    if any(k in text for k in FEEDBACK_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        link = GOOGLE_REVIEW_URL
+        title = {
+            "fi": "Anna palaute tai jätä arvostelu",
+            "sv": "Lämna feedback eller skriv en recension",
+            "en": "Leave feedback or post a review",
+        }[lang]
+        submit = {"fi": "Lähetä", "sv": "Skicka", "en": "Submit"}[lang]
+        name_l = {"fi": "Nimi (valinnainen)", "sv": "Namn (valfritt)", "en": "Name (optional)"}[lang]
+        email_l = {"fi": "Sähköposti (valinnainen)", "sv": "E‑post (valfritt)", "en": "Email (optional)"}[lang]
+        msg_l = {"fi": "Palaute", "sv": "Feedback", "en": "Feedback"}[lang]
+        review_l = {"fi": "Jätä Google‑arvostelu", "sv": "Lämna Google‑recension", "en": "Post Google review"}[lang]
+        html = f"""
+<div class=\"feedback-ui\">
+  <div class=\"title\">{title}</div>
+  <form class=\"feedback-form\">
+    <div class=\"row\"><input type=\"text\" name=\"name\" placeholder=\"{name_l}\"></div>
+    <div class=\"row\"><input type=\"email\" name=\"email\" placeholder=\"{email_l}\"></div>
+    <div class=\"row\"><textarea name=\"message\" rows=\"3\" placeholder=\"{msg_l}\" required></textarea></div>
+    <div class=\"actions\"><button type=\"submit\" class=\"btn btn-primary\">{submit}</button>
+      <a class=\"btn btn-review\" href=\"{link}\" target=\"_blank\" rel=\"noopener\">{review_l}</a></div>
+  </form>
+</div>
+"""
+        return html
+
+    # Bulk / wholesale discounts
+    BULK_KWS = {
+        # EN
+        "bulk", "wholesale", "large order", "large orders", "volume discount", "discounts for bulk", "bulk pricing",
+        # FI
+        "tukku", "isot tilaukset", "suuri tilaus", "määriä", "alennus", "tukkualennus",
+        # SV
+        "partihandel", "storköp", "större beställning", "volymrabatt", "rabatt",
+    }
+    if any(k in text for k in BULK_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        email = "rakaskotileipomo@gmail.com"
+        if lang == "sv":
+            return (
+                f"Detta bedöms från fall till fall. Skicka gärna ett e‑postmeddelande till {email} med din förfrågan."
+            )
+        if lang == "fi":
+            return (
+                f"Päätämme asiasta tapauskohtaisesti. Lähetä ystävällisesti sähköpostia osoitteeseen {email} ja kerro tarpeestasi."
+            )
+        return (
+            f"This is decided on a case‑by‑case basis. Please email {email} with your query."
+        )
+
+    # Gift cards
+    GIFT_KWS = {
+        # EN
+        "gift card", "gift cards", "giftcard", "voucher", "gift voucher",
+        # FI
+        "lahjakortti", "lahjakortteja", "lahjakorte", "lahja kortti",
+        # SV
+        "presentkort", "gåvokort", "gavokort",
+    }
+    if any(k in text for k in GIFT_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "Vi säljer presentkort med ett minsta belopp på 10 € och de gäller i 6 månader."
+        if lang == "fi":
+            return "Myymme lahjakortteja; minimisumma on 10 € ja voimassaoloaika 6 kuukautta."
+        return "We sell gift cards with a minimum value of €10 and they are valid for 6 months."
+
+    # Price range (per‑piece)
+    PRICE_RANGE_KWS = {
+        # EN
+        "price range", "prices range", "how much do", "how expensive", "what are your prices", "price list",
+        # FI
+        "hintahaarukka", "hinnat", "hinnasto", "mitä maksaa", "paljonko maksaa",
+        # SV
+        "prisspann", "prisnivå", "priser", "prislista", "hur mycket kostar",
+    }
+    if any(k in text for k in PRICE_RANGE_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "Styckepriserna ligger ungefär mellan 1,20–4,50 € per styck."
+        if lang == "fi":
+            return "Yksikköhinnat ovat noin 1,20–4,50 € /kpl."
+        return "Per‑piece prices range roughly from €1.20 to €4.50."
+
+    # Unsold goods / food waste policy
+    DONATION_KWS = {
+        # EN
+        "donate", "unsold", "leftover", "food waste", "waste", "left over",
+        # FI
+        "lahjoita", "lahjoitetaanko", "lahjoitukset", "myymättömät", "jääkö yli", "hävikki", "hävikkituotteet",
+        # SV
+        "donera", "donerar", "osålda", "svinn", "matsvinn",
+    }
+    if any(k in text for k in DONATION_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Vi tror inte på matsvinn. Vi har en ‘svinnfrys’ för osålda produkter: "
+                "i slutet av dagen packar vi och fryser in osålda bakverk, och säljer dem sedan till starkt rabatterat pris."
+            )
+        if lang == "fi":
+            return (
+                "Emme usko ruokahävikkiin. Meillä on ‘hävikki‑pakastin’ myymättömille tuotteille: "
+                "päivän päätteeksi pussitamme ja pakastamme myymättä jääneet leivonnaiset, ja myymme ne sen jälkeen hyvin alennettuun hintaan."
+            )
+        return (
+            "We do not believe in food waste. We keep a ‘food‑waste freezer’ for unsold items: "
+            "at the end of the day we bag and freeze any unsold baked goods, then offer them at a very discounted price."
+        )
+
+    # Reusable containers policy
+    REUSE_KWS = {
+        # EN
+        "reusable container", "reusable containers", "bring container", "own container", "bring your own container", "byo container",
+        # FI
+        "uudelleenkäytettävä", "uudelleenkäytettävät", "omat rasiat", "oma rasia", "oma astia", "omat astiat", "tuoda rasia",
+        # SV
+        "återanvändbar", "återanvändbara", "egen behållare", "egna behållare", "ta med behållare",
+    }
+    if any(k in text for k in REUSE_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Kunder är välkomna att ta med egna återanvändbara behållare. Vi packar gärna våra bakverk i dem."
+            )
+        if lang == "fi":
+            return (
+                "Asiakkaat voivat tuoda omat uudelleenkäytettävät rasiat/astiat. Pakkaamme leivonnaiset niihin mielellämme."
+            )
+        return (
+            "Customers are welcome to bring their reusable containers. We will be happy to pack our baked goods in them."
+        )
+
+    # Eco‑friendly / recyclable packaging
+    PACKAGING_KWS = {
+        # EN
+        "eco friendly packaging", "eco-friendly packaging", "sustainable packaging", "recyclable packaging", "packaging", "paper bags", "hdpe",
+        # FI
+        "ekologinen", "ympäristöystävällinen", "kierrätettävä", "kierrätettäviä", "pakkaus", "pakkaukset", "paperipussi", "paperipussit", "leivosrasia", "leivosrasiat", "hdpe",
+        # SV
+        "miljövänlig", "miljovänlig", "hållbar", "återvinningsbar", "återvinningsbara", "förpackning", "förpackningar", "papperspåse", "papperspåsar", "hdpe",
+    }
+    if any(k in text for k in PACKAGING_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Vi använder endast återvinningsbara papperspåsar och bakelseaskar för våra bakverk. "
+                "Frysta produkter packas i återvinningsbara HDPE‑påsar. "
+                "Vi erbjuder också bruna take‑away‑papperskassar med tvinnade handtag som är återanvändbara och återvinningsbara."
+            )
+        if lang == "fi":
+            return (
+                "Käytämme ainoastaan kierrätettäviä paperipusseja ja leivosrasioita leivonnaisten pakkaamiseen. "
+                "Pakasteet pakataan kierrätettäviin HDPE‑pusseihin. "
+                "Tarjoamme myös ruskeita kierretyillä kantokahvoilla varustettuja take‑away‑paperikasseja, jotka ovat uudelleenkäytettäviä ja kierrätettäviä."
+            )
+        return (
+            "We use only recyclable paper bags and ‘leivosrasiat’ pastry boxes for our baked items. "
+            "Frozen items are packed in recyclable HDPE bags. "
+            "We also offer brown take‑away paper bags with twisted handles which are reusable and recyclable."
+        )
+
+    # Samples / tasting policy
+    SAMPLE_KWS = {
+        # EN
+        "samples", "sample", "tasting", "taste", "free sample",
+        # FI
+        "maistiainen", "maistiaiset", "maistella", "maistatuksia", "maistatus",
+        # SV
+        "smakprov", "smakprover", "provsmakning", "smaka",
+    }
+    if any(k in text for k in SAMPLE_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Vi erbjuder normalt inte smakprov. Men om Raka eller Anssi håller på att skapa en ny bakelse kan något gott erbjudas för provsmakning."
+            )
+        if lang == "fi":
+            return (
+                "Emme yleensä tarjoa maistiaisia. Mutta jos Raka tai Anssi on kehittämässä uutta leivonnaista, jotain herkullista voi olla tarjolla maisteltavaksi."
+            )
+        return (
+            "We do not normally offer samples. But if Raka or Anssi is in the middle of creating a new bakery item, something yummy might be on offer for tasting."
+        )
+
+    # Phone vs online orders
+    PHONE_ONLINE_KWS = {"phone order","phone orders","call order","call in",
+                        "puhelin","puhelimitse","soittaa","verkossa",
+                        "telefon","ringa",
+                        "online order","online orders","webborder","onlinebeställning","onlinebeställningar"}
+    if any(k in text for k in PHONE_ONLINE_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        url = ECWID_STORE_URL
+        if lang == "sv":
+            return (
+                f"Vi tar emot webborder. Se webbutiken nedan.\n\n"
+                f"""
+<div class=\"order-ui\">
+  <div class=\"order-title\">Beställ i webbutiken</div>
+  <div class=\"order-sub\">Hämta i butiken, betalning på plats.</div>
+  <div class=\"order-buttons\">
+    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Öppna webbutiken</a>
+    <button class=\"btn\" data-action=\"start-order\">Beställ i chatten</button>
+  </div>
+</div>
+"""
+            )
+        if lang == "fi":
+            return (
+                f"Otamme vastaan verkkotilauksia. Katso verkkokauppa alta.\n\n"
+                f"""
+<div class=\"order-ui\">
+  <div class=\"order-title\">Tilaa verkkokaupasta</div>
+  <div class=\"order-sub\">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class=\"order-buttons\">
+    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Avaa verkkokauppa</a>
+    <button class=\"btn\" data-action=\"start-order\">Tilaa chatissa</button>
+  </div>
+</div>
+"""
+            )
+        return (
+            f"We take online orders. See the online shop below.\n\n"
+            f"""
+<div class=\"order-ui\">
+  <div class=\"order-title\">Order Online</div>
+  <div class=\"order-sub\">Pickup in store, pay at pickup.</div>
+  <div class=\"order-buttons\">
+    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Open Online Shop</a>
+    <button class=\"btn\" data-action=\"start-order\">Order in chat</button>
+  </div>
+</div>
+"""
+        )
+
+    # Freshly baked daily
+    FRESH_KWS = {
+        "fresh daily","bake fresh","freshly baked","baked fresh","handmade",
+        "paistatko", "tuoreena", "tuore", "paistetaan", "leivotteko", "leivotaan",
+        "färskt", "nybakat", "nybakade", "bakas",
+    }
+    if any(k in text for k in FRESH_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "Ja – allt vi erbjuder är nybakat och handgjort med kärlek av Anssi och Raka."
+        if lang == "fi":
+            return "Kyllä – kaikki tuotteemme ovat tuoreita ja käsin tehty rakkaudella Ansin ja Rakan toimesta."
+        return "Yes — everything we offer is freshly baked and handmade with love by Anssi and Raka."
+
+    # Made from scratch vs pre‑made mixes
+    SCRATCH_KWS = {
+        # EN
+        "made from scratch", "from scratch", "pre-made", "premade", "pre made", "pre-made mixes", "mixes", "ready mix", "pre mix",
+        # FI
+        "alusta asti", "käsin tehty", "valmisseos", "valmisseoksia", "esiseos", "valmiseos",
+        # SV
+        "från grunden", "för hand", "färdiga mixer", "färdigmix", "bakmix", "mixer",
+    }
+    if any(k in text for k in SCRATCH_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "Vi gör allting från grunden för hand. Vi använder inga färdiga mixer."
+        if lang == "fi":
+            return "Teemme kaiken alusta asti käsin. Emme käytä valmisseoksia."
+        return "We make everything from scratch by hand. We do not use any pre‑made mixes."
+
+    # Gluten‑free options policy
+    GLUTENFREE_KWS = {
+        # EN
+        "gluten free", "gluten-free", "glutenfree",
+        # FI
+        "gluteeniton", "gluteenittomia", "gluteenittomat",
+        # SV
+        "glutenfri", "glutenfritt", "glutenfria",
+    }
+    if any(k in text for k in GLUTENFREE_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "Tyvärr har vi inte glutenfria alternativ för tillfället."
+        if lang == "fi":
+            return "Valitettavasti meillä ei ole gluteenittomia vaihtoehtoja tällä hetkellä."
+        return "Unfortunately we do not have gluten‑free options at the moment."
+
+    # Nut allergy policy (no nuts in regular products; almonds only for Runebergin torttu)
+    # Make matching broad so phrases like "how do you handle nut allergies" hit this path.
+    NUT_KWS = {
+        # EN
+        "nut allergy", "nut allergies", "nut", "nuts", "peanut", "tree nut", "almond", "almonds",
+        # FI
+        "pähkinäallergia", "pähkinä", "pähkinät", "maapähkinä", "manteli", "manteleita",
+        # SV
+        "nötallergi", "nöt", "nötter", "jordnöt", "mandel",
+    }
+    if any(k in text for k in NUT_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Vi använder inte nötter i våra ordinarie produkter. "
+                "För Runebergstårta använder vi mandel; inget annat bakas samtidigt och allt rengörs noggrant efteråt."
+            )
+        if lang == "fi":
+            return (
+                "Emme käytä pähkinöitä vakiotuotteissamme. "
+                "Runebergintortussa käytämme manteleita; sitä valmistettaessa ei tehdä muita tuotteita ja puhdistamme kaiken huolellisesti sen jälkeen."
+            )
+        return (
+            "We do not use nuts in our regular products. "
+            "For Runeberg torte we use almonds; nothing else is made alongside it and we clean thoroughly after making the tortes."
+        )
+
+    # Request for ingredient/allergen lists (general overview)
+    ALLERGEN_LIST_KWS = {
+        # EN
+        "allergen list", "allergens list", "ingredient list", "ingredients list", "allergen information", "allergen info",
+        # FI
+        "allergialista", "allergeenilista", "ainesosaluettelo", "ainesosalista", "allergiatiedot", "allergeenitiedot",
+        # SV
+        "allergenlista", "allergen lista", "ingredienslista", "ingrediens lista", "allergiinformation",
+    }
+    if any(k in text for k in ALLERGEN_LIST_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Vanliga allergener vi använder: mjölk, gluten (vete/råg/korn) och ägg. "
+                "Vi hanterar spannmål och mejeriprodukter i bageriet; korskontaminering kan inte helt uteslutas."
+            )
+        if lang == "fi":
+            return (
+                "Yleisimmät allergeenit joita käytämme: maito, gluteeni (vehnä/ruis/ohra) ja kananmuna. "
+                "Käsittelemme leipomossa viljaa ja maitotuotteita; ristikontaminaatiota ei voida täysin poissulkea."
+            )
+        return (
+            "Common allergens we handle: milk, gluten (wheat/rye/barley) and egg. "
+            "We handle cereals and dairy in the bakery; cross‑contamination cannot be fully excluded."
+        )
+
+    # Seasonal / special items
+    SEASONAL_KWS = {
+        # EN
+        "seasonal", "season", "special items", "rotate", "rotating", "changing menu", "limited",
+        # FI
+        "kausi", "sesonki", "sesonkituote", "kausituote", "vaihtuva", "erikois",
+        # SV
+        "säsong", "säsongs", "byter", "special", "begränsad",
+    }
+    if any(k in text for k in SEASONAL_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Ja, vi erbjuder säsongs‑ och specialprodukter såsom Runebergstårta, fastlagsbulle, rabarberpaj, bärpaj och mer."
+            )
+        if lang == "fi":
+            return (
+                "Kyllä, meillä on kausituotteita ja erikoistuotteita kuten Runebergin torttu, laskiaispulla, raparperipiirakka, marjapiirakka ja paljon muuta."
+            )
+        return (
+            "Yes, we rotate seasonal and special items such as Runeberg torte, Shrove bun (laskiaispulla), rhubarb pie, berry pie and more."
+        )
+
+    # Local / organic ingredients policy (and local farmers/suppliers)
+    SOURCING_KWS = {
+        # EN
+        "local ingredients", "locally sourced", "organic", "organics", "use local", "from finland",
+        "local farmers", "support local", "local supplier", "local suppliers", "wholesaler", "supplier", "suppliers",
+        # FI
+        "luomu", "lähiruoka", "lähituote", "suomalaiset raaka-aineet", "suomalaisia raaka-aineita",
+        "lähituottaja", "lähituottajat", "paikallinen tuottaja", "paikalliset tuottajat", "tukku", "tukkukauppa", "toimittaja", "toimittajat",
+        # SV
+        "ekologisk", "ekologiska", "ekologiskt", "inhemska", "finska råvaror",
+        "lokala bönder", "lokala leverantörer", "leverantör", "leverantörer", "grossist",
+    }
+    if any(k in text for k in SOURCING_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Vi använder främst finländska råvaror som mjölk, råg, smör, grädde och ägg i våra produkter. "
+                "Vi köper huvudsakligen via en familjeägd finländsk grossist och vårt rågmjöl kommer från Helsingin Mylly. "
+                "Vi använder inte certifierade ekologiska ingredienser."
+            )
+        if lang == "fi":
+            return (
+                "Käytämme tuotteissamme pääosin suomalaisia raaka‑aineita, kuten maitoa, ruista, voita, kermaa ja kananmunia. "
+                "Ostamme raaka‑aineita pääasiassa suomalaiselta perheomisteiselta tukkutoimittajalta ja ruisjauhomme tulee Helsingin Myllyltä. "
+                "Emme käytä sertifioituja luomuraaka‑aineita."
+            )
+        return (
+            "We use mostly Finnish ingredients like milk, rye, butter, cream and eggs in our products. "
+            "We mainly buy through a family‑owned Finnish wholesaler, and our rye flour comes from Helsingin Mylly. "
+            "We do not use certified organic ingredients."
+        )
+
+    # Pre‑order to skip the line (explicit question)
+    SKIPLINE_KWS = {
+        # EN
+        "skip the line", "skip line", "preorder to skip", "pre-order to skip",
+        # FI (include inflections)
+        "ohittaa jonon", "ohitan jonon", "jonon ohittamiseksi", "jonon ohitus",
+        "ennakkotilaus jonon", "ennakkotilauksen", "ennakkotilaus", "ennakkoon tilata jono",
+        # SV
+        "gå förbi kön", "förbeställa för att", "förbeställ för att",
+    }
+    if any(k in text for k in SKIPLINE_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        url = ECWID_STORE_URL
+        if lang == "sv":
+            note = "Du kan förbeställa för att gå förbi kön. Gå bara till kassan och visa din orderbekräftelse."
+            ui = (
+                f"""
+<div class=\"order-ui\">\n  <div class=\"order-title\">Beställ i webbutiken</div>\n  <div class=\"order-sub\">Hämta i butiken, betalning på plats.</div>\n  <div class=\"order-buttons\">\n    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Öppna webbutiken</a>\n    <button class=\"btn\" data-action=\"start-order\">Beställ i chatten</button>\n  </div>\n</div>\n"""
+            )
+            return f"<div class=\"info\">{note}</div>" + ui
+        if lang == "fi":
+            note = "Voit tehdä ennakkotilauksen ja ohittaa jonon. Tule kassalle ja näytä tilausvahvistus sähköpostistasi."
+            ui = (
+                f"""
+<div class=\"order-ui\">\n  <div class=\"order-title\">Tilaa verkkokaupasta</div>\n  <div class=\"order-sub\">Nouto myymälästä, maksu paikan päällä.</div>\n  <div class=\"order-buttons\">\n    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Avaa verkkokauppa</a>\n    <button class=\"btn\" data-action=\"start-order\">Tilaa chatissa</button>\n  </div>\n</div>\n"""
+            )
+            return f"<div class=\"info\">{note}</div>" + ui
+        note = "You can preorder to skip the line. Just come to the cashier and show your confirmation email."
+        ui = (
+            f"""
+<div class=\"order-ui\">\n  <div class=\"order-title\">Order Online</div>\n  <div class=\"order-sub\">Pickup in store, pay at pickup.</div>\n  <div class=\"order-buttons\">\n    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Open Online Shop</a>\n    <button class=\"btn\" data-action=\"start-order\">Order in chat</button>\n  </div>\n</div>\n"""
+        )
+        return f"<div class=\"info\">{note}</div>" + ui
 
     # Ordering intent → link to Ecwid store (pickup, pay in store)
     if any(k in text for k in ORDER_KEYWORDS):
@@ -586,6 +1338,15 @@ def _ecwid_get_shipping_options() -> List[Dict[str, Any]]:
         return data
     return []
 
+# --- Intent router Ecwid adapter wiring ---
+try:
+    IR.ecwid.get_products = _ecwid_get_products
+    IR.ecwid.get_categories = _ecwid_get_categories
+    IR.ecwid.get_order_constraints = (lambda debug=False: api_order_constraints(debug=debug))
+    IR.ecwid.is_blackout = _is_blackout
+except Exception:
+    pass
+
 def _curate_products(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     keep = []
     KEYWORDS = [
@@ -649,19 +1410,19 @@ def llm_like_answer(query: str, kb_items: List[Dict[str, Any]], respond_lang: st
             return (
                 f"En löytänyt tietoja aiheesta “{query}”. "
                 "Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. "
-                "Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Sisältääkö piirakka pähkinää?”."
+                "Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”."
             )
         if lang == "sv":
             return (
                 f"Jag kunde inte hitta information om “{query}”. "
                 "Jag kan hjälpa till med bagerifrågor som produkter, öppettider, meny, beställningar och allergier. "
-                "Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Innehåller pajen nötter?”."
+                "Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Ingredienser för Karjalanpiirakka?”."
             )
         else:
             return (
                 f"I couldn’t find details about “{query}”. "
                 "I can help with bakery topics like products, opening hours, menu, orders, and allergies. "
-                "Try asking: “What are your opening hours?”, “Can I preorder?”, or “Does the pie contain nuts?”."
+                "Try asking: “What are your opening hours?”, “Can I preorder?”, or “What are the ingredients?”."
             )
     best = kb_items[0]
     ans = (best.get("answer") or "").strip()
@@ -693,7 +1454,7 @@ def generate_llm_answer(query: str, kb_items: List[Dict[str, Any]], respond_lang
 
     lang_name = LANG_NAMES.get(respond_lang, respond_lang)
     system = (
-        "You are Piirakkabotti, a helpful assistant for Raka's Kotileipomo bakery in Helsinki. "
+        "You are Piirakkabotti, a helpful assistant for Raka's kotileipomo bakery in Helsinki. "
         "Answer strictly using the provided knowledge base. "
         "Only answer the user's explicit intent and do not add unrelated recommendations unless asked. "
         "If the information is missing, say you don't know and recommend contacting the bakery staff. "
@@ -776,63 +1537,50 @@ def chat(req: ChatRequest, request: Request, response: Response):
     if rb:
         return ChatResponse(reply=rb, source="Rules", match=1.0)
 
-    # 2) Retrieve
-    top = find_best_kb_match(user_msg, top_k=3)
+    # 1.5) Deterministic intent router for menu/hours/allergens/FAQ/blackouts
+    try:
+        routed = IR.answer(user_msg, respond_lang)
+    except Exception:
+        routed = None
+    if routed:
+        try:
+            _db_insert_message(session_id, "assistant", routed, "Intent", 1.0)
+        except Exception:
+            pass
+        return ChatResponse(reply=routed, source="Intent", match=1.0, session_id=session_id)
 
-    if top:
-        best_blend, bm25, fuzzy, jacc, best_item = top[0]
-
-        # Require some lexical evidence (BM25 or Jaccard).
-        # However, for very short queries (1–2 tokens or short strings), allow fuzzy‑only
-        # matches with a higher threshold so typos like "karjalanpiirakk" still hit.
-        q_tok_count = len(list(_tokens(user_msg)))
-        q_char_len = len((user_msg or '').strip())
-        strong_enough = (
-            best_blend >= MIN_ACCEPT_SCORE or
-            (bm25 >= MIN_BM25_SIGNAL) or
-            (jacc >= MIN_JACCARD) or
-            (fuzzy >= max(MIN_FUZZY, 0.55) and (bm25 > 0 or jacc > 0)) or
-            # Fuzzy‑only allowance for short queries
-            (q_tok_count <= 2 and fuzzy >= 0.72) or
-            (q_char_len <= 14 and fuzzy >= 0.74)
-        )
-
-        if strong_enough:
-            kb_items = [t[4] for t in top]
-            # Apply intent filtering for both LLM and non-LLM paths
-            intent = infer_intent(user_msg)
-            kb_items = filter_items_for_intent(intent, kb_items)
-            if LLM_ENABLED and OPENAI_CLIENT:
-                reply = generate_llm_answer(user_msg, kb_items, respond_lang=respond_lang)
-                src = f"LLM • KB-grounded ({best_item.get('file','')})"
-            else:
-                # Prefer the first filtered item if available
-                chosen = kb_items[0] if kb_items else best_item
-                reply = (chosen.get("answer") or "").strip() or llm_like_answer(user_msg, kb_items, respond_lang)
-                src = f"KB • {best_item.get('file','')}"
-            # Log assistant message
-            try:
-                _db_insert_message(session_id, "assistant", reply, src, float(round(best_blend, 3)))
-            except Exception:
-                pass
-            return ChatResponse(reply=reply, source=src, match=float(round(best_blend, 3)), session_id=session_id)
-
-    # 3) Out-of-scope / soft fallback
-    kb_items = [t[4] for t in top] if top else []
+    # 2) Deterministic scope only: out-of-scope friendly fallback
+    kb_items: List[Dict[str, Any]] = []
     intent = infer_intent(user_msg)
     kb_items = filter_items_for_intent(intent, kb_items)
     if LLM_ENABLED and OPENAI_CLIENT:
         reply = generate_llm_answer(user_msg, kb_items, respond_lang=respond_lang)
-        src = "LLM • Fallback KB-grounded"
+        src = "LLM • Fallback"
     else:
         reply = llm_like_answer(user_msg, kb_items, respond_lang)
-        src = "Fallback • KB-grounded"
-    best_score = float(round(top[0][0], 3)) if top else 0.0
+        src = "Fallback"
+    best_score = 0.0
     try:
         _db_insert_message(session_id, "assistant", reply, src, best_score)
     except Exception:
         pass
     return ChatResponse(reply=reply, source=src, match=best_score, session_id=session_id)
+
+# Simple feedback endpoint (logs to DB if available)
+@app.post("/api/feedback")
+def api_feedback(payload: FeedbackPayload, request: Request):
+    try:
+        session_id = request.cookies.get("chat_session")
+    except Exception:
+        session_id = None
+    msg = payload.message.strip()
+    if not msg:
+        raise HTTPException(status_code=400, detail="Feedback message cannot be empty.")
+    try:
+        _db_insert_message(session_id, "feedback", f"name={payload.name or ''}; email={payload.email or ''}; msg={msg}", "feedback", None)
+    except Exception:
+        pass
+    return {"ok": True}
 
 # ============================================================
 # Ecwid endpoints
@@ -1199,8 +1947,8 @@ def startup_event():
     logger.info("=== App startup: loading KB and building index ===")
     if DB_ENABLED:
         _db_connect_and_prepare()
-    KB = load_kb_clean()
-    build_index(KB)
+    # Legacy KB disabled: keep deterministic intent router only
+    KB = []
 
 # ============================================================
 # Frontend routes (serve index.html + static assets from /frontend)

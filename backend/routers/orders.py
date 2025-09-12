@@ -111,6 +111,47 @@ def api_pickup_hours_v2():
     return {"timezone": tz, "hours": SHOP_HOURS}
 
 
+@router.get("/api/v2/ecwid_status")
+def api_ecwid_status():
+    """Lightweight diagnostics for Ecwid auth and basic permissions.
+    Does not expose secrets. Useful for confirming token/store configuration.
+    """
+    from ..ecwid_client import ecwid_base, ecwid_headers
+    status: Dict[str, Any] = {"base": ecwid_base()}
+    # Profile
+    try:
+        profile = ecwid_get_profile()
+        status["profile_ok"] = True
+        status["storeId"] = (
+            (profile.get("generalInfo") or {}).get("storeId")
+            or profile.get("id")
+        )
+        status["storeName"] = (
+            (profile.get("generalInfo") or {}).get("storeName")
+            or (profile.get("settings") or {}).get("storeName")
+        )
+    except Exception as e:
+        status["profile_ok"] = False
+        status["profile_error"] = str(e)
+    # Shipping options
+    try:
+        ship_opts = ecwid_get_shipping_options()
+        status["shipping_ok"] = True
+        status["shipping_count"] = len(ship_opts)
+    except Exception as e:
+        status["shipping_ok"] = False
+        status["shipping_error"] = str(e)
+    # Orders read (permission check)
+    try:
+        url = f"{ecwid_base()}/orders"
+        with httpx.Client(timeout=10.0) as client:
+            r = client.get(url, headers=ecwid_headers(), params={"limit": 1})
+        status["orders_get_status"] = r.status_code
+    except Exception as e:
+        status["orders_get_status"] = None
+        status["orders_get_error"] = str(e)
+    return status
+
 @router.get("/api/v2/check_pickup")
 def api_check_pickup_v2(iso: str):
     ok, reason = validate_pickup_time(iso, SHOP_HOURS)
@@ -175,13 +216,53 @@ def api_order_v2(req: OrderRequest):
 
     from ..ecwid_client import ecwid_base, ecwid_headers
     url = f"{ecwid_base()}/orders"
+    # Determine shipping (Pickup) option from store configuration
+    ship_opts = []
+    try:
+        ship_opts = ecwid_get_shipping_options()
+    except Exception:
+        ship_opts = []
+    def _opt_name(o: Dict[str, Any]) -> str:
+        return (
+            o.get("title")
+            or o.get("name")
+            or o.get("shippingMethodName")
+            or "Pickup"
+        )
+    def _opt_rate(o: Dict[str, Any]) -> float:
+        r = o.get("rate")
+        try:
+            return float(r) if r is not None else 0.0
+        except Exception:
+            return 0.0
+    pickup = None
+    # Prefer explicit pickup options
+    for o in ship_opts:
+        ft = (o.get("fulfillmentType") or o.get("type") or "").upper()
+        name = (_opt_name(o) or "").lower()
+        if ft == "PICKUP" or "nouto" in name or "pickup" in name:
+            pickup = o
+            break
+    shipping_option = {
+        "shippingMethodName": _opt_name(pickup or {}),
+        "shippingRate": _opt_rate(pickup or {}),
+        "fulfillmentType": "PICKUP",
+    }
     body = {
         "name": req.name or "Chat Customer",
         "email": req.email or "",
         "phone": req.phone or "",
         "paymentMethod": "Pay at pickup",
         "paymentStatus": "AWAITING_PAYMENT",
-        "shippingOption": {"shippingMethodName": "Pickup", "fulfillmentType": "PICKUP"},
+        "shippingOption": shipping_option,
+        # Include pickup time in order payload for clarity in Ecwid
+        "pickupTime": req.pickup_time,
+        # Provide contact under shippingPerson as well
+        "shippingPerson": {
+            "name": req.name or "",
+            "phone": req.phone or "",
+            "email": req.email or "",
+        },
         "items": items,
         "customerComment": " | ".join([p for p in [f"Pickup: {req.pickup_time}", req.note] if p]),
     }
@@ -192,7 +273,14 @@ def api_order_v2(req: OrderRequest):
             data = r.json()
         return {"ok": True, "id": data.get("id"), "orderNumber": data.get("orderNumber")}
     except httpx.HTTPStatusError as he:
-        detail = he.response.text or f"Ecwid API error {he.response.status_code}"
+        # Provide a clearer hint for 403 permission issues
+        if he.response.status_code == 403:
+            detail = (
+                he.response.text
+                or "Ecwid API error 403: Forbidden. Check that ECWID_API_TOKEN has write access to Orders for this store."
+            )
+        else:
+            detail = he.response.text or f"Ecwid API error {he.response.status_code}"
         raise HTTPException(status_code=he.response.status_code, detail=detail)
     except Exception:
         raise HTTPException(status_code=502, detail="Failed to create order.")

@@ -1,0 +1,18 @@
+{
+  "shop_name": "Raka's kotileipomo",
+  "address_line": "Kumpulantie 15",
+  "postal_code": "00520",
+  "city": "Helsinki",
+  "district": "Vallila",
+  "store_url": "https://rakaskotileipomo.fi/verkkokauppa",
+  "parking_note": {
+    "fi": "Katutason myymälä. Kadunvarsipysäköinti on saatavilla maksua vastaan.",
+    "sv": "Butik på gatuplan. Gatuparkering finns mot avgift.",
+    "en": "Street-level shop. Street parking is available for a fee."
+  },
+  "nearest_stops": {
+    "fi": "Lähimmät pysäkit: [lisää tähän]",
+    "sv": "Närmaste hållplatser: [lägg till här]",
+    "en": "Nearest stops: [add here]"
+  }
+}

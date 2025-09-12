@@ -1,0 +1,5 @@
+{
+  "source": "ecwid",
+  "notes": "Blackout dates are discovered dynamically from Ecwid shipping/pickup settings. This file exists as documentation and optional future override."
+}
+

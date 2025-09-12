@@ -178,6 +178,23 @@ chatLog.addEventListener('click', async (e) => {
   if (checkoutBtn) { e.preventDefault(); startCheckout(); return; }
   const clearBtn = e.target.closest('.cart-actions .btn-clear');
   if (clearBtn) { e.preventDefault(); handleClearCart(); return; }
+  // Suggestion buttons: prefill and send
+  const sugg = e.target.closest('.suggest .suggest-btn[data-suggest]');
+  if (sugg) {
+    e.preventDefault();
+    const text = sugg.getAttribute('data-suggest');
+    if (text){
+      chatInput.value = text;
+      try {
+        if (typeof chatForm.requestSubmit === 'function') { chatForm.requestSubmit(); }
+        else { chatForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true })); }
+      } catch (err) {
+        // fallback to clicking the send button
+        try { sendBtn.click(); } catch(_){}
+      }
+    }
+    return;
+  }
   // Inline cart controls (inc/dec/remove)
   const cart = e.target.closest('.bot-block[data-key="cart-summary"]');
   if (cart){
@@ -194,6 +211,24 @@ chatLog.addEventListener('click', async (e) => {
       if (e.target.closest('.btn-dec')){ e.preventDefault(); changeQtyKey(key, -1); return; }
     }
   }
+});
+
+// Feedback form submission (embedded in chat bubbles)
+chatLog.addEventListener('submit', async (e) => {
+  const form = e.target.closest('form.feedback-form');
+  if (!form) return;
+  e.preventDefault();
+  const fd = new FormData(form);
+  const payload = Object.fromEntries(fd.entries());
+  const msg = (payload.message||'').trim();
+  if (!msg) return;
+  try{
+    const r = await fetch('/api/feedback', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error('feedback');
+    addBot(tr('thanks_feedback')||'Kiitos palautteesta!');
+    // disable form after success
+    [...form.elements].forEach(el=> el.disabled = true);
+  }catch(err){ addBot('Failed to send feedback. Please try again.'); }
 });
 
 const orderSession = {
@@ -681,6 +716,7 @@ function showLanguagePicker(){
   if (isMobile) {
     // Mobile: flags only, horizontal layout
     html = `<div class="lang-picker mobile">
+      <div class="lang-title">Valitse kieli</div>
       <div class="lang-buttons">
         <button type="button" data-lang="fi" aria-label="Suomi"><span class="flag" aria-hidden="true">🇫🇮</span></button>
         <button type="button" data-lang="sv" aria-label="Svenska"><span class="flag" aria-hidden="true">🇸🇪</span></button>
@@ -706,6 +742,7 @@ function showLanguagePicker(){
       if (!btn) return;
       currentLang = btn.getAttribute('data-lang');
       localStorage.setItem('chat_lang', currentLang);
+      try { document.cookie = `chat_lang=${currentLang}; path=/; max-age=${60*60*24*30}`; } catch(e) {}
       // Show welcome in chosen language
       addBot(welcomeForLang(currentLang));
       chatLog.dataset.welcomed = "1";
@@ -752,3 +789,12 @@ chatForm.addEventListener('submit', async (e) => {
     console.error(err);
   }
 });
+
+// Quick language switcher button in header
+const changeLangBtn = qs('#changeLang');
+if (changeLangBtn){
+  changeLangBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    showLanguagePicker();
+  });
+}

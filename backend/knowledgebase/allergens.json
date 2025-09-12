@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "canonical": "gluten",
+      "synonyms": ["wheat", "vehnä", "vehnäjauho", "ruis", "ohra", "gluteeni"],
+      "disclaimer": {
+        "fi": "Tuotteemme voivat sisältää gluteenia tai valmistetaan tiloissa, joissa käsitellään viljatuotteita.",
+        "sv": "Våra produkter kan innehålla gluten eller produceras i lokaler där spannmål hanteras.",
+        "en": "Our products may contain gluten or be produced in facilities handling cereals."
+      }
+    },
+    {
+      "canonical": "nuts",
+      "synonyms": ["pähkinä", "hazelnut", "almond"],
+      "disclaimer": {
+        "fi": "Emme käytä pähkinää kaikkiin tuotteisiin, mutta ristikontaminaatiota ei voida täysin poissulkea.",
+        "sv": "Vi använder inte nötter i alla produkter, men korskontaminering kan inte helt uteslutas.",
+        "en": "We do not use nuts in all products, but cross‑contamination cannot be fully excluded."
+      }
+    },
+    {
+      "canonical": "milk",
+      "synonyms": ["maito", "voi", "kerma", "piima", "piimä", "täysmaitojuoma", "dairy", "lactose"],
+      "disclaimer": {
+        "fi": "Osa tuotteista sisältää maitotuotteita.",
+        "sv": "Vissa produkter innehåller mjölkprodukter.",
+        "en": "Some products contain dairy."
+      }
+    },
+    {
+      "canonical": "egg",
+      "synonyms": ["muna", "kananmuna", "kananmunia", "egg"],
+      "disclaimer": {
+        "fi": "Osa tuotteista sisältää kananmunaa.",
+        "sv": "Vissa produkter innehåller ägg.",
+        "en": "Some products contain egg."
+      }
+    }
+  ]
+}

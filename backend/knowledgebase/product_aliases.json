@@ -1,0 +1,41 @@
+{
+  "items": [
+    { "name": "Karjalanpiirakka", "aliases": [
+      "karjalan piirakka",
+      "karjalan piirakat",
+      "karjalanpiiras",
+      "karjalan piiras",
+      "karjalanpiiraat",
+      "karjalan piiraat",
+      "karjalapiirakka",
+      "karjalapiirakat",
+      "riisipiiras",
+      "riisipiiraat",
+      "karelian pie",
+      "karelianpie",
+      "karelian pies",
+      "karelian pasty",
+      "karelian pasties",
+      "karelian pastry",
+      "karelian pastries",
+      "karelianpastry",
+      "karelianpastie",
+      "piirakka",
+      "piirakat",
+      "riisi piirakka",
+      "riisi piirakat",
+      "riisipiirakka",
+      "karjalanpiirakat",
+      "rice pie",
+      "rice pies",
+      "rice pasty",
+      "rice pastry",
+      "rice pastries",
+      "karelska piroger",
+      "karelsk pirog",
+      "karjalanpiiraka"
+    ] },
+    { "name": "Samosa", "aliases": ["samosas", "samosa curry"] },
+    { "name": "Mustikkakukko", "aliases": ["blueberry pie", "mustikka"] }
+  ]
+}

@@ -246,8 +246,35 @@ body {
   display:inline-flex; align-items:center; justify-content:center;
   padding: 8px 12px; border-radius: 10px; border: var(--border);
   background: var(--brand-white); color: var(--text); text-decoration: none;
+  -webkit-appearance: none; appearance: none;
+  font-size: 14px; font-weight: 600; line-height: 1.15;
 }
 .order-ui .btn:hover{ box-shadow: var(--ring); }
+
+/* Suggest prompts (Yes/No) */
+.suggest .buttons{ display:flex; gap:8px; flex-wrap:wrap; margin-top: 6px; }
+.suggest .btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding: 10px 14px; border-radius: 10px; border: var(--border);
+  background: var(--accent); color: var(--brand-text-900); text-decoration: none;
+  -webkit-appearance: none; appearance: none;
+  font-size: 14px; font-weight: 700; line-height: 1.15;
+}
+.suggest .btn:hover{ box-shadow: var(--ring); filter: brightness(1.05); }
+
+/* Feedback UI */
+.feedback-ui{ font-size: 14px; }
+.feedback-ui .title{ font-weight: 800; margin-bottom: 6px; }
+.feedback-form .row{ margin-bottom: 6px; }
+.feedback-form input, .feedback-form textarea{
+  width: 100%; border: var(--border); border-radius: 10px;
+  padding: 8px 10px; font: inherit;
+}
+.feedback-form .actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top: 6px; }
+.feedback-form .btn{ display:inline-flex; align-items:center; justify-content:center; border-radius:10px; padding:8px 12px; text-decoration:none; }
+.feedback-form .btn-primary{ background: var(--accent); color: var(--brand-text-900); border: var(--border); font-weight:700; }
+.feedback-form .btn-review{ background: var(--primary); color: var(--brand-white); border: 1px solid rgba(255,255,255,0.2); font-weight:700; }
+.feedback-form .btn:hover{ box-shadow: var(--ring); filter: brightness(1.05); }
 
 /* Title row with View Cart next to heading */
 .title-row{ display:flex; align-items:center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
@@ -406,7 +433,7 @@ body {
 
 /* Mobile-only language picker: flags only, horizontal layout */
 .lang-picker.mobile{ max-width: none; }
-.lang-picker.mobile .lang-title{ display: none; }
+.lang-picker.mobile .lang-title{ display: block; margin-bottom: 6px; font-weight: 700; }
 .lang-picker.mobile .lang-buttons{ flex-direction: row; gap: 8px; }
 .lang-picker.mobile button{
   width: 44px; height: 44px; padding: 0; border-radius: 999px;
@@ -521,3 +548,16 @@ body {
   border: 0;
   cursor: pointer;
 }
+
+.chat-header #changeLang{
+  right: 44px; /* place to the left of close button */
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.15) inset;
+}
+
+.chat-header #changeLang svg{ fill: var(--brand-white); }
+.chat-header #changeLang:hover{ filter: brightness(1.05); }
+.chat-header #changeLang:focus-visible{ outline: none; box-shadow: var(--ring); }

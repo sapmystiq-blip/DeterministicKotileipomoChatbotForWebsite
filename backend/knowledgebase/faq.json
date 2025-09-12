@@ -1,0 +1,28 @@
+[
+  {
+    "q": {
+      "fi": "Voinko tehdä ennakkotilauksen?",
+      "sv": "Kan jag förbeställa?",
+      "en": "Can I place a preorder?"
+    },
+    "a": {
+      "fi": "Kyllä. Tee ennakkotilaus verkkokaupassa ja nouda aukioloaikoina.",
+      "sv": "Ja. Gör en förbeställning i webbutiken och hämta under öppettider.",
+      "en": "Yes. Place a preorder in the online shop and pick up during opening hours."
+    },
+    "tags": ["preorder", "order", "ennakkotilaus"]
+  },
+  {
+    "q": {
+      "fi": "Mistä haen tilauksen?",
+      "sv": "Var hämtar jag min beställning?",
+      "en": "Where do I pick up my order?"
+    },
+    "a": {
+      "fi": "Nouda myymälästä osoitteesta Kumpulantie 15, 00520 Helsinki (katutaso) aukioloaikoina. Kadunvarsipysäköinti on saatavilla maksua vastaan. Ota tilausnumero mukaan.",
+      "sv": "Hämta i butiken på Kumpulantie 15, 00520 Helsingfors (gatuplan) under öppettider. Gatuparkering finns mot avgift. Ta med ordernumret.",
+      "en": "Pick up from our shop at Kumpulantie 15, 00520 Helsinki (street level) during opening hours. Street parking is available for a fee. Bring your order number."
+    },
+    "tags": ["pickup", "nouto", "address", "osoite"]
+  }
+]

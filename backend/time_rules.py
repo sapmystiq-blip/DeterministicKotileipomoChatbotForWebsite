@@ -63,4 +63,3 @@ def is_blackout(dt: datetime, blackouts: List[Dict[str, Any]] | None) -> bool:
         return False
     except Exception:
         return False
-

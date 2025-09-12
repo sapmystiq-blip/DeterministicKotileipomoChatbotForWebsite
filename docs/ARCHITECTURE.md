@@ -16,7 +16,8 @@ This project implements a lightweight Q&A chatbot with optional in‑chat orderi
   - `backend/ecwid_client.py` – tiny Ecwid REST client
   - `backend/order_constraints.py` – pure logic to infer min lead, max window, blackout ranges
   - `backend/routers/orders.py` – v2 ordering endpoints (categories, products, constraints)
-  - `backend/knowledgebase/*.json` – Q&A data
+- `backend/knowledgebase/*.json` – Deterministic KB (hours, FAQ, allergens, product aliases)
+  - Legacy JSON moved to `backend/knowledgebase/deprecated/` and no longer used by chat.
 
 ## Ordering Data Flow
 
@@ -65,6 +66,30 @@ This project implements a lightweight Q&A chatbot with optional in‑chat orderi
 
 - `tests/test_constraints.py` – unit tests for constraints inference (pure function tests).
 - `tests/test_order_validation.py` – regression tests for order validation (uses FastAPI TestClient and patches `/api/order_constraints`).
+- `tests/test_intents.py` – intent router unit tests (hours/menu/allergens basic checks).
+
+## Deterministic Knowledge Base (KB)
+
+We scope the chatbot to bakery topics and answer deterministically without embeddings:
+
+- `backend/knowledgebase/hours.json`: weekly hours + date exceptions (validated by `WeeklyHours`).
+- `backend/knowledgebase/faq.json`: multilingual FAQ items (`FaqItem`).
+- `backend/knowledgebase/allergens.json`: canonical allergen keys, synonyms, and localized disclaimers (`AllergenMap`).
+- `backend/knowledgebase/product_aliases.json`: names/aliases used to recognize products in questions.
+- `backend/knowledgebase/blackouts.json`: documentation stub; actual blackout ranges come live from Ecwid.
+
+Validation models live in `backend/kb_models.py` and are used by `backend/intent_router.py`.
+
+### Editing workflow
+
+- Update JSON files and restart the server (hot‑reload in dev). The router validates on read and safely falls back when invalid.
+- Prices and availability are fetched from Ecwid at answer time when credentials are configured.
+
+### Chat flow
+
+`/api/chat` runs:
+- Rule‑based greetings/identity → deterministic intent router (`backend/intent_router.py`) for: opening hours, menu with prices (Ecwid), allergens/ingredients disclaimers, blackout dates (Ecwid), and simple FAQs.
+- If the question is outside scope, it falls back to the legacy KB retrieval.
 
 ## Migration Plan (Backend)
 
@@ -85,4 +110,3 @@ This project implements a lightweight Q&A chatbot with optional in‑chat orderi
   - `ECWID_STORE_ID`, `ECWID_API_TOKEN` – required for Ecwid calls.
   - `ECWID_MIN_LEAD_MINUTES` (default 720), `ECWID_MAX_ORDER_DAYS` (default 60) – development overrides.
   - `PRIMARY_LANG`, `LANGUAGE_POLICY`, `OPENAI_API_KEY`, etc.
-
