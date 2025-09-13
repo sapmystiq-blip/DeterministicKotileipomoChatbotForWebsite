@@ -116,18 +116,50 @@ def _dow_name(lang: str, dow: int) -> str:
 
 
 def format_hours_response(hours: WeeklyHours, lang: str) -> str:
-    # Render compact weekly schedule
-    lines: List[str] = []
+    # Render compact weekly schedule (Thu, Fri, Sat)
+    spans_by_dow: Dict[int, List[str]] = {}
     for dow in [3, 4, 5]:  # Thu, Fri, Sat common for this bakery
         blocks = hours.hours.get(str(dow)) or []
         if not blocks:
             continue
-        spans = [f"{b.start}-{b.end}" for b in blocks]
-        lines.append(f"{_dow_name(lang, dow)}: {' , '.join(spans)}")
-    if not lines:
+        spans_by_dow[dow] = [f"{b.start}-{b.end}" for b in blocks]
+
+    # If no hours found, return a generic message
+    if not spans_by_dow:
+        if lang == "fi":
+            return "Aukioloaikoja ei ole asetettu. Ota yhteyttä liikkeeseen."
+        if lang == "sv":
+            return "Öppettider har inte angetts. Kontakta butiken."
         return "Opening hours are not set. Please contact the shop."
+
+    # Finnish: Prefer a single sentence like the requested phrasing
     if lang == "fi":
+        def _short(span: str) -> str:
+            # Convert 11:00-17:00 -> 11-17, but keep minutes if needed
+            try:
+                a, b = span.split("-")
+                def s(x: str) -> str:
+                    return x.replace(":00", "")
+                return f"{s(a)}-{s(b)}"
+            except Exception:
+                return span
+        thu = ", ".join(spans_by_dow.get(3, [])) if 3 in spans_by_dow else None
+        fri = ", ".join(spans_by_dow.get(4, [])) if 4 in spans_by_dow else None
+        sat = ", ".join(spans_by_dow.get(5, [])) if 5 in spans_by_dow else None
+        if thu and fri and sat:
+            thu_s = _short(thu)
+            fri_s = _short(fri)
+            sat_s = _short(sat)
+            if thu_s == fri_s:
+                return f"Olemme avoinna torstaisin ja perjantaisin klo {thu_s} ja lauantaisin klo {sat_s}."
+            else:
+                return f"Olemme avoinna torstaisin klo {thu_s}, perjantaisin klo {fri_s} ja lauantaisin klo {sat_s}."
+        # Fallback to list formatting when incomplete
+        lines = [f"{_dow_name(lang, d)}: {', '.join(spans_by_dow[d])}" for d in sorted(spans_by_dow.keys())]
         return "Aukioloajat:\n" + "\n".join(lines)
+
+    # Swedish / English: keep existing compact list
+    lines = [f"{_dow_name(lang, d)}: {', '.join(spans_by_dow[d])}" for d in sorted(spans_by_dow.keys())]
     if lang == "sv":
         return "Öppettider:\n" + "\n".join(lines)
     return "Opening hours:\n" + "\n".join(lines)
@@ -141,15 +173,15 @@ def detect_intent(text: str) -> Optional[str]:
     # Blackout / closed on date (holiday)
     if any(k in t for k in ["closed", "holiday", "pyhä", "kiinni", "blackout"]):
         return "blackout"
-    # Menu / products
+    # Menu / products (also catch "pakaste/frozen/fryst" to toggle frozen view)
     if any(k in t for k in [
         "menu", "meny", "ruokalista",
         # English
-        "product", "products", "bread", "breads", "pastry", "pastries", "cake", "cakes", "bakes",
+        "product", "products", "bread", "breads", "pastry", "pastries", "cake", "cakes", "bakes", "frozen",
         # Swedish
-        "produkt", "produkter", "bröd", "bakverk", "kakor",
+        "produkt", "produkter", "bröd", "bakverk", "kakor", "fryst",
         # Finnish
-        "tuote", "tuotteet", "valikoima",
+        "tuote", "tuotteet", "valikoima", "pakaste", "pakasteet",
         "leipä", "leivät", "leipiä",
         "leivonnainen", "leivonnaiset", "leivonnaisia",
         "kakku", "kakut", "kakkuja",
@@ -234,7 +266,7 @@ def _price_str(price: Any) -> Optional[str]:
         return None
 
 
-def resolve_menu(lang: str) -> str:
+def resolve_menu(lang: str, query: Optional[str] = None) -> str:
     if not ecwid.get_products:
         if lang == "fi":
             return "Tutustu tuotteisiin verkkokaupassa."
@@ -264,6 +296,33 @@ def resolve_menu(lang: str) -> str:
         else:
             other_ids.append(cid)
 
+    # Include descendant categories (products are often placed in subcategories)
+    if cats:
+        by_parent: Dict[int, List[int]] = {}
+        for c in cats:
+            pid = c.get("parentId")
+            cid = c.get("id")
+            if isinstance(cid, int) and isinstance(pid, int):
+                by_parent.setdefault(pid, []).append(cid)
+
+        def _with_descendants(root_ids: List[int]) -> List[int]:
+            out: List[int] = []
+            seen: set[int] = set()
+            stack = list(root_ids)
+            while stack:
+                nid = stack.pop()
+                if not isinstance(nid, int) or nid in seen:
+                    continue
+                seen.add(nid)
+                out.append(nid)
+                for ch in by_parent.get(nid, []):
+                    if isinstance(ch, int) and ch not in seen:
+                        stack.append(ch)
+            return out
+
+        uuni_ids = _with_descendants(uuni_ids) if uuni_ids else []
+        pakaste_ids = _with_descendants(pakaste_ids) if pakaste_ids else []
+
     def _render_group(cat_id: int) -> List[str]:
         try:
             grp_items = _get_products_cached(limit=200, category=cat_id)
@@ -278,7 +337,7 @@ def resolve_menu(lang: str) -> str:
             lines.append(f"• {name}" + (f" — {price}" if price else ""))
         return lines
 
-    # If we have Uunituoreet/Pakasteet categories, render two columns
+    # If we have Uunituoreet/Pakasteet categories, render columns
     if uuni_ids or pakaste_ids:
         instore = _load_instore_prices()
         def _collect(cat_ids: List[int], max_items: int | None = None) -> List[str]:
@@ -325,7 +384,7 @@ def resolve_menu(lang: str) -> str:
                 "marjapiirakka": "Berry pie",
                 "raparperipiirakka": "Rhubarb pie",
                 "riisipiirakka": "Rice pie",
-                "gobi-samosa": "Cauliflower samosa",
+                "gobi-samosa": "Gobi (cauliflower) samosa",
                 "kanasamosa": "Chicken samosa",
                 "mungcurry-twist": "Mung curry twist",
                 "lihacurry-pasteija": "Meat curry pastry",
@@ -348,7 +407,7 @@ def resolve_menu(lang: str) -> str:
                 "marjapiirakka": "Bärpaj",
                 "raparperipiirakka": "Rabarberpaj",
                 "riisipiirakka": "Rispirog",
-                "gobi-samosa": "Blomkålssamosa",
+                "gobi-samosa": "Gobi (blomkål)-samosa",
                 "kanasamosa": "Kycklingsamosa",
                 "mungcurry-twist": "Mungcurry-twist",
                 "lihacurry-pasteija": "Köttcurrypaj",
@@ -361,7 +420,17 @@ def resolve_menu(lang: str) -> str:
                     return v
             return None
 
-        def _fmt_item(name: str, price: str | None, include_instore: bool) -> str:
+        def _name_translation_fi(fi_name: str) -> str | None:
+            nm = (fi_name or "").lower()
+            mapping_fi = {
+                "gobi-samosa": "Gobi (kukkakaali)-samosa",
+            }
+            for k, v in mapping_fi.items():
+                if k in nm:
+                    return v
+            return None
+
+        def _fmt_item(name: str, price: str | None, include_instore: bool, *, is_frozen: bool = False, is_sweet: bool | None = None, suppress_frozen_suffix: bool = False) -> str:
             import re as _re
             base, count = _clean_label(name)
             # Build label per language without bracketed translations, preserving raakapakaste
@@ -370,16 +439,38 @@ def resolve_menu(lang: str) -> str:
             has_vegan = bool(_re.search(r"\(\s*vega", base, flags=_re.IGNORECASE))
             # Keep raakapakaste tag if present, translate per language
             has_raakapakaste = "raakapakaste" in (base or "").lower()
-            if has_raakapakaste:
-                suffix = {"fi": ", raakapakaste", "sv": ", råfryst", "en": ", raw-frozen"}[lang]
-            else:
-                suffix = ""
+            # Build base localized label without forced frozen marker
+            fi_local = _name_translation_fi(base)
             if lang == "en" and en_name:
-                label = en_name + suffix + (" (vegan)" if has_vegan else "")
+                label = en_name + (" (vegan)" if has_vegan else "")
             elif lang == "sv" and sv_name:
-                label = sv_name + suffix + (" (vegansk)" if has_vegan else "")
+                label = sv_name + (" (vegansk)" if has_vegan else "")
+            elif lang == "fi" and fi_local:
+                label = fi_local + (" (vegaani)" if has_vegan else "")
             else:
                 label = base
+
+            # Normalize any existing marker tokens in the source label
+            marker_map = {"fi": "raakapakaste", "sv": "råfryst", "en": "raw-frozen"}
+            # For specific frozen Indian snacks, add a chilli next to the item name (before the marker)
+            nm_l_pre = (base or "").lower()
+            if is_frozen and ("gobi-samosa" in nm_l_pre or "kanasamosa" in nm_l_pre):
+                label = f"{label} 🌶️"
+            # For frozen view: ensure marker present unless explicitly suppressed
+            if is_frozen and not suppress_frozen_suffix:
+                # Remove any existing variants to avoid duplication
+                label = _re.sub(r"\b(raakapakaste|råfryst|raw[\- ]?frozen)\b", "", label, flags=_re.IGNORECASE)
+                label = _re.sub(r"\s{2,}", " ", label).strip().strip(", ")
+                label = f"{label} {marker_map[lang]}".strip()
+            # For suppressed cases (grouped frozen pies), remove marker if present
+            if is_frozen and suppress_frozen_suffix:
+                label = _re.sub(r"\b(raakapakaste|råfryst|raw[\- ]?frozen)\b", "", label, flags=_re.IGNORECASE)
+                label = _re.sub(r"\s{2,}", " ", label).strip().strip(", ")
+
+            # For frozen (pakasteet) view, remove commas from product names entirely
+            if not include_instore:
+                label = label.replace(",", " ")
+                label = _re.sub(r"\s{2,}", " ", label).strip()
             # In-store per-piece price
             nm_l = (base or "").lower()
             p_each = None
@@ -388,10 +479,26 @@ def resolve_menu(lang: str) -> str:
                     p_each = val
                     break
             def _fmt_eur(v: float, lc: str) -> str:
+                # Consistent euro formatting across locales: trailing €, no space; trim .00
+                is_int = abs(v - round(v)) < 1e-9
                 if lc in ("fi", "sv"):
-                    s = f"{v:0.2f}".replace('.', ',')
-                    return f"{s} €"
-                return f"€{v:0.2f}"
+                    s = (f"{v:.2f}" if not is_int else f"{int(round(v))}").replace('.', ',')
+                    return f"{s}€"
+                # English: also trailing € for consistency
+                s = f"{v:.2f}" if not is_int else f"{int(round(v))}"
+                return f"{s}€"
+
+            def _normalize_price_str(p: str) -> str:
+                if not p:
+                    return p
+                raw = p.replace('€', '').strip()
+                raw = raw.replace(',', '.')
+                try:
+                    val = float(raw)
+                    return _fmt_eur(val, lang)
+                except Exception:
+                    # Fallback: remove space before euro sign if present
+                    return p.replace(' €', '€').strip()
             unit_each = {"fi": "/kpl", "sv": "/st", "en": "/each"}[lang]
             unit_pack = {"fi": "/kpl", "sv": "/st", "en": "/pcs"}[lang]
             lines: list[str] = []
@@ -403,7 +510,7 @@ def resolve_menu(lang: str) -> str:
                 if include_instore and p_each is not None:
                     lines.append(f"{_fmt_eur(p_each, lang)} {unit_each}")
                 if price and count:
-                    lines.append(f"{price} /{count} {unit_pack.split('/')[-1]}")
+                    lines.append(f"{_normalize_price_str(price)} /{count} {unit_pack.split('/')[-1]}")
             price_html = "".join(f"<div class=\"pl\">{ln}</div>" for ln in lines) if lines else (f"<div class=\"pl\">{price}</div>" if price else "")
             return f"<div class=\"item\"><div class=\"nm\">{label}</div>{price_html}</div>"
 
@@ -426,8 +533,9 @@ def resolve_menu(lang: str) -> str:
                         continue
                     nm = it.get("name") or ""
                     pr = _price_str(it.get("price"))
-                    formatted = _fmt_item(nm, pr, include_instore=include_instore)
-                    (sweet if _is_sweet(nm) else savory).append(formatted)
+                    is_sw = _is_sweet(nm)
+                    formatted = _fmt_item(nm, pr, include_instore=include_instore, is_frozen=(not include_instore), is_sweet=is_sw, suppress_frozen_suffix=False)
+                    (sweet if is_sw else savory).append(formatted)
             return savory, sweet
 
         uuni_savory, uuni_sweet = _collect_fmt_split(uuni_ids, include_instore=True)
@@ -438,44 +546,207 @@ def resolve_menu(lang: str) -> str:
             "sv": "Alla våra produkter är laktosfria.",
             "en": "All our products are lactose‑free.",
         }[lang]
-        # Build HTML two-column layout, each with Savory/Sweet sections
-        def _col_html(name: str, savory_items: List[str], sweet_items: List[str]) -> str:
+        # Bold the lactose‑free keyword in each language
+        if lang == "fi":
+            lf_note = lf_note.replace("laktoosittomia", "<strong>laktoosittomia</strong>")
+        elif lang == "sv":
+            lf_note = lf_note.replace("laktosfria", "<strong>laktosfria</strong>")
+        else:
+            # Match both ASCII hyphen and non‑breaking hyphen in the source text
+            import re as _re
+            lf_note = _re.sub(r"lactose[\-\u2011]free", r"<strong>lactose-free</strong>", lf_note, flags=_re.IGNORECASE)
+        # Determine which view to render by query keywords
+        qn = (query or "").lower()
+        want_pakaste = any(k in qn for k in [
+            "pakaste", "pakasteet", "pakaste tuotteet",
+            "frozen", "frozen goodies",
+            "fryst", "frysta", "frysta delikatesser", "frysta godsaker"
+        ])
+
+        # Build a two-column layout for a single group (Savory left, Sweet right)
+        def _two_col_only(cat_label: str, savory_items: List[str], sweet_items: List[str], savory_html: Optional[str] = None) -> str:
             s_header = {"fi": "Suolaiset", "sv": "Salta", "en": "Savory"}[lang]
             m_header = {"fi": "Makeat",   "sv": "Söta",  "en": "Sweet"}[lang]
-            s_html = "".join([f"<li>{ln}</li>" for ln in savory_items]) or "<li>—</li>"
+            s_html = savory_html if savory_html is not None else ("".join([f"<li>{ln}</li>" for ln in savory_items]) or "<li>—</li>")
             m_html = "".join([f"<li>{ln}</li>" for ln in sweet_items]) or "<li>—</li>"
             return (
-                f"<div class=\"col\">"
-                f"<div class=\"cat\"><strong>{name}</strong></div>"
-                f"<div class=\"subcat\"><strong>{s_header}</strong></div>"
-                f"<ul class=\"items\">{s_html}</ul>"
-                f"<div class=\"subcat\"><strong>{m_header}</strong></div>"
-                f"<ul class=\"items\">{m_html}</ul>"
+                f"<div class=\"menu-two-col\" style=\"display:grid;grid-template-columns:1fr;gap:6px;align-items:start;width:100%;\">"
+                f"<div class=\"title\" style=\"grid-column:1/-1;font-weight:700;margin:0;\">{title}</div>"
+                f"<div class=\"note\" style=\"grid-column:1/-1;color:#6b5e57;font-size:12px;margin:0 0 1px 0;\">{lf_note}</div>"
+                f"<div class=\"cat center\" style=\"grid-column:1/-1;text-align:center;margin:0 0 1px 0;font-size:19px;font-weight:700\">{cat_label}</div>"
+                f"<div class=\"cols\" style=\"grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;\">"
+                  f"<div class=\"col\"><div class=\"subcat\"><strong>{s_header}</strong></div></div>"
+                  f"<div class=\"col\"><div class=\"subcat\"><strong>{m_header}</strong></div></div>"
+                  f"<div class=\"cols-body\" style=\"grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;\">"
+                    f"<div class=\"col\"><ul class=\"items\">{s_html}</ul></div>"
+                    f"<div class=\"col\"><ul class=\"items\">{m_html}</ul></div>"
+                  f"</div>"
+                f"</div>"
                 f"</div>"
             )
+
+        # Build grouped savory content for Uunituoreet: Piirakat and Intialaiset with shared prices
+        def _mk_group_li(title: str, items: List[str], price_lines: List[str]) -> str:
+            # Localize subsubcategory labels; show one chilli next to the Indian snacks label
+            base = (title or "").strip().lower()
+            if base == "piirakat":
+                label = {"fi": "Piirakat", "sv": "Karelska piroger", "en": "Karelian pies"}[lang]
+            elif base == "intialaiset":
+                base_label = {"fi": "Intialaiset herkut", "sv": "Indiska delikatesser", "en": "Indian snacks"}[lang]
+                label = f"{base_label} 🌶️"
+            else:
+                label = title
+            inner = "".join(f"<li>{x}</li>" for x in items)
+            prices = "".join(f"<div class=\"pl\">{pl}</div>" for pl in price_lines)
+            # Place prices before the items list
+            return f"<li><div class=\"subsubcat\"><strong>{label}</strong></div>{prices}<ul class=\"items\">{inner}</ul></li>"
+
+        savory_uuni_group_html: Optional[str] = None
+        if not want_pakaste and (uuni_savory or uuni_sweet):
+            # Re-collect savory uuni items without per-item prices for grouped sets
+            pies_keys = ["karjalanpiirakka","perunapiirakka","ohrapiirakka","vegaanipiirakka"]
+            indian_keys = ["gobi-samosa","kanasamosa","mungcurry-twist","lihacurry-pasteija"]
+            grp_pies: list[str] = []
+            grp_ind: list[str] = []
+            other_savory: list[str] = []
+            # Local helpers to format group prices consistently and per-language
+            def _fmt_eur_group(v: float) -> str:
+                # Trailing € for all locales; fi/sv use comma decimal
+                is_int = abs(v - round(v)) < 1e-9
+                if lang in ("fi", "sv"):
+                    s = (f"{v:.2f}" if not is_int else f"{int(round(v))}").replace('.', ',')
+                    return f"{s}€"
+                s = f"{v:.2f}" if not is_int else f"{int(round(v))}"
+                return f"{s}€"
+            unit_each_map = {"fi": "/kpl", "sv": "/st", "en": "/each"}
+            unit_pack_map = {"fi": "/kpl", "sv": "/st", "en": "/pcs"}
+            for cid in uuni_ids:
+                try:
+                    grp_items = _get_products_cached(limit=200, category=cid)
+                except Exception:
+                    grp_items = []
+                for it in grp_items:
+                    if not it.get("enabled", True):
+                        continue
+                    nm = (it.get("name") or "").lower()
+                    pr = _price_str(it.get("price"))
+                    # Only collect savory items here; skip sweets entirely from savory column
+                    if _is_sweet(nm):
+                        continue
+                    # Build no-price version for grouped items; normal for others
+                    if any(k in nm for k in pies_keys):
+                        grp_pies.append(_fmt_item(it.get("name") or "", None, include_instore=False, is_frozen=False, is_sweet=False))
+                    elif any(k in nm for k in indian_keys):
+                        grp_ind.append(_fmt_item(it.get("name") or "", None, include_instore=False, is_frozen=False, is_sweet=False))
+                    else:
+                        other_savory.append(_fmt_item(it.get("name") or "", pr, include_instore=True, is_frozen=False, is_sweet=False))
+            parts: list[str] = []
+            if grp_pies:
+                pies_lines = [
+                    f"{_fmt_eur_group(1.40)} {unit_each_map[lang]}",
+                    f"{_fmt_eur_group(12)} /10 {unit_pack_map[lang].split('/')[-1]}"
+                ]
+                parts.append(_mk_group_li("Piirakat", grp_pies, pies_lines))
+            if grp_ind:
+                ind_lines = [
+                    f"{_fmt_eur_group(2.90)} {unit_each_map[lang]}",
+                    f"{_fmt_eur_group(10)} /4 {unit_pack_map[lang].split('/')[-1]}"
+                ]
+                parts.append(_mk_group_li("Intialaiset", grp_ind, ind_lines))
+            # Append any remaining savory items flat
+            parts.extend([f"<li>{x}</li>" for x in other_savory])
+            savory_uuni_group_html = "".join(parts) if parts else None
+
+        # Build grouped savory content for Pakasteet: 10-pack pies under a single subsubcategory
+        savory_paka_group_html: Optional[str] = None
+        if want_pakaste and (paka_savory or paka_sweet):
+            pies_keys = ["karjalanpiirakka","perunapiirakka","ohrapiirakka","vegaanipiirakka"]
+            grp_pies: list[str] = []
+            other_savory_paka: list[str] = []
+            paka_top_items: list[str] = []  # e.g., Karjalanpiirakka 20 kpl priced item above the group
+            def _fmt_eur_local(v: float) -> str:
+                is_int = abs(v - round(v)) < 1e-9
+                if lang in ("fi", "sv"):
+                    s = (f"{v:.2f}" if not is_int else f"{int(round(v))}").replace('.', ',')
+                    return f"{s}€"
+                s = f"{v:.2f}" if not is_int else f"{int(round(v))}"
+                return f"{s}€"
+            unit_pack = {"fi": "/kpl", "sv": "/st", "en": "/pcs"}[lang]
+            for cid in pakaste_ids:
+                try:
+                    grp_items = _get_products_cached(limit=200, category=cid)
+                except Exception:
+                    grp_items = []
+                for it in grp_items:
+                    if not it.get("enabled", True):
+                        continue
+                    nm = (it.get("name") or "").lower()
+                    # skip sweets from savory grouping
+                    if _is_sweet(nm):
+                        continue
+                    if any(k in nm for k in pies_keys):
+                        # Karjalanpiirakka 20 kpl stays as a separate item above the group
+                        if re.search(r"\b20\s*kpl\b", nm) and "karjalanpiirakka" in nm:
+                            pr = _price_str(it.get("price"))
+                            paka_top_items.append(_fmt_item(it.get("name") or "", pr, include_instore=False, is_frozen=True, is_sweet=False, suppress_frozen_suffix=False))
+                        elif re.search(r"\b20\s*kpl\b", nm):
+                            pr = _price_str(it.get("price"))
+                            other_savory_paka.append(_fmt_item(it.get("name") or "", pr, include_instore=False, is_frozen=True, is_sweet=False, suppress_frozen_suffix=False))
+                        else:
+                            grp_pies.append(_fmt_item(it.get("name") or "", None, include_instore=False, is_frozen=True, is_sweet=False, suppress_frozen_suffix=True))
+                    else:
+                        pr = _price_str(it.get("price"))
+                        other_savory_paka.append(_fmt_item(it.get("name") or "", pr, include_instore=False, is_frozen=True, is_sweet=False, suppress_frozen_suffix=False))
+            parts: list[str] = []
+            # Put the Karjalanpiirakka 20 kpl (and any other top items) first
+            parts.extend([f"<li>{x}</li>" for x in paka_top_items])
+            if grp_pies:
+                price_line = f"{_fmt_eur_local(10.90)} /10 {unit_pack.split('/')[-1]}"
+                group_title = {
+                    "fi": "Raakapakaste 10 kpl piirakkaa",
+                    "sv": "Råfryst 10 st piroger",
+                    "en": "Raw-frozen 10 pies",
+                }[lang]
+                parts.append(_mk_group_li(group_title, grp_pies, [price_line]))
+            parts.extend([f"<li>{x}</li>" for x in other_savory_paka])
+            savory_paka_group_html = "".join(parts) if parts else None
+
+        # Render either Uunituoreet (default) or Pakasteet based on query
         html = (
-            f"<div class=\"menu-two-col\" style=\"display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;width:100%;\">"
-            f"<div class=\"title\" style=\"grid-column:1/-1;font-weight:700;margin:2px 0 2px 0;\">{title}</div>"
-            f"<div class=\"note\" style=\"grid-column:1/-1;color:#6b5e57;font-size:13px;margin:0 0 6px 0;\">{lf_note}</div>"
-            f"{_col_html(uuni_name, uuni_savory, uuni_sweet)}"
-            f"{_col_html(paka_name, paka_savory, paka_sweet)}"
-            f"</div>"
+            _two_col_only(paka_name, paka_savory, paka_sweet, savory_html=savory_paka_group_html)
+            if want_pakaste
+            else _two_col_only(uuni_name, uuni_savory, uuni_sweet, savory_html=savory_uuni_group_html)
         )
-        # Add minimal styles for smaller item font
+
+        # Add minimal styles and optional action to show frozen items
         html += (
             "<style>"
             ".menu-two-col, .menu-two-col *{box-sizing:border-box}"
-            ".menu-two-col .items{margin:6px 0 0;padding-left:0;list-style:none;font-size:13px;line-height:1.35}"
-            ".menu-two-col .items li{margin:8px 0 10px 10px;}"
-            ".menu-two-col .cat{margin-top:4px;margin-bottom:4px;font-size:20px;font-weight:700}"
-            ".menu-two-col .subcat{margin-top:6px;margin-bottom:2px;font-size:16px;font-weight:600}"
+            ".menu-two-col .cols-body{position:relative}"
+            ".menu-two-col .cols-body::before{content:'';position:absolute;top:0;bottom:0;left:calc(50% + 6px);border-left:1px solid #e7ddd4}"
+            ".menu-two-col .items{margin:1px 0 0;padding-left:0;list-style:none;font-size:12px;line-height:1.2}"
+            ".menu-two-col .items li{margin:2px 0 4px 10px;}"
+            ".menu-two-col .cat{margin-top:0;margin-bottom:1px;font-size:19px;font-weight:700}"
+            ".menu-two-col .subcat{margin-top:1px;margin-bottom:0;font-size:15px;font-weight:600}"
+            ".menu-two-col .subsubcat{margin:4px 0 2px;font-size:14px;font-weight:700}"
             ".menu-two-col .col{min-width:0}"
-            ".menu-two-col .item .nm{font-size:15px;font-weight:600;margin-bottom:2px;word-break:break-word;overflow-wrap:anywhere}"
-            ".menu-two-col .item .pl{font-size:13px;color:#6b5e57;word-break:break-word;overflow-wrap:anywhere}"
-            ".menu-two-col .col + .col{border-left:1px solid #e7ddd4;padding-left:10px}"
-            "@media (max-width: 420px){.menu-two-col{grid-template-columns:1fr}.menu-two-col .col + .col{border-left:0;padding-left:0;border-top:1px solid #e7ddd4;padding-top:8px}}"
+            ".menu-two-col .item .nm{font-size:14px;font-weight:600;margin-bottom:1px;word-break:break-word;overflow-wrap:anywhere}"
+            ".menu-two-col .item .pl{font-size:12px;color:#6b5e57;word-break:break-word;overflow-wrap:anywhere}"
+            ".menu-two-col .col + .col{padding-left:0}"
+            "@media (max-width: 420px){.menu-two-col{grid-template-columns:1fr}.menu-two-col .cols-body::before{display:none}.menu-two-col .col + .col{border-left:0;padding-left:0;border-top:1px solid #e7ddd4;padding-top:8px}}"
             "</style>"
         )
+
+        # When rendering the default Uunituoreet view, append a suggestion button to show frozen items
+        if not want_pakaste and (paka_savory or paka_sweet):
+            frozen_btn = {"fi": "Pakaste tuotteet", "sv": "Frysta delikatesser", "en": "Frozen goodies"}[lang]
+            html += (
+                "<div class=\"suggest\" style=\"margin-top:8px\">"
+                "<div class=\"buttons\">"
+                f"<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{frozen_btn}\">{frozen_btn}</button>"
+                "</div>"
+                "</div>"
+            )
         return html
 
     # Fallback to flat list if no categories/groups were rendered
@@ -1124,7 +1395,7 @@ def answer(query: str, lang: str) -> Optional[str]:
     if intent == "hours":
         return resolve_hours(lang)
     if intent == "menu":
-        return resolve_menu(lang)
+        return resolve_menu(lang, query=query)
     if intent == "diet":
         return resolve_diet_options(query, lang)
     if intent == "product_detail":
