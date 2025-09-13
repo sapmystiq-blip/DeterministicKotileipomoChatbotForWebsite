@@ -158,10 +158,71 @@ def format_hours_response(hours: WeeklyHours, lang: str) -> str:
         lines = [f"{_dow_name(lang, d)}: {', '.join(spans_by_dow[d])}" for d in sorted(spans_by_dow.keys())]
         return "Aukioloajat:\n" + "\n".join(lines)
 
-    # Swedish / English: keep existing compact list
-    lines = [f"{_dow_name(lang, d)}: {', '.join(spans_by_dow[d])}" for d in sorted(spans_by_dow.keys())]
+    # Swedish: natural sentence if Thu/Fri/Sat are present
+    def _sv_span(span: str) -> str:
+        # 11:00-17:00 -> 11–17 (en dash), keep minutes if needed
+        try:
+            a, b = span.split("-")
+            def s(x: str) -> str:
+                return x.replace(":00", "")
+            return f"{s(a)}–{s(b)}"
+        except Exception:
+            return span
     if lang == "sv":
+        thu = ", ".join(spans_by_dow.get(3, [])) if 3 in spans_by_dow else None
+        fri = ", ".join(spans_by_dow.get(4, [])) if 4 in spans_by_dow else None
+        sat = ", ".join(spans_by_dow.get(5, [])) if 5 in spans_by_dow else None
+        if thu and fri and sat:
+            thu_s = _sv_span(thu)
+            fri_s = _sv_span(fri)
+            sat_s = _sv_span(sat)
+            if thu_s == fri_s:
+                # Requested phrasing
+                return f"Vi har öppet på torsdagar och fredagar kl. {thu_s} samt på lördagar kl. {sat_s}."
+            else:
+                return f"Vi har öppet på torsdagar kl. {thu_s}, fredagar kl. {fri_s} samt på lördagar kl. {sat_s}."
+        # Fallback to compact list
+        lines = [f"{_dow_name(lang, d)}: {', '.join(spans_by_dow[d])}" for d in sorted(spans_by_dow.keys())]
         return "Öppettider:\n" + "\n".join(lines)
+
+    # English: natural sentence if Thu/Fri/Sat are present
+    def _en_ampm(span: str) -> str:
+        # 11:00-17:00 -> 11 am to 5 pm
+        try:
+            a, b = span.split("-")
+            def ampm(x: str) -> str:
+                hh, mm = x.split(":") if ":" in x else (x, "00")
+                h = int(hh)
+                m = int(mm)
+                suf = "am" if h < 12 else "pm"
+                h12 = h % 12
+                if h12 == 0:
+                    h12 = 12
+                if m == 0:
+                    return f"{h12} {suf}"
+                return f"{h12}:{mm} {suf}"
+            return f"{ampm(a)} to {ampm(b)}"
+        except Exception:
+            return span.replace("-", " to ")
+    if lang == "en":
+        thu = ", ".join(spans_by_dow.get(3, [])) if 3 in spans_by_dow else None
+        fri = ", ".join(spans_by_dow.get(4, [])) if 4 in spans_by_dow else None
+        sat = ", ".join(spans_by_dow.get(5, [])) if 5 in spans_by_dow else None
+        if thu and fri and sat:
+            thu_s = _en_ampm(thu)
+            fri_s = _en_ampm(fri)
+            sat_s = _en_ampm(sat)
+            if thu_s == fri_s:
+                # Requested phrasing
+                return f"We are open on Thursdays and Fridays from {thu_s}, and on Saturdays from {sat_s}."
+            else:
+                return f"We are open on Thursdays from {thu_s}, Fridays from {fri_s}, and on Saturdays from {sat_s}."
+        # Fallback to compact list
+        lines = [f"{_dow_name(lang, d)}: {', '.join(spans_by_dow[d])}" for d in sorted(spans_by_dow.keys())]
+        return "Opening hours:\n" + "\n".join(lines)
+
+    # Default: compact list for other languages
+    lines = [f"{_dow_name(lang, d)}: {', '.join(spans_by_dow[d])}" for d in sorted(spans_by_dow.keys())]
     return "Opening hours:\n" + "\n".join(lines)
 
 

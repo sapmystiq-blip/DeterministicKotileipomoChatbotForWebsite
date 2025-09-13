@@ -8,7 +8,14 @@ const chatForm = qs('#chatForm');
 const chatInput = qs('#chatInput');
 const sendBtn = qs('#sendBtn');
 
-let currentLang = localStorage.getItem('chat_lang'); // 'fi' | 'sv' | 'en'
+let currentLang = localStorage.getItem('chat_lang') || 'fi'; // default to Finnish
+// Persist default language immediately so backend receives a cookie hint as well
+if (!localStorage.getItem('chat_lang')) {
+  try {
+    localStorage.setItem('chat_lang', currentLang);
+    document.cookie = `chat_lang=${currentLang}; path=/; max-age=${60*60*24*30}`;
+  } catch(e) {}
+}
 let pickupHoursCache = null;
 let orderConstraintsCache = null; // { min_lead_minutes, max_days }
 
@@ -48,7 +55,8 @@ const I18N = {
     clear_cart: 'Tyhjennä ostoskori',
     confirm_clear_cart: 'Tyhjennetäänkö koko ostoskori?',
     confirm_remove_item: 'Poistetaanko tuote ostoskorista?',
-    order_notice_fi_only: 'Huomio: Tuotenimet ja kuvaukset näkyvät suomeksi. Tilauksen voit tehdä valitsemallasi kielellä.'
+    order_notice_fi_only: 'Huomio: Tuotenimet ja kuvaukset näkyvät suomeksi. Tilauksen voit tehdä valitsemallasi kielellä.',
+    taught_ok: 'Tallennettu. Käytän tätä jatkossa.'
   },
   sv: {
     start_choose_category: 'Vi börjar beställningen. Välj kategori.',
@@ -84,7 +92,8 @@ const I18N = {
     clear_cart: 'Töm varukorgen',
     confirm_clear_cart: 'Vill du tömma hela varukorgen?',
     confirm_remove_item: 'Ta bort produkten från varukorgen?',
-    order_notice_fi_only: 'Observera: Produktnamn och beskrivningar visas på finska. Du kan slutföra beställningen på ditt valda språk.'
+    order_notice_fi_only: 'Observera: Produktnamn och beskrivningar visas på finska. Du kan slutföra beställningen på ditt valda språk.',
+    taught_ok: 'Sparat. Jag kommer att använda detta framöver.'
   },
   en: {
     start_choose_category: 'Let’s start your order. Choose a category.',
@@ -120,7 +129,8 @@ const I18N = {
     clear_cart: 'Clear cart',
     confirm_clear_cart: 'Clear all items from the cart?',
     confirm_remove_item: 'Remove this item from the cart?',
-    order_notice_fi_only: 'Note: Product names and descriptions are shown in Finnish. You can complete your order in your selected language.'
+    order_notice_fi_only: 'Note: Product names and descriptions are shown in Finnish. You can complete your order in your selected language.',
+    taught_ok: 'Learned. I will use this going forward.'
   }
 };
 function tr(key){ const lang = (currentLang||'fi'); return (I18N[lang]&&I18N[lang][key]) || I18N.en[key] || key; }
@@ -144,10 +154,10 @@ function toggleChat(open) {
   if (isOpen) {
     chatInput.focus();
     const hasMsgs = !!chatLog.querySelector('.msg');
-    if (!hasMsgs) {
-      // Always show language chooser at the start of a brand-new chat
-      showLanguagePicker();
-      setInputEnabled(false);
+    if (!hasMsgs && !chatLog.dataset.welcomed) {
+      // Show a welcome message and keep input enabled. Users can still change language later.
+      addBot(welcomeForLang(currentLang));
+      chatLog.dataset.welcomed = "1";
     } else if (!chatLog.dataset.welcomed && currentLang) {
       addBot(welcomeForLang(currentLang));
       chatLog.dataset.welcomed = "1";
@@ -229,6 +239,29 @@ chatLog.addEventListener('submit', async (e) => {
     // disable form after success
     [...form.elements].forEach(el=> el.disabled = true);
   }catch(err){ addBot('Failed to send feedback. Please try again.'); }
+});
+
+// Teach form submission (admin-only, embedded in chat)
+chatLog.addEventListener('submit', async (e) => {
+  const form = e.target.closest('form.teach-form');
+  if (!form) return;
+  e.preventDefault();
+  const fd = new FormData(form);
+  const payload = Object.fromEntries(fd.entries());
+  const q = (payload.question||'').trim();
+  const a = (payload.answer||'').trim();
+  const key = (payload.admin_key||'').trim();
+  if (!q || !a || !key) return;
+  try{
+    const r = await fetch('/api/kb/add', {
+      method:'POST',
+      headers:{'Content-Type':'application/json', 'x-admin-key': key},
+      body: JSON.stringify({ lang: payload.lang||currentLang||'fi', question: q, answer: a })
+    });
+    if (!r.ok) throw new Error('teach');
+    addBot(tr('taught_ok')||'Learned. I will use this going forward.');
+    [...form.elements].forEach(el=> el.disabled = true);
+  }catch(err){ addBot('Failed to save. Check your admin key.'); }
 });
 
 const orderSession = {
@@ -704,7 +737,7 @@ function setInputEnabled(enabled){
 
 function welcomeForLang(lang){
   switch(lang){
-    case 'fi': return "Hei! Olen Piirakkabotti. Kysy tuotteista, aukioloajoista, menusta, tilauksista tai allergioista.";
+    case 'fi': return "Hei! Olen Piirakkabotti. Kysy tuotteista, aukioloajoista, ruokalistasta, tilauksista tai allergioista.";
     case 'sv': return "Hej! Jag är Piirakkabotti. Fråga om produkter, öppettider, meny, beställningar eller allergier.";
     default: return "Hi! I’m Piirakkabotti. Ask about products, opening hours, menu, orders, or allergies.";
   }

@@ -103,9 +103,17 @@ KB_FILES = [p.name for p in sorted(LEGACY_KB_DIR.glob("*.json"))]
 # Database (optional; e.g., Railway Postgres)
 # ============================================================
 DB_URL = os.getenv("DATABASE_URL") or os.getenv("DB_URL")
+# SQLAlchemy requires the "postgresql://" scheme (not legacy "postgres://").
+# Normalize if a Railway/Heroku style URL is provided.
+if DB_URL and DB_URL.startswith("postgres://"):
+    DB_URL = "postgresql://" + DB_URL[len("postgres://"):]
 DB_ENABLED = bool(DB_URL)
 ENGINE = None
 TABLE_READY = False
+ADMIN_KEY = os.getenv("ADMIN_KEY") or os.getenv("BOT_ADMIN_KEY")
+
+# In-memory admin session allowlist (per-process)
+ADMIN_SESSIONS: set[str] = set()
 
 def _db_connect_and_prepare():
     """Initialize DB connection and ensure schema exists.
@@ -132,6 +140,32 @@ def _db_connect_and_prepare():
                 );
                 """
             ))
+            conn.execute(text(
+                """
+                CREATE TABLE IF NOT EXISTS kb_items (
+                  id BIGSERIAL PRIMARY KEY,
+                  lang TEXT,
+                  question TEXT NOT NULL,
+                  answer TEXT NOT NULL,
+                  enabled BOOLEAN DEFAULT TRUE,
+                  created_by TEXT,
+                  created_at TIMESTAMPTZ DEFAULT NOW()
+                );
+                """
+            ))
+            conn.execute(text(
+                """
+                CREATE TABLE IF NOT EXISTS feedback_queue (
+                  id BIGSERIAL PRIMARY KEY,
+                  session_id TEXT,
+                  name TEXT,
+                  email TEXT,
+                  message TEXT NOT NULL,
+                  status TEXT DEFAULT 'pending',
+                  created_at TIMESTAMPTZ DEFAULT NOW()
+                );
+                """
+            ))
         TABLE_READY = True
         logger.info("DB initialized: chat_messages table ready")
     except Exception as e:
@@ -154,6 +188,143 @@ def _db_insert_message(session_id: str | None, role: str, message: str, source: 
             )
     except Exception as e:
         logger.warning(f"DB insert failed: {e}")
+
+def _db_insert_feedback(session_id: str | None, name: str | None, email: str | None, message: str):
+    if not ENGINE or not TABLE_READY:
+        return
+    try:
+        from sqlalchemy import text
+        with ENGINE.begin() as conn:
+            conn.execute(text(
+                """
+                INSERT INTO feedback_queue (session_id, name, email, message)
+                VALUES (:sid, :name, :email, :msg)
+                """
+            ), {"sid": session_id, "name": name, "email": email, "msg": message})
+    except Exception as e:
+        logger.warning(f"DB feedback insert failed: {e}")
+
+def _db_feedback_list(status: str = "pending", limit: int = 100) -> list[dict[str, Any]]:
+    if not ENGINE or not TABLE_READY:
+        return []
+    try:
+        from sqlalchemy import text
+        with ENGINE.begin() as conn:
+            rs = conn.execute(text(
+                """
+                SELECT id, session_id, name, email, message, status, created_at
+                FROM feedback_queue
+                WHERE status = :st
+                ORDER BY id DESC
+                LIMIT :lim
+                """
+            ), {"st": status, "lim": int(limit)})
+            cols = rs.keys()
+            return [dict(zip(cols, row)) for row in rs.fetchall()]
+    except Exception as e:
+        logger.warning(f"DB feedback list failed: {e}")
+        return []
+
+def _db_feedback_set_status(fid: int, status: str):
+    if not ENGINE or not TABLE_READY:
+        return
+    try:
+        from sqlalchemy import text
+        with ENGINE.begin() as conn:
+            conn.execute(text("UPDATE feedback_queue SET status=:st WHERE id=:id"), {"st": status, "id": int(fid)})
+    except Exception as e:
+        logger.warning(f"DB feedback status update failed: {e}")
+
+def _db_kb_insert(lang: str | None, question: str, answer: str, created_by: str | None, enabled: bool = True) -> int | None:
+    if not ENGINE or not TABLE_READY:
+        return None
+    try:
+        from sqlalchemy import text
+        with ENGINE.begin() as conn:
+            rs = conn.execute(text(
+                """
+                INSERT INTO kb_items (lang, question, answer, enabled, created_by)
+                VALUES (:lang, :q, :a, :en, :by)
+                RETURNING id
+                """
+            ), {"lang": lang, "q": question, "a": answer, "en": bool(enabled), "by": created_by})
+            row = rs.fetchone()
+            return int(row[0]) if row else None
+    except Exception as e:
+        logger.warning(f"DB kb insert failed: {e}")
+        return None
+
+def _db_kb_list(limit: int = 500) -> list[dict[str, Any]]:
+    if not ENGINE or not TABLE_READY:
+        return []
+    try:
+        from sqlalchemy import text
+        with ENGINE.begin() as conn:
+            rs = conn.execute(text(
+                """
+                SELECT id, lang, question, answer, enabled, created_by, created_at
+                FROM kb_items
+                ORDER BY id DESC
+                LIMIT :lim
+                """
+            ), {"lim": int(limit)})
+            cols = rs.keys()
+            return [dict(zip(cols, row)) for row in rs.fetchall()]
+    except Exception as e:
+        logger.warning(f"DB kb list failed: {e}")
+        return []
+
+def _db_kb_toggle(item_id: int, enabled: bool):
+    if not ENGINE or not TABLE_READY:
+        return
+    try:
+        from sqlalchemy import text
+        with ENGINE.begin() as conn:
+            conn.execute(text("UPDATE kb_items SET enabled=:en WHERE id=:id"), {"en": bool(enabled), "id": int(item_id)})
+    except Exception as e:
+        logger.warning(f"DB kb toggle failed: {e}")
+
+def _db_kb_enabled_all(lang: str | None = None) -> list[dict[str, Any]]:
+    if not ENGINE or not TABLE_READY:
+        return []
+    try:
+        from sqlalchemy import text
+        with ENGINE.begin() as conn:
+            if lang:
+                rs = conn.execute(text(
+                    """
+                    SELECT question, answer, lang
+                    FROM kb_items
+                    WHERE enabled = TRUE AND (lang = :lang OR lang IS NULL OR lang = '')
+                    ORDER BY id DESC
+                    """
+                ), {"lang": lang})
+            else:
+                rs = conn.execute(text(
+                    "SELECT question, answer, lang FROM kb_items WHERE enabled = TRUE ORDER BY id DESC"
+                ))
+            cols = rs.keys()
+            return [dict(zip(cols, row)) for row in rs.fetchall()]
+    except Exception as e:
+        logger.warning(f"DB kb fetch failed: {e}")
+        return []
+
+def _refresh_kb_index():
+    try:
+        kb_rows = _db_kb_enabled_all()
+        kb = []
+        for r in kb_rows:
+            q = (r.get("question") or "").strip()
+            a = (r.get("answer") or "").strip()
+            if not q or not a:
+                continue
+            kb.append({"question": q, "answer": a, "title": (r.get("lang") or "db") or "db", "file": "db"})
+        build_index(kb)
+        global KB
+        KB = kb
+        logger.info(f"DB KB loaded: {len(KB)} items")
+    except Exception as e:
+        logger.warning(f"KB index refresh failed: {e}")
 
 # ============================================================
 # Retrieval acceptance gates
@@ -468,6 +639,37 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
         except Exception:
             # let downstream handle if router not available
             return None
+
+    # Admin teach UI (hidden command). Accept "/teach" or "teach" after normalization.
+    raw = (user_msg or "").strip().lower()
+    if raw.startswith("/teach") or text.startswith("teach"):
+        # Lightweight HTML form for adding a KB item
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        title = {"fi":"Opeta bottia","sv":"Lär boten","en":"Teach the bot"}[lang]
+        submit = {"fi":"Tallenna","sv":"Spara","en":"Save"}[lang]
+        q_l = {"fi":"Kysymys","sv":"Fråga","en":"Question"}[lang]
+        a_l = {"fi":"Vastaus","sv":"Svar","en":"Answer"}[lang]
+        key_l = {"fi":"Ylläpitäjän avain","sv":"Adminnyckel","en":"Admin key"}[lang]
+        html = f"""
+<div class=\"teach-ui\">
+  <div class=\"title\">{title}</div>
+  <form class=\"teach-form\">
+    <div class=\"row\">
+      <select name=\"lang\" required>
+        <option value=\"fi\">FI</option>
+        <option value=\"sv\">SV</option>
+        <option value=\"en\">EN</option>
+      </select>
+    </div>
+    <div class=\"row\"><input type=\"text\" name=\"question\" placeholder=\"{q_l}\" required></div>
+    <div class=\"row\"><textarea name=\"answer\" rows=\"3\" placeholder=\"{a_l}\" required></textarea></div>
+    <div class=\"row\"><input type=\"password\" name=\"admin_key\" placeholder=\"{key_l}\" required></div>
+    <div class=\"actions\"><button type=\"submit\" class=\"btn btn-primary\">{submit}</button></div>
+  </form>
+  <div class=\"subtle\">This action is restricted to one admin with a secret key.</div>
+  </div>
+"""
+        return html
 
     # capabilities / identity
     if any(p in text for p in CAPABILITY_PHRASES):
@@ -1535,6 +1737,10 @@ def chat(req: ChatRequest, request: Request, response: Response):
     # 1) Rules first
     rb = rule_based_answer(user_msg, respond_lang)
     if rb:
+        try:
+            _db_insert_message(session_id, "assistant", rb, "Rules", 1.0)
+        except Exception:
+            pass
         return ChatResponse(reply=rb, source="Rules", match=1.0)
 
     # 1.5) Deterministic intent router for menu/hours/allergens/FAQ/blackouts
@@ -1549,17 +1755,36 @@ def chat(req: ChatRequest, request: Request, response: Response):
             pass
         return ChatResponse(reply=routed, source="Intent", match=1.0, session_id=session_id)
 
-    # 2) Deterministic scope only: out-of-scope friendly fallback
-    kb_items: List[Dict[str, Any]] = []
-    intent = infer_intent(user_msg)
-    kb_items = filter_items_for_intent(intent, kb_items)
-    if LLM_ENABLED and OPENAI_CLIENT:
-        reply = generate_llm_answer(user_msg, kb_items, respond_lang=respond_lang)
-        src = "LLM • Fallback"
-    else:
-        reply = llm_like_answer(user_msg, kb_items, respond_lang)
-        src = "Fallback"
+    # 2) Retrieval from taught KB (DB), then friendly fallback
+    # Try to find best matches from current KB index
+    matches = find_best_kb_match(user_msg, top_k=5)
+    reply = None
+    src = "Fallback"
     best_score = 0.0
+    if matches:
+        blend, bm25, fuzzy, jacc, best_item = matches[0]
+        # Acceptance gates
+        if (blend >= MIN_ACCEPT_SCORE) and (bm25 >= MIN_BM25_SIGNAL or jacc >= MIN_JACCARD or fuzzy >= MIN_FUZZY):
+            # Compose answer from top items if LLM enabled; else return best answer
+            kb_items = [m[4] for m in matches]
+            if LLM_ENABLED and OPENAI_CLIENT:
+                reply = generate_llm_answer(user_msg, kb_items, respond_lang=respond_lang or PRIMARY_LANG)
+                src = "KB • LLM"
+            else:
+                reply = (best_item.get("answer") or "").strip() or None
+                src = "KB"
+            best_score = float(blend)
+    if not reply:
+        # Deterministic out-of-scope friendly fallback
+        kb_items: List[Dict[str, Any]] = []
+        intent = infer_intent(user_msg)
+        kb_items = filter_items_for_intent(intent, kb_items)
+        if LLM_ENABLED and OPENAI_CLIENT:
+            reply = generate_llm_answer(user_msg, kb_items, respond_lang=respond_lang or PRIMARY_LANG)
+            src = "LLM • Fallback"
+        else:
+            reply = llm_like_answer(user_msg, kb_items, respond_lang or PRIMARY_LANG)
+            src = "Fallback"
     try:
         _db_insert_message(session_id, "assistant", reply, src, best_score)
     except Exception:
@@ -1578,9 +1803,101 @@ def api_feedback(payload: FeedbackPayload, request: Request):
         raise HTTPException(status_code=400, detail="Feedback message cannot be empty.")
     try:
         _db_insert_message(session_id, "feedback", f"name={payload.name or ''}; email={payload.email or ''}; msg={msg}", "feedback", None)
+        _db_insert_feedback(session_id, payload.name, payload.email, msg)
     except Exception:
         pass
     return {"ok": True}
+
+# ---------------------------
+# Admin helpers / endpoints
+# ---------------------------
+def _is_admin(request: Request, body_key: str | None = None) -> bool:
+    if not ADMIN_KEY:
+        return False
+    try:
+        hdr = request.headers.get("x-admin-key")
+    except Exception:
+        hdr = None
+    if hdr and hdr == ADMIN_KEY:
+        return True
+    if body_key and body_key == ADMIN_KEY:
+        return True
+    try:
+        sid = request.cookies.get("chat_session") or ""
+    except Exception:
+        sid = ""
+    return (sid in ADMIN_SESSIONS)
+
+class TeachPayload(BaseModel):
+    lang: str | None = None
+    question: str
+    answer: str
+    admin_key: str | None = None
+
+@app.post("/api/kb/add")
+def api_kb_add(payload: TeachPayload, request: Request):
+    if not _is_admin(request, payload.admin_key):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    q = (payload.question or "").strip()
+    a = (payload.answer or "").strip()
+    if not q or not a:
+        raise HTTPException(status_code=400, detail="question and answer are required")
+    lang = (payload.lang or PRIMARY_LANG).strip().lower()
+    sid = None
+    try:
+        sid = request.cookies.get("chat_session")
+    except Exception:
+        pass
+    new_id = _db_kb_insert(lang, q, a, created_by=sid or "api")
+    if not new_id:
+        raise HTTPException(status_code=500, detail="Failed to insert KB item")
+    _refresh_kb_index()
+    return {"ok": True, "id": new_id}
+
+@app.get("/api/kb/list")
+def api_kb_list(request: Request):
+    if not _is_admin(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {"items": _db_kb_list(limit=500)}
+
+class TogglePayload(BaseModel):
+    id: int
+    enabled: bool
+
+@app.post("/api/kb/toggle")
+def api_kb_toggle(payload: TogglePayload, request: Request):
+    if not _is_admin(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    _db_kb_toggle(int(payload.id), bool(payload.enabled))
+    _refresh_kb_index()
+    return {"ok": True}
+
+@app.get("/api/feedback_queue")
+def api_feedback_queue(request: Request, status: str = "pending", limit: int = 100):
+    if not _is_admin(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {"items": _db_feedback_list(status=status, limit=limit)}
+
+class PromotePayload(BaseModel):
+    id: int
+    lang: str
+    question: str
+    answer: str
+
+@app.post("/api/feedback/promote")
+def api_feedback_promote(payload: PromotePayload, request: Request):
+    if not _is_admin(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    q = (payload.question or "").strip()
+    a = (payload.answer or "").strip()
+    if not q or not a:
+        raise HTTPException(status_code=400, detail="question and answer are required")
+    new_id = _db_kb_insert(payload.lang.strip().lower(), q, a, created_by="promotion")
+    if not new_id:
+        raise HTTPException(status_code=500, detail="Failed to insert KB item")
+    _db_feedback_set_status(int(payload.id), "promoted")
+    _refresh_kb_index()
+    return {"ok": True, "kb_id": new_id}
 
 # ============================================================
 # Ecwid endpoints
@@ -1947,8 +2264,10 @@ def startup_event():
     logger.info("=== App startup: loading KB and building index ===")
     if DB_ENABLED:
         _db_connect_and_prepare()
-    # Legacy KB disabled: keep deterministic intent router only
-    KB = []
+        _refresh_kb_index()
+    else:
+        # Legacy KB disabled: keep deterministic intent router only
+        KB = []
 
 # ============================================================
 # Frontend routes (serve index.html + static assets from /frontend)

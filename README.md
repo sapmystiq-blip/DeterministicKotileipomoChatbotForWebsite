@@ -37,6 +37,43 @@ These variables are optional unless noted.
   - `ECWID_STORE_ID` – numeric store ID.
   - `ECWID_API_TOKEN` – private API token with order scope. Must be kept server‑side only.
 
+### Database logging (Railway Postgres)
+
+The backend can log all chat messages and feedback to Postgres. Set a database URL and it will automatically create a table and insert rows.
+
+- Set `DATABASE_URL` (or `DB_URL`) to your Railway connection string.
+  - Example: `postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require`
+  - Legacy `postgres://…` is also accepted; the app normalizes it to `postgresql://…` for SQLAlchemy.
+- On startup, the app creates a table if needed:
+  - `chat_messages(id, session_id, role, message, source, match_score, created_at)`
+  - `role` will be `user`, `assistant`, or `feedback`.
+- The embedded feedback form POSTs to `/api/feedback` and is stored with `role='feedback'`.
+
+Local dev quick start:
+
+1) Put your connection string in `.env`:
+
+```
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DBNAME?sslmode=require
+```
+
+2) Start the server and send a few messages; verify inserts in `chat_messages`.
+
+### Hybrid training (admin teach + feedback queue)
+
+- Set `ADMIN_KEY` in your environment. Only the person with this secret can teach the bot.
+- Teaching in chat: send `/teach` in the chat to open a small admin form. Enter language, question, answer, and your admin key.
+- The new Q&A is saved to Postgres (`kb_items`) and used immediately for answers.
+- Feedback queue: the existing feedback form also stores entries in `feedback_queue` with `status='pending'`.
+- Admin endpoints (require `x-admin-key: $ADMIN_KEY` header):
+  - `POST /api/kb/add` {lang, question, answer}
+  - `GET /api/kb/list`
+  - `POST /api/kb/toggle` {id, enabled}
+  - `GET /api/feedback_queue?status=pending&limit=100`
+  - `POST /api/feedback/promote` {id, lang, question, answer} → creates KB item and marks feedback as promoted
+
+On startup, enabled KB items are indexed for retrieval; answers are returned when confidence gates pass.
+
 ## Project Layout
 
 - `frontend/` – `index.html`, `styles.css`, `chat.js` (floating bubble + widget UI)
