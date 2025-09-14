@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List, Tuple, Dict, Any
 from collections import Counter
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response, UploadFile, File
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -148,11 +148,14 @@ def _db_connect_and_prepare():
                   question TEXT NOT NULL,
                   answer TEXT NOT NULL,
                   enabled BOOLEAN DEFAULT TRUE,
+                  category TEXT,
                   created_by TEXT,
                   created_at TIMESTAMPTZ DEFAULT NOW()
                 );
                 """
             ))
+            # Ensure category column exists if table was created previously
+            conn.execute(text("ALTER TABLE kb_items ADD COLUMN IF NOT EXISTS category TEXT"))
             conn.execute(text(
                 """
                 CREATE TABLE IF NOT EXISTS feedback_queue (
@@ -235,7 +238,7 @@ def _db_feedback_set_status(fid: int, status: str):
     except Exception as e:
         logger.warning(f"DB feedback status update failed: {e}")
 
-def _db_kb_insert(lang: str | None, question: str, answer: str, created_by: str | None, enabled: bool = True) -> int | None:
+def _db_kb_insert(lang: str | None, question: str, answer: str, created_by: str | None, enabled: bool = True, category: str | None = None) -> int | None:
     if not ENGINE or not TABLE_READY:
         return None
     try:
@@ -243,11 +246,11 @@ def _db_kb_insert(lang: str | None, question: str, answer: str, created_by: str 
         with ENGINE.begin() as conn:
             rs = conn.execute(text(
                 """
-                INSERT INTO kb_items (lang, question, answer, enabled, created_by)
-                VALUES (:lang, :q, :a, :en, :by)
+                INSERT INTO kb_items (lang, question, answer, enabled, category, created_by)
+                VALUES (:lang, :q, :a, :en, :cat, :by)
                 RETURNING id
                 """
-            ), {"lang": lang, "q": question, "a": answer, "en": bool(enabled), "by": created_by})
+            ), {"lang": lang, "q": question, "a": answer, "en": bool(enabled), "cat": category, "by": created_by})
             row = rs.fetchone()
             return int(row[0]) if row else None
     except Exception as e:
@@ -262,7 +265,7 @@ def _db_kb_list(limit: int = 500) -> list[dict[str, Any]]:
         with ENGINE.begin() as conn:
             rs = conn.execute(text(
                 """
-                SELECT id, lang, question, answer, enabled, created_by, created_at
+                SELECT id, lang, question, answer, enabled, category, created_by, created_at
                 FROM kb_items
                 ORDER BY id DESC
                 LIMIT :lim
@@ -293,7 +296,7 @@ def _db_kb_enabled_all(lang: str | None = None) -> list[dict[str, Any]]:
             if lang:
                 rs = conn.execute(text(
                     """
-                    SELECT question, answer, lang
+                    SELECT question, answer, lang, category
                     FROM kb_items
                     WHERE enabled = TRUE AND (lang = :lang OR lang IS NULL OR lang = '')
                     ORDER BY id DESC
@@ -301,7 +304,7 @@ def _db_kb_enabled_all(lang: str | None = None) -> list[dict[str, Any]]:
                 ), {"lang": lang})
             else:
                 rs = conn.execute(text(
-                    "SELECT question, answer, lang FROM kb_items WHERE enabled = TRUE ORDER BY id DESC"
+                    "SELECT question, answer, lang, category FROM kb_items WHERE enabled = TRUE ORDER BY id DESC"
                 ))
             cols = rs.keys()
             return [dict(zip(cols, row)) for row in rs.fetchall()]
@@ -318,7 +321,7 @@ def _refresh_kb_index():
             a = (r.get("answer") or "").strip()
             if not q or not a:
                 continue
-            kb.append({"question": q, "answer": a, "title": (r.get("lang") or "db") or "db", "file": "db"})
+            kb.append({"question": q, "answer": a, "title": (r.get("category") or r.get("lang") or "db"), "file": "db"})
         build_index(kb)
         global KB
         KB = kb
@@ -707,6 +710,19 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             "• Pickup and delivery"
         )
 
+    # Diet queries: route directly to dynamic vegan/dairy-free listing
+    try:
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        try:
+            if IR.detect_intent(user_msg) == "diet":
+                return IR.resolve_diet_options(user_msg, lang)
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+    # Defer FAQ handling to the intent router so product/diet intents are not overshadowed
+
     # Delivery vs pickup clarification
     DELIVERY_KWS = {"delivery","deliver","home delivery","toimitus","kotiinkuljetus","kuljetus","leverans"}
     if any(k in text for k in DELIVERY_KWS):
@@ -851,8 +867,15 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
         # SV
         "hur långt i förväg", "hur tidigt", "beställa i förväg", "hur många dagar i förväg",
     }
-    if any(k in text for k in LEAD_KWS):
+    if any(k in text for k in LEAD_KWS) or ("kuinka ajoissa" in text) or ("minun tulee tehdä tilaus" in text):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        # Prefer curated FAQ answer if available
+        try:
+            faq_txt = IR.resolve_faq(user_msg, lang)
+            if faq_txt:
+                return faq_txt
+        except Exception:
+            pass
         url = ECWID_STORE_URL
         if lang == "sv":
             note = "Gör din beställning minst 1 dag i förväg och upp till en månad i förväg."
@@ -910,6 +933,13 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
     }
     if any(k in text for k in DEPOSIT_KWS):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        # Prefer curated FAQ answer if available
+        try:
+            faq_txt = IR.resolve_faq(user_msg, lang)
+            if faq_txt:
+                return faq_txt
+        except Exception:
+            pass
         if lang == "sv":
             return "För beställningar över 150 € kräver vi förskottsbetalning."
         if lang == "fi":
@@ -927,6 +957,13 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
     }
     if any(k in text for k in MIN_ORDER_KWS):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        # Prefer curated FAQ answer if available
+        try:
+            faq_txt = IR.resolve_faq(user_msg, lang)
+            if faq_txt:
+                return faq_txt
+        except Exception:
+            pass
         if lang == "sv":
             return "Nej, vi har inget minsta orderbelopp."
         if lang == "fi":
@@ -945,6 +982,13 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
     }
     if any(k in text for k in PAYMENT_KWS):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        # Prefer curated FAQ answer if available
+        try:
+            faq_txt = IR.resolve_faq(user_msg, lang)
+            if faq_txt:
+                return faq_txt
+        except Exception:
+            pass
         if lang == "sv":
             return (
                 "Vi accepterar ledande debit- och kreditkort med kontaktlös betalning. "
@@ -1288,6 +1332,13 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
     }
     if any(k in text for k in GLUTENFREE_KWS):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        # Prefer curated FAQ answer if available
+        try:
+            faq_txt = IR.resolve_faq(user_msg, lang)
+            if faq_txt:
+                return faq_txt
+        except Exception:
+            pass
         if lang == "sv":
             return "Tyvärr har vi inte glutenfria alternativ för tillfället."
         if lang == "fi":
@@ -1306,6 +1357,13 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
     }
     if any(k in text for k in NUT_KWS):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        # Prefer FAQ if available for short queries like "pähkinä"
+        try:
+            faq_txt = IR.resolve_faq(user_msg, lang)
+            if faq_txt:
+                return faq_txt
+        except Exception:
+            pass
         if lang == "sv":
             return (
                 "Vi använder inte nötter i våra ordinarie produkter. "
@@ -1384,6 +1442,14 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
     }
     if any(k in text for k in SOURCING_KWS):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        # Prefer explicit FAQ content if configured for this topic
+        try:
+            faq_txt = IR.resolve_faq(user_msg, lang)
+            if faq_txt:
+                return faq_txt
+        except Exception:
+            pass
+        # Fallback to curated default message
         if lang == "sv":
             return (
                 "Vi använder främst finländska råvaror som mjölk, råg, smör, grädde och ägg i våra produkter. "
@@ -1734,6 +1800,24 @@ def chat(req: ChatRequest, request: Request, response: Response):
     except Exception:
         pass
 
+    # 0) Priority: exact KB match (taught items) should override rules
+    try:
+        matches0 = find_best_kb_match(user_msg, top_k=5)
+    except Exception:
+        matches0 = []
+    if matches0:
+        nq = _normalize(user_msg)
+        for blend, bm25, fuzzy, jacc, it in matches0:
+            if _normalize(it.get("question") or "") == nq:
+                ans = (it.get("answer") or "").strip()
+                if ans:
+                    try:
+                        _db_insert_message(session_id, "assistant", ans, "KB", float(blend))
+                    except Exception:
+                        pass
+                    return ChatResponse(reply=ans, source="KB", match=float(blend), session_id=session_id)
+        # No exact match; continue to rules intent, then later general KB retrieval
+
     # 1) Rules first
     rb = rule_based_answer(user_msg, respond_lang)
     if rb:
@@ -1833,6 +1917,7 @@ class TeachPayload(BaseModel):
     question: str
     answer: str
     admin_key: str | None = None
+    category: str | None = None
 
 @app.post("/api/kb/add")
 def api_kb_add(payload: TeachPayload, request: Request):
@@ -1848,7 +1933,7 @@ def api_kb_add(payload: TeachPayload, request: Request):
         sid = request.cookies.get("chat_session")
     except Exception:
         pass
-    new_id = _db_kb_insert(lang, q, a, created_by=sid or "api")
+    new_id = _db_kb_insert(lang, q, a, created_by=sid or "api", category=(payload.category or None))
     if not new_id:
         raise HTTPException(status_code=500, detail="Failed to insert KB item")
     _refresh_kb_index()
@@ -1883,6 +1968,7 @@ class PromotePayload(BaseModel):
     lang: str
     question: str
     answer: str
+    category: str | None = None
 
 @app.post("/api/feedback/promote")
 def api_feedback_promote(payload: PromotePayload, request: Request):
@@ -1892,7 +1978,7 @@ def api_feedback_promote(payload: PromotePayload, request: Request):
     a = (payload.answer or "").strip()
     if not q or not a:
         raise HTTPException(status_code=400, detail="question and answer are required")
-    new_id = _db_kb_insert(payload.lang.strip().lower(), q, a, created_by="promotion")
+    new_id = _db_kb_insert(payload.lang.strip().lower(), q, a, created_by="promotion", category=(payload.category or None))
     if not new_id:
         raise HTTPException(status_code=500, detail="Failed to insert KB item")
     _db_feedback_set_status(int(payload.id), "promoted")
@@ -1962,6 +2048,16 @@ def api_order(req: OrderRequest):
     # Validate pickup time (format, hours, min lead, max window, blackout)
     ok, reason = _validate_pickup_time(req.pickup_time)
     if not ok:
+        # If the day is closed, it might be due to a blackout; prefer explicit blackout wording
+        try:
+            cons = api_order_constraints(debug=False)
+            dt = _parse_pickup_iso(req.pickup_time)
+            if dt and _is_blackout(dt, cons.get("blackout_dates") or []):
+                raise HTTPException(status_code=400, detail="Pickup date is not available (blackout).")
+        except HTTPException:
+            raise
+        except Exception:
+            pass
         raise HTTPException(status_code=400, detail=f"Pickup time not available: {reason}")
     try:
         cons = api_order_constraints(debug=False)  # reuse same logic

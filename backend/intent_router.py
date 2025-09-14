@@ -287,9 +287,11 @@ def detect_intent(text: str) -> Optional[str]:
         # Orders / pickup / contact
         "order", "preorder", "pickup", "nouto", "tilaa", "contact", "payment", "maksu", "store",
         # Address / location (EN/FI/SV)
-        "address", "adress", "location", "sijainti",
+        "address", "adress", "location", "sijainti", "sijaitse",
         "where are you located", "where is your shop", "where is the shop", "shop address", "store address",
-        "missä sijaitsette", "missä olette", "var ligger", "var finns", "butikens adress"
+        "missä sijaitsette", "missä olette", "var ligger", "var finns", "butikens adress",
+        # Seasonal products / offers (route to FAQ)
+        "kausituote", "kausituotteet", "kausi tuote", "kausi tuotteet", "kausi tuotteita", "sesonki", "sesonkituote", "erikoistarjou"
     ]):
         return "faq"
     # Product mention only → suggest follow‑ups
@@ -330,10 +332,10 @@ def _price_str(price: Any) -> Optional[str]:
 def resolve_menu(lang: str, query: Optional[str] = None) -> str:
     if not ecwid.get_products:
         if lang == "fi":
-            return "Tutustu tuotteisiin verkkokaupassa."
+            return "Voin auttaa tuotteissa ja hinnoissa. Tutustu tuotteisiin verkkokaupassa."
         if lang == "sv":
-            return "Se produkter i webbutiken."
-        return "See products in the online store."
+            return "Jag kan hjälpa till med produkter och priser. Se produkter i webbutiken."
+        return "I can help with products and prices. See products in the online store."
     # Try to order by categories: Uunituoreet first, then Pakasteet, then others
     cats: List[Dict[str, Any]] = []
     try:
@@ -821,10 +823,10 @@ def resolve_menu(lang: str, query: Optional[str] = None) -> str:
             items = []
         if not items:
             if lang == "fi":
-                return "Tuotelista ei ole saatavilla juuri nyt. Katso verkkokauppa."
+                return "Voin auttaa tuotteissa ja hinnoissa. Tuotelista ei ole saatavilla juuri nyt. Katso verkkokauppa."
             if lang == "sv":
-                return "Produktlistan är inte tillgänglig just nu. Se webbutiken."
-            return "Product list is not available right now. See the online store."
+                return "Jag kan hjälpa till med produkter och priser. Produktlistan är inte tillgänglig just nu. Se webbutiken."
+            return "I can help with products and prices. Product list is not available right now. See the online store."
         keep: List[str] = []
         for it in items:
             if not it.get("enabled", True):
@@ -1320,18 +1322,20 @@ def resolve_faq(query: str, lang: str) -> Optional[str]:
         "hämt", "var hämtar", "var ligger", "var finns", "butikens adress", "var i helsingfors",
         "närmsta hållplats", "närmaste hållplats", "närmsta buss", "närmsta spårvagn",
     ]):
-        addr = ", ".join([p for p in [s.address_line, s.postal_code, s.city] if p]) or ""
+        # Localize city name for Swedish if needed
+        city_val = s.city
+        try:
+            if lang == "sv" and (s.city or "").strip().lower() == "helsinki":
+                city_val = "Helsingfors"
+        except Exception:
+            pass
+        addr = ", ".join([p for p in [s.address_line, s.postal_code, city_val] if p]) or ""
         district = s.district or ""
         park = (s.parking_note.get(lang) or s.parking_note.get("fi") or "").strip()
         stops = (s.nearest_stops.get(lang) or s.nearest_stops.get("fi") or "").strip()
         if lang == "fi":
-            lines = [
-                f"Sijaitsemme {district}ssa osoitteessa {addr}. Tervetuloa!".replace("  ", " ").strip(),
-                "Myymälä on katutasossa ja kadunvarsipysäköinti on maksullista.",
-                (stops if stops else ""),
-                "Jos olet tehnyt verkkotilauksen, tuo tilausvahvistus (sähköpostista).",
-            ]
-            return " ".join(lines)
+            # Requested exact phrasing for Finnish location answer
+            return "Leipomomyymälämme sijaitsee osoitteessa Kumpulantie 15, 00520 Helsinki"
         if lang == "sv":
             lines = [
                 f"Vi finns i {district} på {addr}. Välkommen!".replace("  ", " ").strip(),
@@ -1349,6 +1353,49 @@ def resolve_faq(query: str, lang: str) -> Optional[str]:
         ]
         return " ".join(lines)
 
+    # Prefer specific FAQ items before generic order/preorder messaging
+    items = load_faq()
+    if items:
+        def _tokens(s: str) -> set[str]:
+            import re
+            return {w for w in re.split(r"[^a-zåäöA-ZÅÄÖ0-9]+", s.lower()) if len(w) >= 3}
+        qtoks = _tokens(t)
+        best = None
+        best_score = 0
+        for it in items:
+            q_all = " ".join([v.lower() for v in it.q.values()])
+            atoks = _tokens(q_all)
+            score = 0
+            # tag hits
+            for tag in it.tags:
+                if tag and tag.lower() in t:
+                    score += 3
+            # token overlap
+            score += sum(1 for w in atoks if w in qtoks)
+            # lead-time phrasing boost across languages
+            if any(k in t for k in [
+                "kuinka ajoissa", "edellisenä päivänä", "milloin pitää tilata",
+                "hur långt i förväg", "dagen innan",
+                "how early should i", "day before"
+            ]):
+                score += 2
+            if score > best_score:
+                best_score = score
+                best = it
+        if best and best_score > 0:
+            ans = best.text_for(lang, "a")
+            veg_tags = {"vegaaninen", "vegaani", "maidoton", "laktoositon", "vegan", "dairy-free"}
+            if any(tag in veg_tags for tag in best.tags):
+                label = {"fi": "Tuotteet", "sv": "Produkter", "en": "Goodies"}.get(lang, "Tuotteet")
+                trigger = {"fi": "vegaaninen maidoton", "sv": "vegansk mjölkfri", "en": "vegan dairy-free"}.get(lang, "vegaaninen maidoton")
+                suggest_html = (
+                    f"""
+<div class=\"suggest\">\n  <div class=\"buttons\">\n    <button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{trigger}\">{label}</button>\n  </div>\n</div>
+"""
+                )
+                return f"<div class=\"faq-ans\"><p>{ans}</p>{suggest_html}</div>"
+            return ans
+
     # Order / preorder topic
     if any(k in t for k in ["preorder", "order", "tilaa", "ennakkotilaus", "beställ"]):
         url = s.store_url
@@ -1358,14 +1405,10 @@ def resolve_faq(query: str, lang: str) -> Optional[str]:
             return f"Gör en beställning i webbutiken och hämta under öppettider. {url or ''}".strip()
         return f"Place an order in the online shop and pick up during opening hours. {url or ''}".strip()
 
-    # Fallback to legacy FAQ entries if present
-    items = load_faq()
-    if items:
-        for it in items:
-            q_all = " ".join([v.lower() for v in it.q.values()])
-            if any(tag in t for tag in it.tags) or any(w in t for w in q_all.split() if len(w) > 3):
-                return it.text_for(lang, "a")
-        return items[0].text_for(lang, "a")
+    # Final fallback to first entry if present
+    items2 = load_faq()
+    if items2:
+        return items2[0].text_for(lang, "a")
     return None
 
 

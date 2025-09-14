@@ -4,11 +4,15 @@ from pathlib import Path
 
 
 class TestKBSchema(unittest.TestCase):
-    def test_kb_files_valid(self):
-        kb_dir = Path('backend/knowledgebase')
-        self.assertTrue(kb_dir.exists(), 'knowledgebase folder missing')
-        files = list(kb_dir.glob('*.json'))
-        self.assertTrue(len(files) > 0, 'no KB json files found')
+    def test_legacy_kb_files_valid(self):
+        """Legacy KB schema: backend/knowledgebase/deprecated/*.json should be
+        lists of {question, answer} for backwards compatibility.
+        Structured KB (faq.json, hours.json, etc.) is validated elsewhere.
+        """
+        legacy_dir = Path('backend/knowledgebase/deprecated')
+        self.assertTrue(legacy_dir.exists(), 'legacy knowledgebase/deprecated folder missing')
+        files = list(legacy_dir.glob('*.json'))
+        # It's OK if there are no legacy files present in some deployments
         for f in files:
             data = json.loads(f.read_text(encoding='utf-8'))
             self.assertIsInstance(data, list, f'{f.name} is not a list')
@@ -18,7 +22,19 @@ class TestKBSchema(unittest.TestCase):
                 a = (row.get('answer') or '').strip()
                 self.assertTrue(q and a, f'{f.name}[{idx}] missing question/answer')
 
+    def test_main_kb_files_are_json(self):
+        """Structured KB files should be valid JSON (shape is validated by code)."""
+        kb_dir = Path('backend/knowledgebase')
+        self.assertTrue(kb_dir.exists(), 'knowledgebase folder missing')
+        files = list(kb_dir.glob('*.json'))
+        self.assertTrue(len(files) > 0, 'no KB json files found')
+        for f in files:
+            # Just ensure they parse as JSON
+            try:
+                json.loads(f.read_text(encoding='utf-8'))
+            except Exception as e:
+                self.fail(f'{f.name} is not valid JSON: {e}')
+
 
 if __name__ == '__main__':
     unittest.main()
-
