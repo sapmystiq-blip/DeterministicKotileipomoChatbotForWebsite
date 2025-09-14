@@ -40,6 +40,30 @@ class TestFAQAnswers(unittest.TestCase):
         # Be tolerant about the euro sign/formatting
         self.assertTrue('(yli 150' in reply or 'yli 150' in reply)
 
+    def test_weekday_pickup_keskiviikko(self):
+        reply = self._chat('Voinko noutaa keskiviikkona?')
+        self.assertIn('sopimuksen mukaan', reply)
+        self.assertIn('rakaskotileipomo@gmail.com', reply)
+
+    def test_weekday_pickup_sunnuntai(self):
+        reply = self._chat('Voinko noutaa sunnuntaina?')
+        self.assertTrue('ei noutoa' in reply.lower())
+
+    def test_weekday_pickup_torstai(self):
+        reply = self._chat('Voinko noutaa torstaina?')
+        self.assertIn('aukioloaikoina', reply)
+
+    def test_custom_cakes_policy_fi(self):
+        reply = self._chat('Valmistatteko tilaustyönä kakkuja tai leivonnaisia?')
+        self.assertIn('Emme leivo kakkuja', reply)
+        self.assertIn('voileipäkakkuja', reply)
+        self.assertIn('karjalanpiirakkaleipomo', reply)
+
+    def test_no_cake_queries_map_to_policy(self):
+        for q in ['onko täytekakku', 'onko kuivakakkuja', 'onko voileipäkakku', 'onko lihapiirakka', 'onko kakkuja', 'onko kakku']:
+            reply = self._chat(q)
+            self.assertIn('Emme leivo kakkuja', reply)
+
     def test_nut_allergy_answer_fi(self):
         reply = self._chat('Miten huomioitte pähkinäallergiat?')
         self.assertIn('Tuotteissamme ja leipomossamme ei ole pähkinöitä', reply)
@@ -52,4 +76,3 @@ class TestFAQAnswers(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

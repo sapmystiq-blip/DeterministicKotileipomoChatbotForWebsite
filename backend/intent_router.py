@@ -275,17 +275,23 @@ def detect_intent(text: str) -> Optional[str]:
     # Dietary filters (vegan / lactose-free / dairy-free)
     if any(k in t for k in [
         # EN
-        "vegan", "dairy free", "dairy-free", "lactose free", "lactose-free",
+        "vegan", "dairy free", "dairy-free", "lactose free", "lactose-free", "lactose",
         # FI
-        "vegaani", "vegaaninen", "laktoositon", "maidoton",
+        "vegaani", "vegaaninen", "laktoositon", "maidoton", "laktoosi", "laktoos",
         # SV
-        "vegansk", "laktosfri", "mjölkfri", "mjolkfri",
+        "vegansk", "laktosfri", "mjölkfri", "mjolkfri", "laktos",
     ]):
         return "diet"
     # FAQ (orders, pickup, contact, address/location)
     if any(k in t for k in [
         # Orders / pickup / contact
-        "order", "preorder", "pickup", "nouto", "tilaa", "contact", "payment", "maksu", "store",
+        "order", "preorder", "pickup", "pick up", "pick-up",
+        # Swedish pickup verbs (with/without diacritics)
+        "hämta", "hämt", "hamta",
+        # Finnish
+        "nouto", "noutaa", "tilaa",
+        # Generic contact/payment/store
+        "contact", "payment", "maksu", "store",
         # Address / location (EN/FI/SV)
         "address", "adress", "location", "sijainti", "sijaitse",
         "where are you located", "where is your shop", "where is the shop", "shop address", "store address",
@@ -1308,6 +1314,76 @@ def resolve_faq(query: str, lang: str) -> Optional[str]:
     # Dynamic FAQ composition based on topic detection and settings
     t = query.lower()
     s = load_settings()
+    # Weekday-specific pickup guidance (Mon/Tue/Wed by arrangement; Thu–Sat normal; Sun none)
+    try:
+        day_map = {
+            # Finnish stems
+            "maanant": 0, "tiist": 1, "keskiviik": 2, "torst": 3, "perjant": 4, "lauant": 5, "sunnunt": 6,
+            # Swedish
+            "måndag": 0, "mandag": 0, "tisdag": 1, "onsdag": 2, "torsdag": 3, "fredag": 4, "lördag": 5, "lordag": 5, "söndag": 6, "sondag": 6,
+            # English
+            "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6,
+        }
+        dow: int | None = None
+        for key, val in day_map.items():
+            if key in t:
+                dow = val
+                break
+        # If not matched by stems, detect common abbreviations by token
+        if dow is None:
+            import re as _re
+            toks = set(_re.findall(r"[a-zåäö]+", t))
+            # Finnish two-letter abbreviations
+            fi_abbr = {"ma": 0, "ti": 1, "ke": 2, "to": 3, "pe": 4, "la": 5, "su": 6}
+            # Swedish common abbreviations (2–3 letters, with/without diacritics)
+            sv_abbr = {
+                "mån": 0, "man": 0, "må": 0, "ma": 0,
+                "tis": 1, "ti": 1,
+                "ons": 2, "on": 2,
+                "tors": 3, "tor": 3, "to": 3,
+                "fre": 4, "fr": 4,
+                "lör": 5, "lor": 5, "lö": 5, "lo": 5,
+                "sön": 6, "son": 6, "sö": 6, "so": 6,
+            }
+            # English three-letter abbreviations
+            en_abbr = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
+            cand: int | None = None
+            if lang == "fi":
+                for k, v in fi_abbr.items():
+                    if k in toks:
+                        cand = v; break
+            elif lang == "sv":
+                for k, v in sv_abbr.items():
+                    if k in toks:
+                        cand = v; break
+            elif lang == "en":
+                for k, v in en_abbr.items():
+                    if k in toks:
+                        cand = v; break
+            if cand is not None:
+                dow = cand
+        if dow is not None:
+            email = "rakaskotileipomo@gmail.com"
+            if dow in {0, 1, 2}:  # Mon/Tue/Wed
+                if lang == "sv":
+                    return f"Du kan hämta större beställningar måndagar, tisdagar och onsdagar enligt överenskommelse. Skicka e‑post till oss på {email}."
+                if lang == "en":
+                    return f"You can pick up larger orders on Mondays, Tuesdays and Wednesdays by arrangement. Please email us at {email}."
+                return f"Voit noutaa isoja tilauksia maanantaisin, tiistaisin ja keskiviikkoisin sopimuksen mukaan. Lähetä sähköpostia meille osoitteeseen {email}."
+            if dow in {3, 4, 5}:  # Thu/Fri/Sat
+                if lang == "sv":
+                    return "Du kan hämta under öppettider. Beställ i webbutiken."
+                if lang == "en":
+                    return "You can pick up during opening hours. Order in the online shop."
+                return "Voit noutaa aukioloaikoina. Tee tilaus verkkokaupassa."
+            if dow == 6:  # Sunday
+                if lang == "sv":
+                    return "På söndagar ingen avhämtning."
+                if lang == "en":
+                    return "No pickups on Sundays."
+                return "Sunnuntaisin ei noutoa."
+    except Exception:
+        pass
     # Pickup / address topic
     if any(k in t for k in [
         # generic address/location
@@ -1413,6 +1489,22 @@ def resolve_faq(query: str, lang: str) -> Optional[str]:
 
 
 def resolve_diet_options(query: str, lang: str) -> str:
+    # Special case: lactose-free question → direct answer
+    ql = (query or "").lower()
+    if any(k in ql for k in [
+        # FI
+        "laktoositon", "laktoosi", "laktoos",
+        # SV
+        "laktosfri", "laktosfritt", "laktosfria", "laktos",
+        # EN
+        "lactose", "lactose free", "lactose-free"
+    ]):
+        if lang == "sv":
+            return "Alla våra produkter är laktosfria."
+        if lang == "en":
+            return "All our products are lactose-free."
+        return "Kaikki tuotteemme ovat laktoosittomia."
+
     # Fetch a broad list of products and filter based on name markers
     items = _get_products_cached(limit=200)
     vegan_list: list[str] = []

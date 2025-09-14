@@ -629,6 +629,32 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             return "Ole hyvä!"
         return "You're welcome!"
 
+    # Explicit pickup-on-weekday queries → delegate to FAQ weekday logic
+    try:
+        pk_kws = {"pickup","pick up","pick-up","nouto","noutaa","hämta","hamta","hämt"}
+        if any(k in text for k in pk_kws):
+            import re as _re
+            toks = set(_re.findall(r"[a-zåäö]+", text))
+            # Common weekday tokens and abbreviations across FI/SV/EN
+            wd = {
+                # EN
+                "monday","tuesday","wednesday","thursday","friday","saturday","sunday",
+                "mon","tue","wed","thu","fri","sat","sun",
+                # FI
+                "maanantai","tiistai","keskiviikko","torstai","perjantai","lauantai","sunnuntai",
+                "ma","ti","ke","to","pe","la","su",
+                # SV (with/without diacritics)
+                "måndag","mandag","tisdag","onsdag","torsdag","fredag","lördag","lordag","söndag","sondag",
+                "mån","man","må","ma","tis","ti","ons","on","tors","tor","to","fre","fr","lör","lor","lö","lo","sön","son","sö","so",
+            }
+            if toks & wd:
+                lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+                ans = IR.resolve_faq(user_msg, lang)
+                if ans:
+                    return ans
+    except Exception:
+        pass
+
     # opening hours fast-path (avoid misfiring capability phrase on "what are your opening hours")
     HOURS_KWS = [
         "opening hours", "open today", "open now",  # EN
@@ -786,6 +812,32 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             return "Meillä ei ole asiakaspaikkoja myymälässä. Voit tilata noudettavaksi."
         return "We don’t have customer seating in-store. Please order for pickup."
 
+    # Direct cakes/pies availability (negative policy) — catch generic cake queries first
+    CAKE_KWS = {
+        # FI
+        "kakku", "kakut", "kakkuja", "täytekakku", "kuivakakku", "voileipäkakku", "lihapiirakka", "lihapiirakoita",
+        # SV
+        "tårta", "tårtor", "smörgåstårta", "köttpirog", "köttpiroger",
+        # EN
+        "cake", "cakes", "sandwich cake", "meat pie", "meat pies",
+    }
+    if any(k in text for k in CAKE_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return (
+                "Vi bakar inte tårtor (gräddtårtor, sockerkakor), smörgåstårtor, köttpiroger eller konditorivaror. "
+                "Vi är i första hand ett karelskt pirogbageri."
+            )
+        if lang == "fi":
+            return (
+                "Emme leivo kakkuja (täytekakkuja, kuivakakkuja), voileipäkakkuja, lihapiirakoita tai konditoriatuotteita. "
+                "Olemme ensisijaisesti karjalanpiirakkaleipomo."
+            )
+        return (
+            "We don’t bake cakes (layer cakes, loaf cakes), sandwich cakes, meat pies, or confectionery items. "
+            "We are primarily a Karelian pie bakery."
+        )
+
     # Custom cakes/pastries request → explain policy + show menu
     CUSTOM_KWS = {
         # EN
@@ -800,8 +852,8 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
         if lang == "sv":
             msg = (
-                "För närvarande gör vi inte specialtårtor eller skräddarsydda bakverk. "
-                "Vi tar gärna förhandsbeställningar för större fester och evenemang – ur vårt ordinarie sortiment."
+                "Vi bakar inte tårtor (gräddtårtor, sockerkakor), smörgåstårtor, köttpiroger eller konditorivaror. "
+                "Vi är i första hand ett karelskt pirogbageri. Vi tar dock emot förbeställningar till större fester och evenemang – ur vårt ordinarie sortiment."
             )
             prompt = (
                 "<div class=\"suggest\">"
@@ -814,8 +866,8 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             return f"<div class=\"info\">{msg}</div>" + prompt
         if lang == "fi":
             msg = (
-                "Tällä hetkellä emme tee tilauskakkuja tai räätälöityjä leivonnaisia. "
-                "Otamme kuitenkin ennakkotilauksia isompiin juhliin ja tilaisuuksiin – valikoimamme tuotteista."
+                "Emme leivo kakkuja (täytekakkuja, kuivakakkuja), voileipäkakkuja, lihapiirakoita tai konditoriatuotteita. "
+                "Olemme ensisijaisesti karjalanpiirakkaleipomo. Otamme kuitenkin ennakkotilauksia isompiin juhliin ja tilaisuuksiin – valikoimamme tuotteista."
             )
             prompt = (
                 "<div class=\"suggest\">"
@@ -828,8 +880,8 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             return f"<div class=\"info\">{msg}</div>" + prompt
         # en
         msg = (
-            "At the moment we don’t make custom cakes or pastries. "
-            "We do take pre‑orders for bigger parties and occasions – from items on our menu."
+            "We don’t bake cakes (layer cakes, loaf cakes), sandwich cakes, meat pies, or confectionery items. "
+            "We are primarily a Karelian pie bakery. However, we do accept preorders for larger events using items from our menu."
         )
         prompt = (
             "<div class=\"suggest\">"

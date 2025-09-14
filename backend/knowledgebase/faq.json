@@ -105,7 +105,7 @@
   },
   {
     "q": { "fi": "Valmistatteko tilaustyönä kakkuja tai leivonnaisia?", "sv": "Gör ni beställningsarbeten som tårtor eller bakverk?", "en": "Do you make custom cakes or pastries?" },
-    "a": { "fi": "Emme leivo kakkuja tai konditoriatuotteita. Olemme ensisijaisesti karjalanpiirakkaleipomo. Otamme kuitenkin ennakkotilauksia isompiin juhliin ja tilaisuuksiin – valikoimamme tuotteista. Haluatko nähdä valikon?", "sv": "Vi bakar inte tårtor eller konditoriprodukter; vi är i första hand ett karelskt pirogbageri. Vi tar dock emot förbeställningar till större fester och evenemang – från vårt ordinarie sortiment. Vill du se menyn?", "en": "We don’t bake cakes or confectionery items; we are primarily a Karelian pie bakery. However, we do accept preorders for larger events using items from our menu. Would you like to see the menu?" },
+    "a": { "fi": "Emme leivo kakkuja (täytekakkuja, kuivakakkuja), voileipäkakkuja, lihapiirakoita tai konditoriatuotteita. Olemme ensisijaisesti karjalanpiirakkaleipomo. Otamme kuitenkin ennakkotilauksia isompiin juhliin ja tilaisuuksiin – valikoimamme tuotteista. Haluatko nähdä valikon?", "sv": "Vi bakar inte tårtor (gräddtårtor, sockerkakor), smörgåstårtor, köttpiroger eller konditorivaror. Vi är i första hand ett karelskt pirogbageri. Vi tar dock emot förbeställningar till större fester och evenemang – ur vårt ordinarie sortiment. Vill du se menyn?", "en": "We don’t bake cakes (layer cakes, loaf cakes), sandwich cakes, meat pies, or confectionery items. We are primarily a Karelian pie bakery. However, we do accept preorders for larger events using items from our menu. Would you like to see the menu?" },
     "tags": ["teettekö kakkuja", "kakku", "tilaustyö"]
   },
   {
