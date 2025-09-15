@@ -17,11 +17,22 @@ import json
 import sys
 import urllib.parse
 import urllib.request
+import urllib.error
 
 
-def get_json(url: str):
-    with urllib.request.urlopen(url) as r:
-        return json.load(r)
+def get_json(url: str, timeout: float = 10.0):
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        # Return a recognizable structure so callers can decide how to proceed
+        try:
+            body = e.read().decode()
+        except Exception:
+            body = ""
+        return {"__error__": True, "status": e.code, "body": body}
+    except Exception as e:
+        return {"__error__": True, "error": str(e)}
 
 
 def main():
@@ -39,19 +50,28 @@ def main():
 
     # Validate pickup time
     chk = get_json(f"{base}/api/v2/check_pickup?{urllib.parse.urlencode({'iso': pickup_time})}")
-    if not chk.get("ok"):
+    if isinstance(chk, dict) and not chk.get("ok"):
         sys.exit(f"Pickup time rejected: {chk.get('reason')}")
 
     # Choose first category/product
-    cats = get_json(f"{base}/api/v2/categories").get("items", [])
-    if not cats:
-        sys.exit("No categories available")
-    cat_id = cats[0]["id"]
-
-    prods = get_json(f"{base}/api/v2/products?{urllib.parse.urlencode({'category': cat_id})}").get("items", [])
-    if not prods:
-        sys.exit("No products available in selected category")
-    prod_id = prods[0]["id"]
+    cats_resp = get_json(f"{base}/api/v2/categories")
+    items = []
+    if isinstance(cats_resp, dict) and cats_resp.get("__error__"):
+        print(f"Warning: categories failed ({cats_resp.get('status')}). Falling back to flat product list.")
+        prods_resp = get_json(f"{base}/api/v2/products")
+        items = (prods_resp or {}).get("items", []) if isinstance(prods_resp, dict) else []
+        if not items:
+            sys.exit("No products available (fallback)")
+    else:
+        cats = (cats_resp or {}).get("items", []) if isinstance(cats_resp, dict) else []
+        if not cats:
+            sys.exit("No categories available")
+        cat_id = cats[0]["id"]
+        prods_resp = get_json(f"{base}/api/v2/products?{urllib.parse.urlencode({'category': cat_id})}")
+        items = (prods_resp or {}).get("items", []) if isinstance(prods_resp, dict) else []
+        if not items:
+            sys.exit("No products available in selected category")
+    prod_id = items[0]["id"]
 
     payload = json.dumps({
         "items": [{"productId": int(prod_id), "quantity": 1}],
@@ -82,4 +102,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

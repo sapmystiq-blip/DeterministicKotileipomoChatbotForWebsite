@@ -342,6 +342,15 @@ MIN_FUZZY        = 0.40   # or moderate fuzzy similarity
 # ============================================================
 app = FastAPI(title="Piirakkabotti")
 
+# Helper: when chat ordering is disabled, strip the Start Order button from UI snippets
+def _maybe_strip_chat_order_btn(html: str) -> str:
+    try:
+        if os.getenv("ENABLE_CHAT_ORDERING", "false").lower() in {"0","false","no","off"}:
+            return re.sub(r'<button class="btn" data-action="start-order">.*?</button>', '', html)
+        return html
+    except Exception:
+        return html
+
 # ============================================================
 # Models
 # ============================================================
@@ -768,7 +777,7 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
 </div>
 """
             )
-            return msg
+            return _maybe_strip_chat_order_btn(msg)
         if lang == "fi":
             msg = (
                 f"""
@@ -783,9 +792,9 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
 </div>
 """
             )
-            return msg
+            return _maybe_strip_chat_order_btn(msg)
         # en
-        return (
+        return _maybe_strip_chat_order_btn(
             f"""
 <div class=\"order-ui\">
   <div class=\"order-sub\">We currently do not offer delivery. Pickup in-store during opening hours.</div>
@@ -943,7 +952,7 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
 </div>
 """
             )
-            return f"<div class=\"info\">{note}</div>" + ui
+            return _maybe_strip_chat_order_btn(f"<div class=\"info\">{note}</div>" + ui)
         if lang == "fi":
             note = "Tee tilaus vähintään 1 päivä etukäteen ja enintään kuukauden päähän."
             ui = (
@@ -958,7 +967,7 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
 </div>
 """
             )
-            return f"<div class=\"info\">{note}</div>" + ui
+            return _maybe_strip_chat_order_btn(f"<div class=\"info\">{note}</div>" + ui)
         note = "Please place orders at least 1 day in advance and up to a month ahead."
         ui = (
             f"""
@@ -972,7 +981,7 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
 </div>
 """
         )
-        return f"<div class=\"info\">{note}</div>" + ui
+        return _maybe_strip_chat_order_btn(f"<div class=\"info\">{note}</div>" + ui)
 
     # Deposit / prepayment policy
     DEPOSIT_KWS = {
@@ -1539,27 +1548,27 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
                 f"""
 <div class=\"order-ui\">\n  <div class=\"order-title\">Beställ i webbutiken</div>\n  <div class=\"order-sub\">Hämta i butiken, betalning på plats.</div>\n  <div class=\"order-buttons\">\n    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Öppna webbutiken</a>\n    <button class=\"btn\" data-action=\"start-order\">Beställ i chatten</button>\n  </div>\n</div>\n"""
             )
-            return f"<div class=\"info\">{note}</div>" + ui
+            return _maybe_strip_chat_order_btn(f"<div class=\"info\">{note}</div>" + ui)
         if lang == "fi":
             note = "Voit tehdä ennakkotilauksen ja ohittaa jonon. Tule kassalle ja näytä tilausvahvistus sähköpostistasi."
             ui = (
                 f"""
 <div class=\"order-ui\">\n  <div class=\"order-title\">Tilaa verkkokaupasta</div>\n  <div class=\"order-sub\">Nouto myymälästä, maksu paikan päällä.</div>\n  <div class=\"order-buttons\">\n    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Avaa verkkokauppa</a>\n    <button class=\"btn\" data-action=\"start-order\">Tilaa chatissa</button>\n  </div>\n</div>\n"""
             )
-            return f"<div class=\"info\">{note}</div>" + ui
+            return _maybe_strip_chat_order_btn(f"<div class=\"info\">{note}</div>" + ui)
         note = "You can preorder to skip the line. Just come to the cashier and show your confirmation email."
         ui = (
             f"""
 <div class=\"order-ui\">\n  <div class=\"order-title\">Order Online</div>\n  <div class=\"order-sub\">Pickup in store, pay at pickup.</div>\n  <div class=\"order-buttons\">\n    <a class=\"btn\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">Open Online Shop</a>\n    <button class=\"btn\" data-action=\"start-order\">Order in chat</button>\n  </div>\n</div>\n"""
         )
-        return f"<div class=\"info\">{note}</div>" + ui
+        return _maybe_strip_chat_order_btn(f"<div class=\"info\">{note}</div>" + ui)
 
     # Ordering intent → link to Ecwid store (pickup, pay in store)
     if any(k in text for k in ORDER_KEYWORDS):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
         url = ECWID_STORE_URL
         if lang == "sv":
-            return (
+            return _maybe_strip_chat_order_btn(
                 f"""
 <div class=\"order-ui\">
   <div class=\"order-title\">Beställ i webbutiken</div>
@@ -1572,7 +1581,7 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
 """
             )
         if lang == "fi":
-            return (
+            return _maybe_strip_chat_order_btn(
                 f"""
 <div class=\"order-ui\">
   <div class=\"order-title\">Tilaa verkkokaupasta</div>
@@ -1584,7 +1593,7 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
 </div>
 """
             )
-        return (
+        return _maybe_strip_chat_order_btn(
             f"""
 <div class=\"order-ui\">
   <div class=\"order-title\">Order Online</div>
@@ -2075,6 +2084,9 @@ def api_categories():
 
 @app.post("/api/order")
 def api_order(req: OrderRequest):
+    # Feature flag to disable in‑chat ordering
+    if (os.getenv("ENABLE_CHAT_ORDERING", "false").lower() in {"0","false","no","off"}):
+        raise HTTPException(status_code=403, detail="Ordering is disabled")
     if not (ECWID_STORE_ID and ECWID_API_TOKEN):
         raise HTTPException(status_code=503, detail="In-chat ordering is not configured.")
     if not req.items:

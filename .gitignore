@@ -20,6 +20,10 @@ env/
 server.log
 server.pid
 .env
+# Ecwid debug artifacts
+shipping_options.json
+slot.json
+.ecwid_candidates.txt
 
 # Node (future-proof)
 node_modules/

@@ -177,7 +177,15 @@ chatLog.addEventListener('click', async (e) => {
   const viewBtn = e.target.closest('.btn-view-cart');
   if (viewBtn) { e.preventDefault(); viewCart(); return; }
   const addBtn = e.target.closest('.prod-list .btn-add');
-  if (addBtn) { e.preventDefault(); const id = addBtn.dataset.id, sku = addBtn.dataset.sku, name = addBtn.dataset.name; addToCart({id, sku, name}, 1); return; }
+  if (addBtn) {
+    e.preventDefault();
+    const id = addBtn.dataset.id,
+          sku = addBtn.dataset.sku,
+          name = addBtn.dataset.name,
+          price = addBtn.dataset.price ? parseFloat(addBtn.dataset.price) : null;
+    addToCart({id, sku, name, price}, 1);
+    return;
+  }
   const incBtn = e.target.closest('.prod-list .btn-inc');
   if (incBtn) { e.preventDefault(); const id = incBtn.dataset.id; changeQty(id, +1); return; }
   const decBtn = e.target.closest('.prod-list .btn-dec');
@@ -283,7 +291,7 @@ function keyFor(it){ return String(it.id || it.sku || ''); }
 function addToCart(it, qty){
   const key = keyFor(it); if (!key) return;
   const found = orderSession.cart.find(x => x.key === key);
-  if (found) found.quantity += qty; else orderSession.cart.push({ key, id: it.id?parseInt(it.id,10):null, sku: it.sku||null, name: it.name, quantity: qty });
+  if (found) found.quantity += qty; else orderSession.cart.push({ key, id: it.id?parseInt(it.id,10):null, sku: it.sku||null, name: it.name, price: (typeof it.price==='number'?it.price:null), quantity: qty });
   if (orderSession.cart.find(x=>x.key===key).quantity <= 0){
     orderSession.cart = orderSession.cart.filter(x=>x.key!==key);
   }
@@ -333,7 +341,32 @@ async function showCategories(){
       <div class="title-row"><div class="of-title">${tr('choose_category')}</div><button class="btn btn-view-cart">${tr('view_cart')}</button></div>
       <div class="order-buttons">${list}</div>
     </div>`);
-  }catch(e){ addBot(tr('categories_unavailable')); }
+  }catch(e){
+    addBot(tr('categories_unavailable'));
+    // Fallback: try to fetch a flat product list so ordering can proceed
+    try{
+      const rp = await fetch('/api/v2/products');
+      if (!rp.ok) throw new Error('products');
+      const pdata = await rp.json();
+      const items = (pdata.items||[]);
+      if (!items.length) return;
+      const rows = items.map(it=>{
+        const inCart = orderSession.cart.find(x=>String(x.id)===String(it.id));
+        const qty = inCart ? inCart.quantity : 0;
+        const n = escapeHtml(it.name);
+        const price = (it.price != null) ? `<span class=\"price\">${Number(it.price).toFixed(2)}€</span>` : '';
+        const img = it.imageUrl ? `<img class=\"prod-img\" src=\"${it.imageUrl}\" alt=\"\">` : '';
+        const out = (it.inStock === false) || (it.quantity === 0);
+        const stock = out ? `<span class=\"stock-badge out\">${tr('out_of_stock')}</span>` : '';
+        const ctrls = (qty>0)
+          ? `<div class=\"qty-ctrls\"><button class=\"btn-dec\" data-id=\"${it.id}\">−</button><span class=\"qty\">${qty}</span><button class=\"btn-inc\" data-id=\"${it.id}\">+</button></div>`
+          : `<button class=\"btn-add\" ${out?'disabled':''} data-id=\"${it.id||''}\" data-sku=\"${it.sku||''}\" data-name=\"${n}\" data-price=\"${it.price!=null?String(Number(it.price).toFixed(2)):''}\">${tr('add')}</button>`;
+        return `<div class=\"prod-row\">\n        <div class=\"prod-main\">${img}\n          <div class=\"prod-info\">\n            <div class=\"prod-name\">${n}</div>\n            <div class=\"prod-meta\">${price} ${stock}<span class=\"prod-ctrls-inline\">${ctrls}</span></div>\n          </div>\n        </div>\n      </div>`;
+      }).join('');
+      addBotHtml(`<div class=\"prod-list\">\n        <div class=\"title-row\"><div class=\"of-title\">Tuotteet</div><button class=\"btn btn-view-cart\">${tr('view_cart')}</button></div>\n        ${rows}\n      </div>`);
+      updateCartSummary();
+    }catch(e2){ /* no-op */ }
+  }
 }
 
 async function showCategoryItems(catId, catName){
@@ -353,7 +386,7 @@ async function showCategoryItems(catId, catName){
       const stock = out ? `<span class=\"stock-badge out\">${tr('out_of_stock')}</span>` : '';
       const ctrls = (qty>0)
         ? `<div class=\"qty-ctrls\"><button class=\"btn-dec\" data-id=\"${it.id}\">−</button><span class=\"qty\">${qty}</span><button class=\"btn-inc\" data-id=\"${it.id}\">+</button></div>`
-        : `<button class=\"btn-add\" ${out?'disabled':''} data-id=\"${it.id||''}\" data-sku=\"${it.sku||''}\" data-name=\"${n}\">${tr('add')}</button>`;
+        : `<button class=\"btn-add\" ${out?'disabled':''} data-id=\"${it.id||''}\" data-sku=\"${it.sku||''}\" data-name=\"${n}\" data-price=\"${it.price!=null?String(Number(it.price).toFixed(2)):''}\">${tr('add')}</button>`;
       return `<div class="prod-row">
         <div class="prod-main">${img}
           <div class="prod-info">
@@ -500,7 +533,13 @@ function bindBack(step, onBack){
 }
 
 async function submitOrder(){
-  const items = orderSession.cart.map(it=>({ quantity: it.quantity, ...(it.id?{productId: parseInt(it.id,10)}:{}), ...(it.sku?{sku: it.sku}:{}) }));
+  const items = orderSession.cart.map(it=>({
+    quantity: it.quantity,
+    name: it.name,
+    ...(typeof it.price==='number' ? { price: Number(it.price) } : {}),
+    ...(it.id?{productId: parseInt(it.id,10)}:{}),
+    ...(it.sku?{sku: it.sku}:{})
+  }));
   const iso = `${orderSession.pickupDate}T${orderSession.pickupTime}`;
   const payload = { items, name: orderSession.name, email: orderSession.email||null, phone: orderSession.phone, pickup_time: iso, note: orderSession.note||null };
   try{

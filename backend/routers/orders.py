@@ -16,6 +16,10 @@ import os
 from datetime import datetime, timedelta
 import httpx
 from ..time_rules import SHOP_HOURS, validate_pickup_time, parse_pickup_iso, is_blackout
+try:
+    from zoneinfo import ZoneInfo  # Python 3.9+
+except Exception:  # pragma: no cover
+    ZoneInfo = None  # type: ignore
 
 
 router = APIRouter()
@@ -138,6 +142,23 @@ def api_ecwid_status():
         ship_opts = ecwid_get_shipping_options()
         status["shipping_ok"] = True
         status["shipping_count"] = len(ship_opts)
+        # Include a concise summary of options to aid debugging
+        status["shipping_options"] = [
+            {
+                "id": (o.get("id") or o.get("shippingMethodId") or o.get("methodId")),
+                "name": (
+                    o.get("title")
+                    or o.get("name")
+                    or o.get("shippingMethodName")
+                ),
+                "fulfillmentType": (
+                    o.get("fulfillmentType")
+                    or o.get("type")
+                    or ""
+                ),
+            }
+            for o in ship_opts
+        ]
     except Exception as e:
         status["shipping_ok"] = False
         status["shipping_error"] = str(e)
@@ -161,6 +182,8 @@ def api_check_pickup_v2(iso: str):
 class OrderItem(BaseModel):
     productId: int | None = None
     sku: str | None = None
+    name: str | None = None
+    price: float | None = None
     quantity: int
 
 
@@ -175,6 +198,9 @@ class OrderRequest(BaseModel):
 
 @router.post("/api/v2/order")
 def api_order_v2(req: OrderRequest):
+    # Feature flag: allow/disallow ordering via chat
+    if (os.getenv("ENABLE_CHAT_ORDERING", "false").lower() in {"0", "false", "no", "off"}):
+        raise HTTPException(status_code=403, detail="Ordering is disabled")
     ok, reason = validate_pickup_time(req.pickup_time, SHOP_HOURS)
     if not ok:
         raise HTTPException(status_code=400, detail=f"Pickup time not available: {reason}")
@@ -210,6 +236,13 @@ def api_order_v2(req: OrderRequest):
                 entry["productId"] = it.productId
             if it.sku:
                 entry["sku"] = it.sku
+            if it.name:
+                entry["name"] = it.name
+            if it.price is not None:
+                try:
+                    entry["price"] = float(it.price)
+                except Exception:
+                    pass
             items.append(entry)
     if not items:
         raise HTTPException(status_code=400, detail="All quantities are zero.")
@@ -243,11 +276,43 @@ def api_order_v2(req: OrderRequest):
         if ft == "PICKUP" or "nouto" in name or "pickup" in name:
             pickup = o
             break
+    # Try to include Ecwid method ID if present so Ecwid can apply the exact option's rules
+    method_id_any = None  # keep original type (str or int)
+    if isinstance(pickup, dict):
+        for key in ("id", "shippingMethodId", "methodId"):
+            if key in pickup and pickup.get(key) is not None:
+                method_id_any = pickup.get(key)
+                break
     shipping_option = {
         "shippingMethodName": _opt_name(pickup or {}),
         "shippingRate": _opt_rate(pickup or {}),
         "fulfillmentType": "PICKUP",
     }
+    if method_id_any is not None:
+        # Ecwid expects `id` for the chosen shipping method; include both for compatibility
+        shipping_option["id"] = method_id_any
+        shipping_option["shippingMethodId"] = method_id_any
+
+    # Format pickup time as local store time without TZ offset (Ecwid expects local "YYYY-MM-DD HH:MM")
+    pickup_time_str = req.pickup_time
+    pickup_date_str = (req.pickup_time or "").split("T")[0].replace("/", "-")
+    pickup_time_only = None
+    try:
+        tzname = os.getenv("LOCAL_TZ", "Europe/Helsinki")
+        dt_local = parse_pickup_iso(req.pickup_time)
+        if dt_local is not None:
+            # Keep the value in local time without offset
+            pickup_time_str = dt_local.strftime("%Y-%m-%d %H:%M")
+            pickup_date_str = dt_local.strftime("%Y-%m-%d")
+            pickup_time_only = dt_local.strftime("%H:%M")
+    except Exception:
+        # Fallback to original string if tz conversion fails
+        pickup_time_str = req.pickup_time
+        pickup_date_str = (req.pickup_time or "").split("T")[0].replace("/", "-")
+        try:
+            pickup_time_only = req.pickup_time.split('T',1)[1]
+        except Exception:
+            pickup_time_only = None
     body = {
         "name": req.name or "Chat Customer",
         "email": req.email or "",
@@ -256,7 +321,10 @@ def api_order_v2(req: OrderRequest):
         "paymentStatus": "AWAITING_PAYMENT",
         "shippingOption": shipping_option,
         # Include pickup time in order payload for clarity in Ecwid
-        "pickupTime": req.pickup_time,
+        "pickupTime": pickup_time_str,
+        # Provide preferred delivery fields as Ecwid scheduled pickup uses these
+        "preferredDeliveryDate": pickup_date_str,
+        **({"preferredDeliveryTime": pickup_time_only} if pickup_time_only else {}),
         # Provide contact under shippingPerson as well
         "shippingPerson": {
             "name": req.name or "",
@@ -273,14 +341,29 @@ def api_order_v2(req: OrderRequest):
             data = r.json()
         return {"ok": True, "id": data.get("id"), "orderNumber": data.get("orderNumber")}
     except httpx.HTTPStatusError as he:
-        # Provide a clearer hint for 403 permission issues
-        if he.response.status_code == 403:
-            detail = (
-                he.response.text
-                or "Ecwid API error 403: Forbidden. Check that ECWID_API_TOKEN has write access to Orders for this store."
-            )
-        else:
-            detail = he.response.text or f"Ecwid API error {he.response.status_code}"
-        raise HTTPException(status_code=he.response.status_code, detail=detail)
+        # Parse Ecwid error JSON when possible for clearer messages
+        status = he.response.status_code
+        detail = ""
+        try:
+            payload = he.response.json()
+            if isinstance(payload, dict):
+                detail = (
+                    payload.get("errorMessage")
+                    or payload.get("message")
+                    or payload.get("error")
+                    or ""
+                )
+                errs = payload.get("errors")
+                if (not detail) and isinstance(errs, list) and errs:
+                    detail = str(errs[0])
+        except Exception:
+            # Fall back to raw text if body isn't JSON
+            detail = (he.response.text or "").strip()
+        if not detail:
+            if status == 403:
+                detail = "Ecwid API error 403: Forbidden. Check that ECWID_API_TOKEN has write access to Orders for this store."
+            else:
+                detail = f"Ecwid API error {status}"
+        raise HTTPException(status_code=status, detail=detail)
     except Exception:
         raise HTTPException(status_code=502, detail="Failed to create order.")

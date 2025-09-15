@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+import os
 from typing import Dict, List, Optional, Tuple, Any
 
 from pydantic import ValidationError
@@ -1564,22 +1565,29 @@ def resolve_diet_options(query: str, lang: str) -> str:
     return "".join(parts)
 
 def resolve_product_suggest(query: str, lang: str) -> Optional[str]:
+    def _maybe_strip(html: str) -> str:
+        try:
+            if os.getenv("ENABLE_CHAT_ORDERING", "false").lower() in {"0","false","no","off"}:
+                return re.sub(r'<button class="btn" data-action="start-order">.*?</button>', '', html)
+            return html
+        except Exception:
+            return html
     items = _get_products_cached(limit=100)
     it = _find_product_by_name_or_alias(query, items) if items else None
     name = (it.get("name") if it else None) or query.strip()
     if lang == "fi":
-        return (
+        return _maybe_strip(
             f"""
 <div class=\"suggest\">\n  <div class=\"title\">{name}</div>\n  <div class=\"buttons\">\n    <button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{name} ainesosat ja allergeenit\">Haluatko tiedot?</button>\n    <button type=\"button\" class=\"btn suggest-btn\" data-action=\"start-order\">Haluatko tilata {name}?</button>\n  </div>\n</div>
 """
         )
     if lang == "sv":
-        return (
+        return _maybe_strip(
             f"""
 <div class=\"suggest\">\n  <div class=\"title\">{name}</div>\n  <div class=\"buttons\">\n    <button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{name} ingredienser och allergener\">Vill du se uppgifter?</button>\n    <button type=\"button\" class=\"btn suggest-btn\" data-action=\"start-order\">Vill du beställa {name}?</button>\n  </div>\n</div>
 """
         )
-    return (
+    return _maybe_strip(
         f"""
 <div class=\"suggest\">\n  <div class=\"title\">{name}</div>\n  <div class=\"buttons\">\n    <button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{name} ingredients and allergens\">Want details?</button>\n    <button type=\"button\" class=\"btn suggest-btn\" data-action=\"start-order\">Want to order {name}?</button>\n  </div>\n</div>
 """
