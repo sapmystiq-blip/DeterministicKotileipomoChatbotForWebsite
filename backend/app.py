@@ -725,7 +725,7 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             )
         if lang == "fi":
             return (
-                "Hei, olen Piirakkabotti – Rakan kotileipomon avustaja.\n"
+                "Hei, olen Piirakkabotti – Raka's kotileipomon avustaja.\n"
                 "Voin auttaa seuraavissa asioissa:\n"
                 "• Tuotteet ja hinnat\n"
                 "• Aukioloajat ja yhteystiedot\n"
@@ -1731,10 +1731,55 @@ class OrderRequest(BaseModel):
 # Fallback composer (out-of-scope aware)
 # ============================================================
 def llm_like_answer(query: str, kb_items: List[Dict[str, Any]], respond_lang: str | None = None) -> str:
+    # Lightweight small‑talk handler so fun questions get a friendly answer
+    def _small_talk(q: str, lang: str) -> str | None:
+        t = _normalize(q)
+        if lang not in {"fi","sv","en"}:
+            lang = "en"
+        who_kws = {
+            "fi": ["kuka sinä olet", "kuka olet", "mikä sinä olet", "mika sina olet"],
+            "sv": ["vem är du", "vem ar du"],
+            "en": ["who are you", "what are you"]
+        }
+        hello_kws = {
+            "fi": ["hei", "moikka", "moi", "terve"],
+            "sv": ["hej", "hejsan"],
+            "en": ["hi", "hello", "hey"]
+        }
+        thanks_kws = {
+            "fi": ["kiitos", "kiitti"],
+            "sv": ["tack"],
+            "en": ["thanks", "thank you"]
+        }
+        def _any(keys):
+            return any(k in t for k in keys)
+        if _any(who_kws.get(lang, [])):
+            if lang == "fi":
+                return "Olen Piirakkabotti – Raka's kotileipomon avustaja. Voin auttaa tuotteista, aukioloajoista, menusta, tilauksista ja allergioista."
+            if lang == "sv":
+                return "Jag är Piirakkabotti – assistent för Raka's kotileipomo. Jag hjälper med produkter, öppettider, meny, beställningar och allergier."
+            return "I'm Piirakkabotti – the assistant for Raka's kotileipomo. I can help with products, hours, menu, orders and allergies."
+        if _any(hello_kws.get(lang, [])):
+            if lang == "fi":
+                return "Hei! Miten voin auttaa?"
+            if lang == "sv":
+                return "Hej! Hur kan jag hjälpa till?"
+            return "Hi! How can I help today?"
+        if _any(thanks_kws.get(lang, [])):
+            if lang == "fi":
+                return "Ole hyvä! Tarvitsetko muuta?"
+            if lang == "sv":
+                return "Varsågod! Behöver du något mer?"
+            return "You’re welcome! Anything else I can help with?"
+        return None
+
     toks = list(_tokens(query))
     has_overlap = any(t in DF for t in toks)
     if not kb_items or not has_overlap:
         lang = (respond_lang or PRIMARY_LANG)
+        small = _small_talk(query, lang)
+        if small:
+            return small
         if lang == "fi":
             return (
                 f"En löytänyt tietoja aiheesta “{query}”. "
