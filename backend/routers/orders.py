@@ -247,6 +247,56 @@ def api_order_v2(req: OrderRequest):
     if not items:
         raise HTTPException(status_code=400, detail="All quantities are zero.")
 
+    # Ensure each item has required name and price per Ecwid API (fallback to catalog)
+    try:
+        from ..ecwid_client import ecwid_base, ecwid_headers
+        base = ecwid_base(); headers = ecwid_headers()
+        def _fill_item(i: Dict[str, Any]) -> Dict[str, Any]:
+            if ("name" in i) and ("price" in i):
+                return i
+            # Try by productId
+            prod = None
+            try:
+                if i.get("productId"):
+                    with httpx.Client(timeout=10.0) as client:
+                        r = client.get(f"{base}/products/{int(i['productId'])}", headers=headers)
+                        if r.status_code == 200:
+                            prod = r.json()
+            except Exception:
+                prod = None
+            # If not found and we have sku, try search by SKU
+            if (not prod) and i.get("sku"):
+                try:
+                    with httpx.Client(timeout=10.0) as client:
+                        r = client.get(f"{base}/products", headers=headers, params={"sku": i.get("sku"), "limit": 1})
+                        if r.status_code == 200:
+                            items_json = r.json().get("items") or []
+                            if items_json:
+                                prod = items_json[0]
+                except Exception:
+                    prod = None
+            # Fill name/price if available
+            if prod:
+                if "name" not in i or not i.get("name"):
+                    nm = prod.get("name") or ""
+                    if nm:
+                        i["name"] = nm
+                if "price" not in i or i.get("price") is None:
+                    pr = prod.get("price")
+                    if isinstance(pr, (int, float)):
+                        i["price"] = float(pr)
+            return i
+        items = [_fill_item(i) for i in items]
+        # Validate again
+        for i in items:
+            if ("name" not in i) or ("price" not in i):
+                raise HTTPException(status_code=400, detail="Each item must include name and price (resolved from catalog or provided).")
+    except HTTPException:
+        raise
+    except Exception:
+        # If filling fails silently, proceed (Ecwid will validate and return a clear error)
+        pass
+
     from ..ecwid_client import ecwid_base, ecwid_headers
     url = f"{ecwid_base()}/orders"
     # Determine shipping (Pickup) option from store configuration
@@ -293,7 +343,7 @@ def api_order_v2(req: OrderRequest):
         shipping_option["id"] = method_id_any
         shipping_option["shippingMethodId"] = method_id_any
 
-    # Format pickup time as local store time without TZ offset (Ecwid expects local "YYYY-MM-DD HH:MM")
+    # Format pickup time as RFC3339-like with explicit offset (Ecwid samples show: YYYY-MM-DD HH:MM:SS +0000)
     pickup_time_str = req.pickup_time
     pickup_date_str = (req.pickup_time or "").split("T")[0].replace("/", "-")
     pickup_time_only = None
@@ -301,8 +351,12 @@ def api_order_v2(req: OrderRequest):
         tzname = os.getenv("LOCAL_TZ", "Europe/Helsinki")
         dt_local = parse_pickup_iso(req.pickup_time)
         if dt_local is not None:
-            # Keep the value in local time without offset
-            pickup_time_str = dt_local.strftime("%Y-%m-%d %H:%M")
+            # Attach proper timezone and format with seconds + offset
+            if ZoneInfo:
+                dt_z = dt_local.replace(tzinfo=ZoneInfo(tzname))
+            else:
+                dt_z = dt_local
+            pickup_time_str = dt_z.strftime("%Y-%m-%d %H:%M:00 %z")
             pickup_date_str = dt_local.strftime("%Y-%m-%d")
             pickup_time_only = dt_local.strftime("%H:%M")
     except Exception:
@@ -335,6 +389,28 @@ def api_order_v2(req: OrderRequest):
         "customerComment": " | ".join([p for p in [f"Pickup: {req.pickup_time}", req.note] if p]),
     }
     try:
+        # Optional: pre-calculate to validate totals and timing before creating the order
+        try:
+            calc_url = f"{ecwid_base()}/orders/calculate"
+            with httpx.Client(timeout=10.0) as client:
+                rc = client.post(calc_url, headers=ecwid_headers(), json={
+                    "items": items,
+                    "shippingOption": shipping_option,
+                    "pickupTime": pickup_time_str,
+                })
+                if rc.status_code >= 400:
+                    # Surface calculation error directly
+                    detail = rc.text
+                    try:
+                        detail = rc.json().get("errorMessage") or rc.json().get("message") or detail
+                    except Exception:
+                        pass
+                    raise HTTPException(status_code=rc.status_code, detail=detail)
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+
         with httpx.Client(timeout=10.0) as client:
             r = client.post(url, headers=ecwid_headers(), json=body)
             r.raise_for_status()
