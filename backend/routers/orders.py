@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
+import logging
 from pydantic import BaseModel
 
 from ..order_constraints import infer_constraints
@@ -23,6 +24,7 @@ except Exception:  # pragma: no cover
 
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def _curate_products(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -253,7 +255,10 @@ def api_order_v2(req: OrderRequest):
         base = ecwid_base(); headers = ecwid_headers()
         def _fill_item(i: Dict[str, Any]) -> Dict[str, Any]:
             if ("name" in i) and ("price" in i):
-                return i
+                # even if name/price present, try to backfill weight if missing
+                need_weight = ("weight" not in i) or (i.get("weight") in (None, 0, 0.0))
+                if not need_weight:
+                    return i
             # Try by productId
             prod = None
             try:
@@ -285,6 +290,13 @@ def api_order_v2(req: OrderRequest):
                     pr = prod.get("price")
                     if isinstance(pr, (int, float)):
                         i["price"] = float(pr)
+                # Backfill weight if available
+                try:
+                    w = prod.get("weight")
+                    if isinstance(w, (int, float)) and w > 0:
+                        i["weight"] = float(w)
+                except Exception:
+                    pass
             return i
         items = [_fill_item(i) for i in items]
         # Validate again
@@ -367,6 +379,32 @@ def api_order_v2(req: OrderRequest):
             pickup_time_only = req.pickup_time.split('T',1)[1]
         except Exception:
             pickup_time_only = None
+    # Compute totals (Ecwid POST /orders is manual: must include subtotal/total)
+    try:
+        subtotal = 0.0
+        for it in items:
+            p = float(it.get("price", 0))
+            q = int(it.get("quantity", 0))
+            subtotal += p * q
+        shipping_cost = float(shipping_option.get("shippingRate") or 0.0)
+        # Tax handling: flat percentage possibly included in prices
+        rate = float(os.getenv("ECWID_TAX_RATE_PERCENT", os.getenv("TAX_RATE_PERCENT", "14"))) / 100.0
+        prices_include_tax = (os.getenv("ECWID_TAX_INCLUDED", os.getenv("TAX_PRICES_INCLUDED", "true")).lower() not in {"0","false","no","off"})
+        if rate > 0:
+            if prices_include_tax:
+                tax_amount = round(subtotal * rate / (1.0 + rate), 2)
+                total = round(subtotal + shipping_cost, 2)
+            else:
+                tax_amount = round(subtotal * rate, 2)
+                total = round(subtotal + tax_amount + shipping_cost, 2)
+        else:
+            tax_amount = 0.0
+            total = round(subtotal + shipping_cost, 2)
+    except Exception:
+        subtotal = 0.0
+        tax_amount = 0.0
+        total = 0.0
+
     body = {
         "name": req.name or "Chat Customer",
         "email": req.email or "",
@@ -374,6 +412,10 @@ def api_order_v2(req: OrderRequest):
         "paymentMethod": "Pay at pickup",
         "paymentStatus": "AWAITING_PAYMENT",
         "shippingOption": shipping_option,
+        # Manual totals as per Ecwid API
+        "subtotal": round(subtotal, 2),
+        "tax": round(tax_amount, 2),
+        "total": round(total, 2),
         # Include pickup time in order payload for clarity in Ecwid
         "pickupTime": pickup_time_str,
         # Provide preferred delivery fields as Ecwid scheduled pickup uses these
@@ -399,23 +441,31 @@ def api_order_v2(req: OrderRequest):
                     "pickupTime": pickup_time_str,
                 })
                 if rc.status_code >= 400:
-                    # Surface calculation error directly
-                    detail = rc.text
-                    try:
-                        detail = rc.json().get("errorMessage") or rc.json().get("message") or detail
-                    except Exception:
-                        pass
-                    raise HTTPException(status_code=rc.status_code, detail=detail)
+                    # Some stores do not support /orders/calculate and return 404/405. Proceed to create the order.
+                    if rc.status_code in (404, 405):
+                        logger.info("Ecwid calculate not available (status %s). Proceeding to create order.", rc.status_code)
+                    else:
+                        # Surface calculation error directly for other statuses
+                        detail = rc.text
+                        try:
+                            j = rc.json()
+                            detail = j.get("errorMessage") or j.get("message") or detail
+                        except Exception:
+                            pass
+                        raise HTTPException(status_code=rc.status_code, detail=f"Ecwid calculate error: {detail}")
         except HTTPException:
             raise
         except Exception:
-            pass
+            logger.exception("Ecwid calculate step failed")
 
         with httpx.Client(timeout=10.0) as client:
             r = client.post(url, headers=ecwid_headers(), json=body)
             r.raise_for_status()
             data = r.json()
         return {"ok": True, "id": data.get("id"), "orderNumber": data.get("orderNumber")}
+    except httpx.RequestError as re:
+        logger.exception("Ecwid network error")
+        raise HTTPException(status_code=502, detail=f"Ecwid network error: {str(re)}")
     except httpx.HTTPStatusError as he:
         # Parse Ecwid error JSON when possible for clearer messages
         status = he.response.status_code
@@ -441,5 +491,6 @@ def api_order_v2(req: OrderRequest):
             else:
                 detail = f"Ecwid API error {status}"
         raise HTTPException(status_code=status, detail=detail)
-    except Exception:
-        raise HTTPException(status_code=502, detail="Failed to create order.")
+    except Exception as e:
+        logger.exception("Order creation failed")
+        raise HTTPException(status_code=502, detail=f"Failed to create order: {e.__class__.__name__}: {str(e)}")
