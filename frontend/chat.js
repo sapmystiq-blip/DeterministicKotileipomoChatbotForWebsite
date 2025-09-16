@@ -170,7 +170,8 @@ if (closeBtn) closeBtn.addEventListener('click', () => toggleChat(false));
 
 // Order flow v2: categories → products → cart → guided checkout
 chatLog.addEventListener('click', async (e) => {
-  const startBtn = e.target.closest('.order-ui .btn[data-action="start-order"]');
+  // Start order from any bubble that offers it (order-ui or suggest)
+  const startBtn = e.target.closest('.order-ui .btn[data-action="start-order"], .suggest .btn[data-action="start-order"]');
   if (startBtn) { e.preventDefault(); startOrderFlow(); return; }
   const catBtn = e.target.closest('.cat-list .btn[data-cat-id]');
   if (catBtn) { e.preventDefault(); const id = parseInt(catBtn.dataset.catId,10); showCategoryItems(id, catBtn.textContent.trim()); return; }

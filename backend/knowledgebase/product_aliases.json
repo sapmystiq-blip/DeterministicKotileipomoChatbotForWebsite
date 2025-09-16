@@ -35,7 +35,11 @@
       "karelsk pirog",
       "karjalanpiiraka"
     ] },
-    { "name": "Samosa", "aliases": ["samosas", "samosa curry"] },
+    { "name": "Samosa", "aliases": ["samosas", "samosa curry", "gobi samosa", "kana samosa", "kanasamosa"] },
+    { "name": "Vegaanipiirakka", "aliases": ["vegaaninen riisipiirakka", "vegaani riisipiirakka", "vegaanipiirakka", "vegan rice pie", "vegan karelian pie"] },
+    { "name": "Perunapiirakka", "aliases": ["peruna piirakka", "potato pie", "potatispirog"] },
+    { "name": "Curry twist", "aliases": ["mung curry twist", "currytwist", "twist curry", "twist"] },
+    { "name": "Pasteija", "aliases": ["lihapasteija", "pasteija curry", "curry pasteija", "pasties", "pastry"] },
     { "name": "Mustikkakukko", "aliases": ["blueberry pie", "mustikka"] }
   ]
 }

@@ -888,17 +888,30 @@ def _find_product_by_name_or_alias(query: str, items: List[Dict[str, Any]]) -> O
     def _compact(s: str) -> str:
         return re.sub(r"[^a-z0-9]+", "", s.lower())
     cq = _compact(query)
-    # Build alias → canonical map
+    # Alias detection with specificity; avoid generic terms like "piirakka"
     pa = load_product_aliases().items
     canonical_from_hit: Optional[str] = None
+    best_score = -1
+    generic_terms = {
+        "piirakka","piirakat","piiras","piiraat","pie","pies","pasty","pastry",
+        "pirog","pirogi","piroger","paj","pasties"
+    }
+    def _term_score(term: str) -> int:
+        tn = _norm(term)
+        tc = _compact(term)
+        if not tn or tn in generic_terms:
+            return -1
+        if tn == q or tc == cq:
+            return 3
+        if tn in q or tc in cq:
+            return 2
+        return -1
     for entry in pa:
-        terms = [entry.name] + list(entry.aliases)
-        for term in terms:
-            if (_norm(term) and _norm(term) in q) or (_compact(term) and _compact(term) in cq):
-                canonical_from_hit = _norm(entry.name)
-                break
-        if canonical_from_hit:
-            break
+        for term in [entry.name] + list(entry.aliases):
+            sc = _term_score(term)
+            if sc > best_score:
+                best_score = sc
+                canonical_from_hit = _norm(entry.name) if sc >= 0 else canonical_from_hit
     # If we matched an alias/canonical, choose best product by similarity to the user's query,
     # with a lightweight boost when the product name contains the canonical label. This avoids
     # hardcoded variant tokens and relies on actual Ecwid product names.
@@ -983,6 +996,72 @@ def _extract_ingredients_from_description(desc_html: str) -> Optional[str]:
             return tail
     return None
 
+def _extract_intro_from_description(desc_html: str) -> Optional[str]:
+    """Return a short, friendly intro paragraph before the Ingredients section.
+    Trims HTML, stops at the first known label, and shortens to a couple of sentences.
+    """
+    if not desc_html:
+        return None
+    text = _strip_html(desc_html)
+    # Cut at labels for ingredients/nutrition to keep the intro only
+    labels = ["ainesosat", "ingredients", "ingredienser", "nutrition", "ravintosisältö"]
+    low = text.lower()
+    cut = len(text)
+    for lb in labels:
+        i = low.find(lb)
+        if i != -1:
+            cut = min(cut, i)
+    intro = text[:cut].strip()
+    # Keep it short: up to ~2 sentences or 280 chars
+    import re as _re
+    sents = _re.split(r"(?<=[.!?])\s+", intro)
+    intro = " ".join(sents[:2]).strip()
+    if len(intro) > 280:
+        intro = intro[:277].rstrip() + "…"
+    return intro or None
+
+def _intro_for_item(it: Dict[str, Any], lang: str) -> Optional[str]:
+    """Get a short translated intro paragraph for a product item.
+    Prefers Ecwid's translated description fields when present; otherwise falls back
+    to original description intro and optionally LLM translation when enabled.
+    """
+    # Prefer translated description if available
+    try:
+        desc_tr = it.get("descriptionTranslated") or {}
+        if isinstance(desc_tr, dict):
+            lang_key = {"fi": "fi", "sv": "sv", "en": "en"}.get(lang, lang)
+            txt = desc_tr.get(lang_key)
+            intro = _extract_intro_from_description(txt or "") if txt else None
+            if intro:
+                return intro
+    except Exception:
+        pass
+    # Fallback to base description intro
+    base_intro = _extract_intro_from_description(it.get("description") or "")
+    if not base_intro:
+        return None
+    # If target language differs and LLM is available, try a quick translation
+    try:
+        from .app import OPENAI_CLIENT, LLM_ENABLED  # type: ignore
+        if lang in {"fi","sv","en"} and OPENAI_CLIENT and LLM_ENABLED:
+            target = {"fi": "Finnish", "sv": "Swedish", "en": "English"}[lang]
+            prompt = (
+                f"Translate the following description to {target}. Keep it concise (1-2 sentences) and natural.\n\n"
+                f"Text: {base_intro}"
+            )
+            resp = OPENAI_CLIENT.chat.completions.create(
+                model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.0,
+                max_tokens=120,
+            )
+            out = (resp.choices[0].message.content or "").strip()
+            if out:
+                return out
+    except Exception:
+        pass
+    return base_intro
+
 
 def _detect_allergens_fi(text: str) -> List[str]:
     """Heuristic detection for Finnish allergen tokens.
@@ -1050,10 +1129,12 @@ def _detect_allergens_sv(text: str) -> List[str]:
 
 
 def resolve_product_detail(query: str, lang: str) -> Optional[str]:
+    # Pre-clean the query from helper suffixes
+    q_clean = re.sub(r"\b(ainesosat ja allergeenit|ingredienser och allergener|ingredients and allergens)\b", "", query, flags=re.IGNORECASE).strip()
     items = _get_products_cached(limit=100)
     if not items:
         return None
-    it = _find_product_by_name_or_alias(query, items)
+    it = _find_product_by_name_or_alias(q_clean, items)
     if not it:
         return None
     name = it.get("name") or "Product"
@@ -1572,26 +1653,138 @@ def resolve_product_suggest(query: str, lang: str) -> Optional[str]:
             return html
         except Exception:
             return html
-    items = _get_products_cached(limit=100)
-    it = _find_product_by_name_or_alias(query, items) if items else None
-    name = (it.get("name") if it else None) or query.strip()
-    if lang == "fi":
-        return _maybe_strip(
-            f"""
-<div class=\"suggest\">\n  <div class=\"title\">{name}</div>\n  <div class=\"buttons\">\n    <button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{name} ainesosat ja allergeenit\">Haluatko tiedot?</button>\n    <button type=\"button\" class=\"btn suggest-btn\" data-action=\"start-order\">Haluatko tilata {name}?</button>\n  </div>\n</div>
-"""
-        )
-    if lang == "sv":
-        return _maybe_strip(
-            f"""
-<div class=\"suggest\">\n  <div class=\"title\">{name}</div>\n  <div class=\"buttons\">\n    <button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{name} ingredienser och allergener\">Vill du se uppgifter?</button>\n    <button type=\"button\" class=\"btn suggest-btn\" data-action=\"start-order\">Vill du beställa {name}?</button>\n  </div>\n</div>
-"""
-        )
-    return _maybe_strip(
-        f"""
-<div class=\"suggest\">\n  <div class=\"title\">{name}</div>\n  <div class=\"buttons\">\n    <button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{name} ingredients and allergens\">Want details?</button>\n    <button type=\"button\" class=\"btn suggest-btn\" data-action=\"start-order\">Want to order {name}?</button>\n  </div>\n</div>
-"""
-    )
+    items = _get_products_cached(limit=200)
+    if not items:
+        return None
+
+    qn = _norm(query)
+    cq = re.sub(r"[^a-z0-9]+", "", qn)
+    # Alias detection with specificity (avoid generic words like "piirakka")
+    canon: Optional[str] = None
+    best_term_score = -1
+    generic_terms = {
+        "piirakka","piirakat","piiras","piiraat","pie","pies","pasty","pastry",
+        "pirog","pirogi","piroger","paj","pasties"
+    }
+    def _term_score(term: str) -> int:
+        t_norm = _norm(term)
+        t_comp = re.sub(r"[^a-z0-9]+", "", term.lower())
+        if not t_norm or t_norm in generic_terms:
+            return -1
+        # strongest: exact match of compact or normalized
+        if t_norm == qn or t_comp == cq:
+            return 3
+        # medium: term as a token substring
+        if t_norm in qn or t_comp in cq:
+            return 2
+        return -1
+    for entry in load_product_aliases().items:
+        for term in [entry.name] + list(entry.aliases):
+            sc = _term_score(term)
+            if sc > best_term_score or (sc == best_term_score and len(term) >  (0 if not canon else len(canon))):
+                best_term_score = sc
+                canon = _norm(entry.name) if sc >= 0 else canon
+
+    toks = [t for t in re.findall(r"[a-zåäöA-ZÅÄÖ0-9]+", qn) if len(t) >= 3]
+    scored: List[Tuple[float, Dict[str, Any]]] = []
+    for it in items:
+        name = _norm(it.get("name") or "")
+        if not name:
+            continue
+        s = 0.0
+        # If we detected a canonical target (e.g., perunapiirakka), enforce it strictly
+        if canon:
+            if canon not in name:
+                continue  # drop candidates that don't contain the canonical token
+            s += 5.0
+        s += sum(1.0 for t in toks if t in name)
+        s += SequenceMatcher(None, name, qn).ratio()
+        # extra boost for samosa variants when asked samosa
+        if "samosa" in qn and "samosa" in name:
+            s += 2.0
+        if s > 0.5:
+            scored.append((s, it))
+    # If user asked generic "piirakka" and we didn't anchor to a specific canonical term,
+    # prefer baked "paistettu" core pies and ensure Karjalanpiirakka is included as a top option.
+    if not canon and "piirakka" in qn and scored:
+        baked = [(s, it) for s, it in scored if "paistettu" in ((it.get("name") or "").lower())]
+        if baked:
+            scored = baked
+        # ensure karjalanpiirakka shows up among suggestions
+        for s, it in scored:
+            if "karjalanpiirakka" in ((it.get("name") or "").lower()):
+                break
+        else:
+            for it in items:
+                nm = (it.get("name") or "").lower()
+                if "karjalanpiirakka" in nm and "paistettu" in nm:
+                    scored.append((10.0, it))
+                    break
+    if not scored:
+        it = _find_product_by_name_or_alias(query, items)
+        if not it:
+            return None
+        candidates = [it]
+    else:
+        scored_sorted = sorted(scored, key=lambda x: x[0], reverse=True)
+        candidates = [d for _, d in scored_sorted[:6]]
+        # If generic "piirakka" query, ensure Karjalanpiirakka appears first if present
+        if not canon and "piirakka" in qn:
+            idx = None
+            for i, it in enumerate(candidates):
+                if "karjalanpiirakka" in ((it.get("name") or "").lower()):
+                    idx = i; break
+            if idx is None:
+                # Try to find a baked karjalanpiirakka from the full product list
+                for it in items:
+                    nm = (it.get("name") or "").lower()
+                    if "karjalanpiirakka" in nm and "paistettu" in nm:
+                        candidates.insert(0, it)
+                        break
+            else:
+                if idx != 0:
+                    candidates.insert(0, candidates.pop(idx))
+
+    # Prefer baked (paistettu) variants over frozen (raakapakaste) if baked is available
+    baked: List[Dict[str, Any]] = []
+    frozen: List[Dict[str, Any]] = []
+    for it in candidates:
+        nm_low = ((it.get("name") or "").lower())
+        if "raakapakaste" in nm_low:
+            frozen.append(it)
+        else:
+            baked.append(it)
+    chosen = baked or frozen
+
+    blocks: List[str] = []
+    # Build info-only cards for each candidate
+    for it in chosen:
+        nm = (it.get("name") or query).strip()
+        intro = _intro_for_item(it, lang)
+        if lang == "fi":
+            info_btn = f"<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{nm} ainesosat ja allergeenit\">Haluatko tiedot?</button>"
+        elif lang == "sv":
+            info_btn = f"<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{nm} ingredienser och allergener\">Vill du se uppgifter?</button>"
+        else:
+            info_btn = f"<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{nm} ingredients and allergens\">Want details?</button>"
+        desc_html = f"<div class=\"subtle\" style=\"margin:4px 0 2px;color:#6b5e57\">{intro}</div>" if intro else ""
+        blocks.append(_maybe_strip(
+            f"<div class=\"suggest\">\n  <div class=\"title\">{nm}</div>{desc_html}\n  <div class=\"buttons\">{info_btn}</div>\n</div>"
+        ))
+
+    # Append a single order button at the end (generic label)
+    if chosen:
+        if lang == "fi":
+            order_label = "Haluatko tehdä tilauksen?"
+        elif lang == "sv":
+            order_label = "Vill du göra en beställning?"
+        else:
+            order_label = "Want to place an order?"
+        blocks.append(_maybe_strip(
+            f"<div class=\"suggest\">\n  <div class=\"buttons\"><button type=\"button\" class=\"btn\" data-action=\"start-order\">{order_label}</button></div>\n</div>"
+        ))
+
+    return "\n".join(blocks)
 
 
 def answer(query: str, lang: str) -> Optional[str]:

@@ -1,4 +1,17 @@
-[
+[ 
+  {
+    "title": "About us",
+    "question": "Who are you?",
+    "answer": "Hi! We're a small bakery run by a couple in Vallila, Helsinki."
+  },
+  {
+    "question": "Keitä olette?",
+    "answer": "Moi! Olemme pariskunnan pyörittämä pienleipomo Helsingin Vallilassa"
+  },
+  {
+    "question": "Vilka är ni?",
+    "answer": "Hej! Vi är ett litet bageri som drivs av ett par i Vallila, Helsingfors."
+  },
   {
     "title": "Products",
     "question": "What products do you sell?",
@@ -12,11 +25,15 @@
   {
     "title": "Karjalanpiirakat",
     "question": "What are your Karelian pies like?",
-    "answer": "Our handmade pies have a 100% rye crust with no wheat. Fillings: rice, barley or potato. We also bake a vegan rice version. Available fresh in-store and as raw‑frozen for home baking."
+    "answer": "Our handmade Karelian pies have a 100% rye crust with no wheat. Fillings: rice, barley or potato. We also bake vegan rice pies. All our pies are lactose-free. Available fresh in-store and as raw‑frozen for home baking."
   },
   {
     "question": "Millaisia ovat teidän karjalanpiirakat?",
-    "answer": "Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Täytteet: riisi, ohra tai peruna. Leivomme myös vegaanisia riisipiirakoita. Kaikki saatavilla uunituoreina ja raakapakasteina."
+    "answer": "Karjalanpiirakat: Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Karjalanpiirakat ovat saatavilla riisi-, ohra- ja perunatäytteellä. Leivomme myös vegaanisia riisipiirakoita. Piirakkamme ovat laktoosittomia. Kaikki piirakat ovat saatavilla myymälästä uunituoreina ja kotona paistettavina raakapakasteina."
+  },
+  {
+    "question": "Hur är era karelska piroger?",
+    "answer": "Våra handgjorda karelska piroger har 100% rågskal utan vete. Finns med ris-, korn- och potatisfyllning. Vi bakar även veganska rispiroger. Våra piroger är laktosfria. Finns ugnsfärska i butiken och som råfrysta för hemmagräddning."
   },
 
   {
@@ -26,27 +43,39 @@
   },
   {
     "question": "Millaisia samosoja on tarjolla?",
-    "answer": "Samosat ovat suolaisia intialaisia leivonnaisia. Vegaanisen gobisamosamme resepti tulee Rakan kotoa Intiasta; teemme myös kanasamosoja."
+    "answer": "Samosat: Samosat ovat suolaisia intialaisia leivonnaisia, joita voi nautiskella niin lounaalla kuin päivällisellä. Vegaanisen gobisamosamme resepti tulee Raka's kotileipomon Rakan kotoa Intiasta."
+  },
+  {
+    "question": "Vilka samosor erbjuder ni?",
+    "answer": "Samosor är salta indiska bakverk som passar till lunch eller middag. Vårt veganska gobi-samosarecept kommer från Raka's hem i Indien."
   },
 
   {
     "title": "Curry‑twistit",
     "question": "What are curry twists?",
-    "answer": "An Indian‑style savory bake: naan‑like bread filled with spiced mung bean (vegan) or meat curry with a gentle chili heat."
+    "answer": "An Indian-style savory bake: naan-like bread filled with spiced mung bean curry with a gentle chili heat (vegan)."
   },
   {
     "question": "Mitä ovat curry‑twistit?",
-    "answer": "Curry‑twistit ovat intialaisia suolaisia leivonnaisia. Naan‑tyyppisen leivän sisällä on mausteista mungpapu‑ (vegaaninen) tai lihacurrya, jossa on hieman chiliä."
+    "answer": "Curry-twistit: Curry-twist on intialainen suolainen leivonnainen. Naan-tyyppisen leivän sisällä on mausteista mungpapucurrya, johon chili tuo hieman tulisuuttakin."
+  },
+  {
+    "question": "Vad är curry twists?",
+    "answer": "En indisk salt bakelse: naan-liknande bröd fyllt med kryddig mungböna-curry med en mild chilihetta (vegansk)."
   },
 
   {
     "title": "Pullat",
     "question": "What buns do you bake?",
-    "answer": "We grind cardamom fresh from pods. Typical bakes: cinnamon rolls, caramel (‘kinuski’) buns and ‘voisilmä’ buns; selection varies."
+    "answer": "We grind cardamom fresh from pods. Typical bakes include cinnamon rolls, caramel (‘kinuski’) buns and ‘voisilmä’ buns; selection varies."
   },
   {
     "question": "Millaisia pullia on?",
-    "answer": "Maustamme pullat tuorejauhetulla intialaisella kardemummalla. Vitriinissä on usein kanelipullaa, kinuskipullaa ja voisilmäpullaa – valikoima vaihtelee."
+    "answer": "Pullat: Kaikki pullamme maustamme tuorejauhetulla Intiasta saapuvalla kardemummalla. Vitriinistä löytyy yleensä kanelipullia, kinuskipullia, voisilmäpullia ja sesonkipullia."
+  },
+  {
+    "question": "Vilka bullar bakar ni?",
+    "answer": "Vi kryddar alla bullar med nymald kardemumma från Indien. I montern finns ofta kanelbullar, kola- (‘kinuski’) bullar, smöröga-bullar och säsongsbullar."
   },
 
   {
@@ -62,11 +91,11 @@
   {
     "title": "Mustikkakukko",
     "question": "What is your mustikkakukko like?",
-    "answer": "A small rye ‘blueberry pie’ filled with wild blueberries (also called ‘rättänä’). Especially good with vanilla ice cream or whipped cream."
+    "answer": "A modest-sized rye ‘blueberry pie’ filled with wild blueberries (also called ‘rättänä’). Especially good with vanilla ice cream or whipped cream."
   },
   {
     "question": "Millainen on mustikkakukko?",
-    "answer": "Rukiista metsämustikoilla täytetty maltillisen kokoinen kukko (rättänä). Erityisen hyvää vaniljajäätelön tai kermavaahdon kanssa."
+    "answer": "Mustikkakukko: Maltillisen kokonsa vuoksi meidän rukiista metsämustikoilla täytettyä kukkoa, tai rättänää, voinee kutsua myös mustikkakukkoseksi. Erityisen hyviä nämä ovat vaniljajäätelön tai kermavaahdon kanssa."
   },
 
   {
