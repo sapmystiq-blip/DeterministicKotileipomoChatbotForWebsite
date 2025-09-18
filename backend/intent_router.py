@@ -238,8 +238,9 @@ def detect_intent(text: str) -> Optional[str]:
     # Menu / products (also catch "pakaste/frozen/fryst" to toggle frozen view)
     if any(k in t for k in [
         "menu", "meny", "ruokalista",
+        "valikko",
         # English
-        "product", "products", "bread", "breads", "pastry", "pastries", "cake", "cakes", "bakes", "frozen",
+        "product", "products", "bread", "breads", "pastry", "pastries", "cake", "cakes", "bakes", "frozen", "show menu",
         # Swedish
         "produkt", "produkter", "bröd", "bakverk", "kakor", "fryst",
         # Finnish
@@ -338,6 +339,9 @@ def _price_str(price: Any) -> Optional[str]:
 
 def resolve_menu(lang: str, query: Optional[str] = None) -> str:
     if not ecwid.get_products:
+        static = _static_menu_html(lang)
+        if static:
+            return static
         if lang == "fi":
             return "Voin auttaa tuotteissa ja hinnoissa. Tutustu tuotteisiin verkkokaupassa."
         if lang == "sv":
@@ -829,6 +833,9 @@ def resolve_menu(lang: str, query: Optional[str] = None) -> str:
         except Exception:
             items = []
         if not items:
+            static = _static_menu_html(lang)
+            if static:
+                return static
             if lang == "fi":
                 return "Voin auttaa tuotteissa ja hinnoissa. Tuotelista ei ole saatavilla juuri nyt. Katso verkkokauppa."
             if lang == "sv":
@@ -1514,22 +1521,97 @@ def resolve_faq(query: str, lang: str) -> Optional[str]:
     # Prefer specific FAQ items before generic order/preorder messaging
     items = load_faq()
     if items:
-        def _tokens(s: str) -> set[str]:
-            import re
-            return {w for w in re.split(r"[^a-zåäöA-ZÅÄÖ0-9]+", s.lower()) if len(w) >= 3}
-        qtoks = _tokens(t)
+        import re
+        import unicodedata as _ud
+
+        def _strip_accents(s: str) -> str:
+            # Keep ASCII only; map åäö -> aao via NFD
+            norm = _ud.normalize("NFD", s)
+            return "".join(ch for ch in norm if _ud.category(ch) != "Mn")
+
+        def _fi_stem(w: str) -> str:
+            # Very lightweight Finnish suffix stripping; longest-first
+            suf = [
+                "hinsa","hänsä","nsä","mme","nne",
+                "issaan","issä","issa","istä","ista","isiin","ihin","iin","een",
+                "ssa","ssä","sta","stä","lla","llä","lta","ltä","lle",
+                "na","nä","ksi","tta","ttä","kin",
+                "ita","itä","ien","jen","ja","jä",
+                "t","n","a","ä",
+            ]
+            for sfx in sorted(suf, key=len, reverse=True):
+                if w.endswith(sfx) and len(w) - len(sfx) >= 3:
+                    return w[: -len(sfx)]
+            # Special-case common product words
+            if w.startswith("karjalanpiirak"):
+                return "karjalanpiirakka"
+            return w
+
+        def _sv_stem(w: str) -> str:
+            suf = [
+                "arnas","ernas","ornas","andes","endes",
+                "arnas","erna","orna","heten","ande","ende",
+                "arna","erna","orna",
+                "hetena","het",
+                "en","et","na","ar","er","or","n","s",
+            ]
+            for sfx in sorted(suf, key=len, reverse=True):
+                if w.endswith(sfx) and len(w) - len(sfx) >= 3:
+                    return w[: -len(sfx)]
+            return w
+
+        def _en_stem(w: str) -> str:
+            if w.endswith("'s") and len(w) > 3:
+                return w[:-2]
+            if w.endswith("es") and len(w) > 4:
+                return w[:-2]
+            if w.endswith("s") and len(w) > 3:
+                return w[:-1]
+            return w
+
+        def _norm_word(w: str, lang_hint: str) -> str:
+            w0 = w.lower()
+            w1 = _strip_accents(w0)
+            if lang_hint == "fi":
+                return _fi_stem(w1)
+            if lang_hint == "sv":
+                return _sv_stem(w1)
+            if lang_hint == "en":
+                return _en_stem(w1)
+            return w1
+
+        def _tokens(s: str, lang_hint: str) -> set[str]:
+            raw = [w for w in re.split(r"[^a-zåäöA-ZÅÄÖ0-9]+", s.lower()) if len(w) >= 2]
+            out: set[str] = set()
+            for w in raw:
+                b = _norm_word(w, lang_hint)
+                if len(b) >= 2:
+                    out.add(b)
+                # also keep diacriticless for cross-variant queries
+                out.add(_strip_accents(b))
+            return out
+
+        qtoks = _tokens(t, lang)
+        # Always include a neutral-language normalization for safety
+        qtoks |= _tokens(t, "en")
+
         best = None
         best_score = 0
         for it in items:
             q_all = " ".join([v.lower() for v in it.q.values()])
-            atoks = _tokens(q_all)
+            atoks = _tokens(q_all, lang)
             score = 0
-            # tag hits
+            # tag hits (normalize tag too)
             for tag in it.tags:
-                if tag and tag.lower() in t:
+                tag_n = tag.lower()
+                if tag_n in t or _strip_accents(tag_n) in _strip_accents(t):
                     score += 3
-            # token overlap
+            # token overlap (normalized)
             score += sum(1 for w in atoks if w in qtoks)
+            # Prefer section if user mentions the section head term
+            if any(tag.startswith("section:") for tag in it.tags):
+                if any(k in qtoks for k in {"karjalanpiirakka", "karelian", "pirog", "piirak"}):
+                    score += 1
             # lead-time phrasing boost across languages
             if any(k in t for k in [
                 "kuinka ajoissa", "edellisenä päivänä", "milloin pitää tilata",
@@ -1553,6 +1635,23 @@ def resolve_faq(query: str, lang: str) -> Optional[str]:
                 )
                 return f"<div class=\"faq-ans\"><p>{ans}</p>{suggest_html}</div>"
             return ans
+
+        # Fuzzy fallback across localized questions and tags
+        try:
+            qn = _strip_accents(t)
+            cand: tuple[float, FaqItem] | None = None
+            for it in items:
+                src = _strip_accents(" ".join(list(it.q.values()) + it.tags))
+                sim = SequenceMatcher(None, src, qn).ratio()
+                # mild bonus for section matches if query mentions core token
+                if any(tag.startswith("section:") for tag in it.tags) and ("karjalanpiirakka" in qn or "karelian" in qn):
+                    sim += 0.05
+                if cand is None or sim > cand[0]:
+                    cand = (sim, it)
+            if cand and cand[0] >= 0.60:
+                return cand[1].text_for(lang, "a")
+        except Exception:
+            pass
 
     # Order / preorder topic
     if any(k in t for k in ["preorder", "order", "tilaa", "ennakkotilaus", "beställ"]):
@@ -1810,3 +1909,52 @@ def answer(query: str, lang: str) -> Optional[str]:
     if intent == "faq":
         return resolve_faq(query, lang)
     return None
+def _static_menu_html(lang: str) -> str | None:
+    blocks = {
+        "fi": (
+            "<div class=\"menu-static\">"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Karjalanpiirakat</div>"
+            "<p>Karjalanpiirakat: Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Täytteinä riisi-, ohra- ja perunapuuro sekä vegaaninen riisipuuro. Kaikki piirakat ovat laktoosittomia ja saatavilla uunituoreina tai kotona paistettavina raakapakasteina.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Samosat ja curry-twistit</div>"
+            "<p>Samosat ovat suolaisia intialaisia leivonnaisia; vegaaninen gobi-samosa tulee Rakan perhereseptistä. Curry-twistissä naan-tyyppisen leivän sisällä on mausteista mungpapucurrya, jossa on lempeä chilin potku.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Pullat ja makeat</div>"
+            "<p>Pulla vitriinissä vaihtelee: kanelipullat, kinuskipullat, voisilmäpullat ja sesonkileivonnaiset. Kardemumman jauhamme itse kokonaisista siemenistä Intiasta.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Marjapiirakat ja mustikkakukko</div>"
+            "<p>Marjapiirakoissa vaihtelevat puolukka, mustikka ja punaherukka – erinomaisia vaniljakastikkeen kanssa. Mustikkakukko (aka rättänä) on metsämustikoilla täytetty rukiinen leivonnainen.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Raakapakastevalikoima</div>"
+            "<p>Useimmat tuotteet saa myös raakapakasteina: karjalanpiirakat (10 tai 20 kpl pakkaukset), vegaaniset samosat sekä mustikkakukot kotiin paistettavaksi.</p></div>"
+            "<div class=\"menu-note\">Hinnat voivat vaihdella; ajantasaiset hinnat löydät verkkokaupastamme.</div>"
+            "</div>"
+        ),
+        "en": (
+            "<div class=\"menu-static\">"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Karelian pies</div>"
+            "<p>Handmade with a 100% rye crust (no wheat). Fillings: rice porridge, barley porridge, mashed potato, plus a vegan rice option. All pies are lactose-free and available fresh or as par-baked frozen packs for finishing at home.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Savory Indian pastries</div>"
+            "<p>Vegan gobi samosas from Raka’s family recipe and mung curry twists (naan-style bread filled with gently spiced mung bean curry with mild chili heat).</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Finnish buns & sweets</div>"
+            "<p>Cinnamon rolls, caramel (“kinuski”) buns, butter-eye buns and seasonal varieties. We grind whole cardamom pods from India fresh before baking.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Berry pies & mustikkakukko</div>"
+            "<p>Rotating berry pies — lingonberry, blueberry, redcurrant — delicious with vanilla sauce. Mustikkakukko (“blueberry rye pie”) is filled with wild blueberries.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Take-home freezer packs</div>"
+            "<p>Most of the range is also available frozen: Karelian pies (packs of 10 or 20), vegan samosas and mustikkakukko to bake or warm up at home.</p></div>"
+            "<div class=\"menu-note\">Prices may change; see the online shop for current pricing.</div>"
+            "</div>"
+        ),
+        "sv": (
+            "<div class=\"menu-static\">"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Karelska piroger</div>"
+            "<p>Handgjorda med 100 % rågskal utan vete. Fyllningar: risgröt, korngröt, potatismos samt en vegansk risvariant. Alla piroger är laktosfria och finns både nygräddade och som råfrysta för hemmagräddning.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Indiska salta bakverk</div>"
+            "<p>Veganska gobi-samosor enligt Rakas familjerecept och curry twists – naanliknande bröd fyllt med kryddig mungbönscurry med mild chili.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Bullarna & det söta</div>"
+            "<p>Kanelbullar, kola-/kinuskibullar, smöröga-bullar och säsongsbakelser. Kardemumman mals alltid färsk från hela kapslar som importeras från Indien.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Bärpajer & mustikkakukko</div>"
+            "<p>Bärpajerna varierar mellan lingon, blåbär och vinbär – goda med vaniljsås. Mustikkakukko är ett mindre rågskal fyllt med vilda blåbär.</p></div>"
+            "<div class=\"menu-section\"><div class=\"menu-heading\">Råfrysta produkter</div>"
+            "<p>De flesta bakverk finns även råfrysta: karelska piroger (10 eller 20 st förpackningar), veganska samosor och mustikkakukko för att grädda hemma.</p></div>"
+            "<div class=\"menu-note\">Priser kan ändras; se webbutiken för aktuella priser.</div>"
+            "</div>"
+        ),
+    }
+    return blocks.get(lang)

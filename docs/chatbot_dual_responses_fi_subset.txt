@@ -1,0 +1,129 @@
+Q: Mitä tuotteita teillä on tänään myynnissä?
+A (legacy): En löytänyt tietoja aiheesta “Mitä tuotteita teillä on tänään myynnissä?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Päätuotteemme on täysrukiinen karjalanpiirakka. Lisäksi tarjoamme suolaisia intialaisia leivonnaisia, kuten samosat ja curry‑twistit. Makealta puolelta löytyy suomalaisia pullia ja mustikkakukkoa. Tarjoamme myös vegaanisia vaihtoehtoja; vegaanituotteet kannattaa tilata etukäteen verkkokaupasta.
+
+Q: Miten voin tilata tuotteita etukäteen?
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>
+
+Q: Voinko maksaa kortilla?
+A (legacy): Kyllä. Tee ennakkotilaus verkkokaupassa ja nouda aukioloaikoina.
+A (new): Maksut vain kortilla, ja lähes kaikki kortit käyvät.
+
+Q: Teettekö tilauskakkuja?
+A (legacy): Emme leivo kakkuja (täytekakkuja, kuivakakkuja), voileipäkakkuja, lihapiirakoita tai konditoriatuotteita. Olemme ensisijaisesti karjalanpiirakkaleipomo.
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>
+
+Q: Onko tuotteita mahdollista saada pakasteena?
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karjalanpiirakat</div><p>Karjalanpiirakat: Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Täytteinä riisi-, ohra- ja perunapuuro sekä vegaaninen riisipuuro. Kaikki piirakat ovat laktoosittomia ja saatavilla uunituoreina tai kotona paistettavina raakapakasteina.</p></div><div class="menu-section"><div class="menu-heading">Samosat ja curry-twistit</div><p>Samosat ovat suolaisia intialaisia leivonnaisia; vegaaninen gobi-samosa tulee Rakan perhereseptistä. Curry-twistissä naan-tyyppisen leivän sisällä on mausteista mungpapucurrya, jossa on lempeä chilin potku.</p></div><div class="menu-section"><div class="menu-heading">Pullat ja makeat</div><p>Pulla vitriinissä vaihtelee: kanelipullat, kinuskipullat, voisilmäpullat ja sesonkileivonnaiset. Kardemumman jauhamme itse kokonaisista siemenistä Intiasta.</p></div><div class="menu-section"><div class="menu-heading">Marjapiirakat ja mustikkakukko</div><p>Marjapiirakoissa vaihtelevat puolukka, mustikka ja punaherukka – erinomaisia vaniljakastikkeen kanssa. Mustikkakukko (aka rättänä) on metsämustikoilla täytetty rukiinen leivonnainen.</p></div><div class="menu-section"><div class="menu-heading">Raakapakastevalikoima</div><p>Useimmat tuotteet saa myös raakapakasteina: karjalanpiirakat (10 tai 20 kpl pakkaukset), vegaaniset samosat sekä mustikkakukot kotiin paistettavaksi.</p></div><div class="menu-note">Hinnat voivat vaihdella; ajantasaiset hinnat löydät verkkokaupastamme.</div></div>
+A (new): <p>Myymme myös raakapakasteita, jotka voit paistaa kotona. Löydät vaihtoehdot valikostamme.</p><div class="suggest"><div class="suggest-title">Haluatko nähdä valikon?</div><a class="btn suggest-btn" data-suggest="Näytä valikko">Näytä valikko</a></div>
+
+Q: Kuinka kauan piirakat säilyvät kotona?
+A (legacy): En löytänyt tietoja aiheesta “Kuinka kauan piirakat säilyvät kotona?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Piirakkamme säilyvät jääkaapissa noin 2–3 päivää. Kaikki paistetut tuotteemme voi myös pakastaa, jolloin ne säilyvät noin kaksi kuukautta.
+
+Q: Voinko ostaa tuotteita verkkokaupan kautta?
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>
+
+Q: Mikä on teidän osoitteenne?
+A (legacy): En löytänyt tietoja aiheesta “Mikä on teidän osoitteenne?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Myymälämme sijaitsee Vallilassa osoitteessa Kumpulantie 15, 00520 Helsinki.
+
+Q: Mitkä ovat aukioloaikanne?
+A (legacy): Olemme avoinna torstaisin ja perjantaisin klo 11-17 ja lauantaisin klo 11-15.
+A (new): Olemme avoinna torstaisin ja perjantaisin klo 11-17 ja lauantaisin klo 11-15.
+
+Q: Pystynkö tilaamaan yritykselle isompia määriä?
+A (legacy): Päätämme asiasta tapauskohtaisesti. Lähetä ystävällisesti sähköpostia osoitteeseen rakaskotileipomo@gmail.com ja kerro tarpeestasi.
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>
+
+Q: Myyttekö lahjakortteja?
+A (legacy): Valitettavasti emme myy lahjakortteja.
+A (new): Valitettavasti emme myy lahjakortteja.
+
+Q: Onko samosat mausteisia?
+A (legacy): En löytänyt tietoja aiheesta “Onko samosat mausteisia?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Samosamme maustetaan kymmenillä intialaisilla mausteilla kuten juustokuminalla, korianterilla, kurkumalla, garam masalalla ja miedolla chilillä. Ne ovat aromikkaita ja lempeän tulisia.
+
+Q: Millä kardemummalla pullat on maustettu?
+A (legacy): En löytänyt tietoja aiheesta “Millä kardemummalla pullat on maustettu?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Käytämme pullissa kokonaisia kardemumman siemeniä, jotka jauhamme itse tuoreiksi juuri ennen taikinan valmistusta. Kardemumma tuodaan perheemme kautta Intiasta, joten aromi on erityisen raikas.
+
+Q: Voinko saada allergialistan tuotteista?
+A (legacy): Yleisimmät allergeenit joita käytämme: maito, gluteeni (vehnä/ruis/ohra) ja kananmuna. Käsittelemme leipomossa viljaa ja maitotuotteita; ristikontaminaatiota ei voida täysin poissulkea.
+A (new): Yleisimmät allergeenit joita käytämme: maito, gluteeni (vehnä/ruis/ohra) ja kananmuna. Käsittelemme leipomossa viljaa ja maitotuotteita; ristikontaminaatiota ei voida täysin poissulkea.
+
+Q: Teettekö toimituksia kotiin?
+A (legacy): En löytänyt tietoja aiheesta “Teettekö toimituksia kotiin?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Emme tarjoa kotiinkuljetusta, mutta voit tilata taksin tai kuljetuspalvelun noutamaan tilauksesi. Luovutamme tuotteet kuskille ja voimme lähettää maksulinkin etukäteen, kun tilaus on vahvistettu.
+
+Q: Näytä valikko
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karjalanpiirakat</div><p>Karjalanpiirakat: Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Täytteinä riisi-, ohra- ja perunapuuro sekä vegaaninen riisipuuro. Kaikki piirakat ovat laktoosittomia ja saatavilla uunituoreina tai kotona paistettavina raakapakasteina.</p></div><div class="menu-section"><div class="menu-heading">Samosat ja curry-twistit</div><p>Samosat ovat suolaisia intialaisia leivonnaisia; vegaaninen gobi-samosa tulee Rakan perhereseptistä. Curry-twistissä naan-tyyppisen leivän sisällä on mausteista mungpapucurrya, jossa on lempeä chilin potku.</p></div><div class="menu-section"><div class="menu-heading">Pullat ja makeat</div><p>Pulla vitriinissä vaihtelee: kanelipullat, kinuskipullat, voisilmäpullat ja sesonkileivonnaiset. Kardemumman jauhamme itse kokonaisista siemenistä Intiasta.</p></div><div class="menu-section"><div class="menu-heading">Marjapiirakat ja mustikkakukko</div><p>Marjapiirakoissa vaihtelevat puolukka, mustikka ja punaherukka – erinomaisia vaniljakastikkeen kanssa. Mustikkakukko (aka rättänä) on metsämustikoilla täytetty rukiinen leivonnainen.</p></div><div class="menu-section"><div class="menu-heading">Raakapakastevalikoima</div><p>Useimmat tuotteet saa myös raakapakasteina: karjalanpiirakat (10 tai 20 kpl pakkaukset), vegaaniset samosat sekä mustikkakukot kotiin paistettavaksi.</p></div><div class="menu-note">Hinnat voivat vaihdella; ajantasaiset hinnat löydät verkkokaupastamme.</div></div>
+A (new): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karjalanpiirakat</div><p>Karjalanpiirakat: Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Täytteinä riisi-, ohra- ja perunapuuro sekä vegaaninen riisipuuro. Kaikki piirakat ovat laktoosittomia ja saatavilla uunituoreina tai kotona paistettavina raakapakasteina.</p></div><div class="menu-section"><div class="menu-heading">Samosat ja curry-twistit</div><p>Samosat ovat suolaisia intialaisia leivonnaisia; vegaaninen gobi-samosa tulee Rakan perhereseptistä. Curry-twistissä naan-tyyppisen leivän sisällä on mausteista mungpapucurrya, jossa on lempeä chilin potku.</p></div><div class="menu-section"><div class="menu-heading">Pullat ja makeat</div><p>Pulla vitriinissä vaihtelee: kanelipullat, kinuskipullat, voisilmäpullat ja sesonkileivonnaiset. Kardemumman jauhamme itse kokonaisista siemenistä Intiasta.</p></div><div class="menu-section"><div class="menu-heading">Marjapiirakat ja mustikkakukko</div><p>Marjapiirakoissa vaihtelevat puolukka, mustikka ja punaherukka – erinomaisia vaniljakastikkeen kanssa. Mustikkakukko (aka rättänä) on metsämustikoilla täytetty rukiinen leivonnainen.</p></div><div class="menu-section"><div class="menu-heading">Raakapakastevalikoima</div><p>Useimmat tuotteet saa myös raakapakasteina: karjalanpiirakat (10 tai 20 kpl pakkaukset), vegaaniset samosat sekä mustikkakukot kotiin paistettavaksi.</p></div><div class="menu-note">Hinnat voivat vaihdella; ajantasaiset hinnat löydät verkkokaupastamme.</div></div>
+
+Q: Tilaus
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>

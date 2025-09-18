@@ -1,14 +1,5 @@
 [
   {
-    "title": "Contact",
-    "question": "How can I contact you?",
-    "answer": "You can reach us during opening hours in the shop. For preorders and questions, use our online shop or message us via our social channels."
-  },
-  {
-    "question": "Miten saan teihin yhteyden?",
-    "answer": "Tavoitat meidät aukioloaikoina myymälästä. Ennakkotilauksiin ja kysymyksiin voit käyttää verkkokauppaa tai laittaa viestiä somessa."
-  },
-  {
     "title": "About",
     "question": "Keitä olette?",
     "answer": "Olemme pariskunnan pyörittämä pienleipomo Helsingin Vallilassa."

@@ -197,5 +197,117 @@
     "q": { "fi": "Miten voin antaa palautetta tai arvostelun?", "sv": "Hur kan jag ge feedback eller en recension?", "en": "How can I leave feedback or a review?" },
     "a": { "fi": "Paras tapa on jättää arvostelu Googlessa (linkki), kiitos.", "sv": "Det bästa sättet är att lämna en recension på Google (länk). Tack.", "en": "The best way is to leave a review on Google (link). Thank you." },
     "tags": ["palaute", "arvostelu", "review"]
+  },
+  {
+    "q": {
+      "fi": "Mikä on karjalanpiirakka?",
+      "sv": "Vad är Karjalanpiirakka?",
+      "en": "What is Karjalanpiirakka?"
+    },
+    "a": {
+      "fi": "Karjalanpiirakka on perinteinen suomalainen leivonnainen, jossa on ohut ruiskuori ja täytteenä riisi- tai ohrapuuro tai perunamuusi.",
+      "sv": "Karjalanpiirakka är ett traditionellt finskt bakverk med en tunn rågbotten fylld med ris eller korngröt eller potatismos.",
+      "en": "Karjalanpiirakka (Karelian pasty) is a traditional Finnish pastry with a thin rye crust filled with rice or barley porridge, or mashed potatoes."
+    },
+    "tags": ["section:karjalanpiirakka", "karjalanpiirakka", "karelsk pirog", "karelian pie", "mikä", "vad", "what"]
+  },
+  {
+    "q": {
+      "fi": "Onko karjalanpiirakka EU:n suojaama?",
+      "sv": "Är Karjalanpiirakka skyddad av EU?",
+      "en": "Is Karjalanpiirakka protected by the EU?"
+    },
+    "a": {
+      "fi": "Kyllä, Karjalanpiirakka on rekisteröity Euroopan komission toimesta aitona perinteisenä tuotteena (APT).",
+      "sv": "Ja, Karjalanpiirakka är registrerad som en Garanterad Traditionell Specialitet (GTS) av Europeiska kommissionen.",
+      "en": "Yes, Karjalanpiirakka is registered as a Traditional Speciality Guaranteed (TSG) product by the European Commission."
+    },
+    "tags": ["section:karjalanpiirakka", "apt", "tsg", "gts", "eu", "suojattu", "skyddad"]
+  },
+  {
+    "q": {
+      "fi": "Milloin karjalanpiirakka mainittiin ensimmäisen kerran kirjallisesti?",
+      "sv": "När omnämndes Karjalanpiirakka första gången i skrift?",
+      "en": "When was Karjalanpiirakka first documented?"
+    },
+    "a": {
+      "fi": "Ensimmäiset kirjalliset tiedot Karjalanpiirakasta ovat vuodelta 1686.",
+      "sv": "De första skriftliga uppgifterna om Karjalanpiirakka är från år 1686.",
+      "en": "The first written record of Karjalanpiirakka dates back to 1686."
+    },
+    "tags": ["section:karjalanpiirakka", "historia", "history", "1686"]
+  },
+  {
+    "q": {
+      "fi": "Miten karjalanpiirakka valmistetaan perinteisesti?",
+      "sv": "Hur tillagas Karjalanpiirakka traditionellt?",
+      "en": "How is Karjalanpiirakka traditionally prepared?"
+    },
+    "a": {
+      "fi": "Kuori kaulitaan hyvin ohueksi, täytetään puurolla, reunat rypytetään ja piirakat paistetaan nopeasti 250–300 °C:ssa, jotta ne pysyvät rapeina.",
+      "sv": "Bottnen kavlas mycket tunn, fylls med gröt, kanterna rynkas och pirogerna gräddas snabbt vid 250–300 °C för att förbli krispiga.",
+      "en": "The crust is rolled very thin, filled with porridge, the edges are crimped, and the pies are baked quickly at 250–300°C to stay crispy."
+    },
+    "tags": ["section:karjalanpiirakka", "valmistus", "tillagning", "preparation", "resepti"]
+  },
+  {
+    "q": {
+      "fi": "Mikä on karjalanpiirakan tyypillinen koko?",
+      "sv": "Vad är den typiska storleken på Karjalanpiirakka?",
+      "en": "What is the typical size of Karjalanpiirakka?"
+    },
+    "a": {
+      "fi": "Ne ovat tavallisesti 7–20 cm kokoisia, soikeita tai pyöreähköjä, noin kolmannes kuorta ja kaksi kolmannesta täytettä.",
+      "sv": "De är vanligtvis 7–20 cm stora, ovala eller rundaktiga, med ungefär en tredjedel botten och två tredjedelar fyllning.",
+      "en": "They are usually 7–20 cm in size, oval or round in shape, with about one-third crust and two-thirds filling."
+    },
+    "tags": ["section:karjalanpiirakka", "koko", "storlek", "size", "mitat"]
+  }
+  ,
+  {
+    "q": { "fi": "Milloin karjalanpiirakka levisi koko Suomeen?", "sv": "När spreds Karjalanpiirakka över hela Finland?", "en": "When did Karjalanpiirakka spread across Finland?" },
+    "a": { "fi": "Karjalanpiirakka kulkeutui 1600–1700-luvuilla Itä-Suomeen ja myöhemmin ympäri maata. Ensimmäiset kirjalliset tiedot ovat vuodelta 1686.", "sv": "Karjalanpiirakka spreds till östra Finland på 1600–1700-talen och senare över hela landet. De första skriftliga uppgifterna är från 1686.", "en": "Karjalanpiirakka spread to Eastern Finland in the 1600–1700s and later across the whole country. The first written records date from 1686." },
+    "tags": ["section:karjalanpiirakka", "historia", "leviäminen", "spridning", "history"]
+  },
+  {
+    "q": { "fi": "Milloin karjalanpiirakka rekisteröitiin APT-tuotteeksi?", "sv": "När registrerades Karjalanpiirakka som GTS?", "en": "When was Karjalanpiirakka registered as a TSG (APT) product?" },
+    "a": { "fi": "Se rekisteröitiin Euroopan unionin aidoksi perinteiseksi tuotteeksi (APT) vuonna 2003.", "sv": "Den registrerades av Europeiska unionen som en Garanterad Traditionell Specialitet (GTS) år 2003.", "en": "It was registered by the European Union as a Traditional Speciality Guaranteed (TSG) in 2003." },
+    "tags": ["section:karjalanpiirakka", "apt", "tsg", "gts", "2003", "eu"]
+  },
+  {
+    "q": { "fi": "Kuka haki EU:n nimisuojaa karjalanpiirakalle?", "sv": "Vem ansökte om EU-skyddet för Karjalanpiirakka?", "en": "Who applied for the EU protection for Karjalanpiirakka?" },
+    "a": { "fi": "EU:n APT-nimisuojaa haki Pohjois-Karjalan maaseutukeskuksen maa- ja kotitalousnaisten piirikeskus.", "sv": "Ansökan lämnades in av Norra Karelens landsbygdscentrums hushållskvinnornas distriktscentrum.", "en": "The application was submitted by the Rural Advisory Centre of North Karelia’s Home Economics Women’s District Centre." },
+    "tags": ["section:karjalanpiirakka", "apt", "hakija", "ansökan", "applicant"]
+  },
+  {
+    "q": { "fi": "Mitä EU:n nimisuoja korostaa karjalanpiirakassa?", "sv": "Vad betonar EU-skyddet för Karjalanpiirakka?", "en": "What does the EU protection emphasize for Karjalanpiirakka?" },
+    "a": { "fi": "APT-nimisuoja korostaa karjalanpiirakan perinteisiä ainesosia ja tuotantotapaa.", "sv": "GTS-skyddet betonar de traditionella ingredienserna och tillverkningssättet för bakverket.", "en": "The TSG protection emphasizes the traditional ingredients and production method of the pastry." },
+    "tags": ["section:karjalanpiirakka", "apt", "perinne", "tradition", "ingredients", "method"]
+  },
+  {
+    "q": { "fi": "Mitä ainesosia karjalanpiirakan kuoreen sallitaan?", "sv": "Vilka ingredienser är tillåtna i Karjalanpiirakkas botten?", "en": "What ingredients are allowed in the crust of Karjalanpiirakka?" },
+    "a": { "fi": "Kuori saa sisältää vettä, suolaa, ruis- ja vehnäjauhoja.", "sv": "Bottnen får innehålla vatten, salt, råg- och vetemjöl.", "en": "The crust may contain water, salt, rye flour, and wheat flour." },
+    "tags": ["section:karjalanpiirakka", "kuori", "skorpa", "crust", "ainesosat", "ingredienser"]
+  },
+  {
+    "q": { "fi": "Mitä täytteitä karjalanpiirakkaan sallitaan?", "sv": "Vilka fyllningar är tillåtna i Karjalanpiirakka?", "en": "What fillings are permitted in Karjalanpiirakka?" },
+    "a": { "fi": "Täytteeksi voidaan käyttää ohra- tai riisipuuroa, perunasosetta (perunahiutaleet sallittu) tai survottuja kasviksia. Vuodesta 2019 valmistuksessa on saanut käyttää myös laktoositonta maitojuomaa ja maitojauhetta.", "sv": "Fyllningen kan vara korn- eller risgröt, potatismos (även potatisflingor tillåtna) eller mosade grönsaker. Sedan 2019 får även laktosfri mjölkdryck och mjölkpulver användas.", "en": "The filling can be barley or rice porridge, mashed potatoes (also potato flakes allowed), or mashed vegetables. Since 2019, lactose-free milk drink and milk powder may also be used." },
+    "tags": ["section:karjalanpiirakka", "täyte", "fyllning", "filling", "ainesosat"]
+  },
+  {
+    "q": { "fi": "Miten karjalanpiirakka muotoillaan ja paistetaan?", "sv": "Hur ska Karjalanpiirakka formas och gräddas?", "en": "How must Karjalanpiirakka be shaped and baked?" },
+    "a": { "fi": "Taikina kaulitaan ohuiksi, halkaisijaltaan 10–24 cm:n pyöreiksi tai soikeiksi levyiksi. Täyte levitetään 1–2 cm päähän reunoista, reunat rypytetään ja piirakat paistetaan nopeasti korkeassa lämpötilassa, jolloin tuloksena on rapea kuori ja mehevä täyte.", "sv": "Dejen kavlas tunn till rundlar eller ovaler på 10–24 cm, fyllningen sprids med 1–2 cm från kanterna, kanterna rynkas och pirogerna gräddas snabbt i hög temperatur för att ge en krispig botten och saftig fyllning.", "en": "The dough is rolled thin into 10–24 cm rounds or ovals, filled leaving 1–2 cm from the edges, the edges are crimped, and the pies are baked quickly at high temperature to get a crispy crust and moist filling." },
+    "tags": ["section:karjalanpiirakka", "muoto", "shape", "paisto", "baking"]
+  },
+  {
+    "q": { "fi": "Miten paistetut karjalanpiirakat voidellaan?", "sv": "Hur glaseras/ penslas gräddade Karjalanpiirakka?", "en": "How are baked Karjalanpiirakka glazed?" },
+    "a": { "fi": "Paiston jälkeen karjalanpiirakat voidellaan voilla, öljyllä tai vesimaitoseoksella.", "sv": "Efter gräddningen penslas de med smör, olja eller en vatten-mjölkblandning.", "en": "After baking, they are glazed with butter, oil, or a water-milk mixture." },
+    "tags": ["section:karjalanpiirakka", "voitelu", "glasering", "glaze"]
+  },
+  {
+    "q": { "fi": "Mitä tapahtuu jos riisitäytteeseen lisätään esim. kananmuna, voi tai kerma?", "sv": "Vad händer om ingredienser som ägg, smör eller grädde tillsätts i risfyllningen?", "en": "What happens if extra ingredients like egg, butter, or cream are added to the rice filling?" },
+    "a": { "fi": "Jos riisitäytteeseen lisätään esimerkiksi kananmunaa, voita tai kermaa, tuotetta ei saa kutsua karjalanpiirakaksi vaan esimerkiksi riisipiirakaksi.", "sv": "Om ingredienser som ägg, smör eller grädde tillsätts i risfyllningen får produkten inte kallas Karjalanpiirakka utan ska säljas som till exempel rispirog (riisipiirakka).",
+           "en": "If such ingredients are added, the product cannot be called Karjalanpiirakka but must be sold under another name, such as rice pasty (riisipiirakka)." },
+    "tags": ["section:karjalanpiirakka", "nimisuoja", "name protection", "rules"]
   }
 ]

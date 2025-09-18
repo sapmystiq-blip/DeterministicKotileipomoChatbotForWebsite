@@ -9,6 +9,19 @@ const chatInput = qs('#chatInput');
 const sendBtn = qs('#sendBtn');
 
 let currentLang = localStorage.getItem('chat_lang') || 'fi'; // default to Finnish
+// Answer display flags (deterministic vs RAG). If both true → show both.
+let showLegacy = true;
+let showRag = true;
+try {
+  const params = new URLSearchParams(window.location.search);
+  const lsLegacy = localStorage.getItem('show_legacy');
+  const lsRag = localStorage.getItem('show_rag');
+  if (lsLegacy != null) showLegacy = (lsLegacy === '1' || lsLegacy === 'true');
+  if (lsRag != null) showRag = (lsRag === '1' || lsRag === 'true');
+  if (params.has('legacy')) showLegacy = !['0','false','no','off'].includes((params.get('legacy')||'').toLowerCase());
+  if (params.has('rag')) showRag = !['0','false','no','off'].includes((params.get('rag')||'').toLowerCase());
+  if (!showLegacy && !showRag) showLegacy = true; // ensure at least one
+} catch(e) {}
 // Persist default language immediately so backend receives a cookie hint as well
 if (!localStorage.getItem('chat_lang')) {
   try {
@@ -842,19 +855,36 @@ chatForm.addEventListener('submit', async (e) => {
   chatInput.value = '';
   setTyping(true);
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch('/api/chat_dual', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, lang: currentLang || undefined })
+      body: JSON.stringify({ message: text, lang: currentLang || undefined, legacy: !!showLegacy, rag: !!showRag })
     });
     if (!res.ok) throw new Error('Network error');
     const data = await res.json();
     setTyping(false);
-    const reply = data.reply || '...';
-    if (/^\s*</.test(reply) || reply.includes('order-ui')) {
-      addBotHtml(reply);
+    // If dual payload: show both legacy and RAG answers. Else fallback to single.
+    if (data && (data.legacy || data.rag)) {
+      const labelA = '<div class="subtle" style="font-size:12px;color:#6b5e57;margin-bottom:4px;">Legacy</div>';
+      const labelB = '<div class="subtle" style="font-size:12px;color:#6b5e57;margin-bottom:4px;">New (RAG)</div>';
+      const renderAnswer = (labelHtml, reply) => {
+        const txt = reply || '';
+        const isHtml = /^\s*</.test(txt) || txt.includes('order-ui');
+        if (isHtml) {
+          addBotHtml(labelHtml + txt);
+        } else {
+          addBotHtml(labelHtml + `<div>${escapeHtml(txt)}</div>`);
+        }
+      };
+      if (showLegacy && data.legacy) renderAnswer(labelA, data.legacy.reply || '');
+      if (showRag && data.rag) renderAnswer(labelB, data.rag.reply || '');
     } else {
-      addBot(reply);
+      const reply = data.reply || '...';
+      if (/^\s*</.test(reply) || reply.includes('order-ui')) {
+        addBotHtml(reply);
+      } else {
+        addBot(reply);
+      }
     }
   } catch (err) {
     setTyping(false);

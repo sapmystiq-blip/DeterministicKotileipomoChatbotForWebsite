@@ -1,0 +1,446 @@
+Q: Mitä tuotteita teillä on tänään myynnissä?
+A (legacy): En löytänyt tietoja aiheesta “Mitä tuotteita teillä on tänään myynnissä?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Päätuotteemme on täysrukiinen karjalanpiirakka. Lisäksi tarjoamme suolaisia intialaisia leivonnaisia, kuten samosat ja curry‑twistit. Makealta puolelta löytyy suomalaisia pullia ja mustikkakukkoa. Tarjoamme myös vegaanisia vaihtoehtoja; vegaanituotteet kannattaa tilata etukäteen verkkokaupasta.
+
+Q: Onko teillä vegaanisia vaihtoehtoja?
+A (legacy): Tällä hetkellä en löytänyt vegaanisia tai maidottomia tuotteita. Tarkista valikko.
+A (new): Meillä on useita vegaanisia tuotteita ilman maitoa: vegaaniset riisipiirakat, gobi-samosat, mungcurry-twistit, sekä vegaaniset mustikkakukot ja pullat. Vegaanituotteet kannattaa tilata etukäteen verkkokaupasta.
+
+Q: Mitä täytteitä karjalanpiirakoissa on?
+A (legacy): En löytänyt tietoja aiheesta “Mitä täytteitä karjalanpiirakoissa on?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Karjalanpiirakoissamme on neljä vakituista täytettä: riisipuuro, perunasose, ohrapuuro ja vegaaninen riisipuuro (ilman maitotuotteita).
+
+Q: Käytättekö vehnää piirakoiden taikinassa?
+A (legacy): En löytänyt tietoja aiheesta “Käytättekö vehnää piirakoiden taikinassa?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Karjalanpiirakat: Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Karjalanpiirakat ovat saatavilla riisi-, ohra- ja perunatäytteellä. Leivomme myös vegaanisia riisipiirakoita. Piirakkamme ovat laktoosittomia. Kaikki piirakat ovat saatavilla myymälästä uunituoreina ja kotona paistettavina raakapakasteina.
+
+Q: Onko tuotteissa laktoosia?
+A (legacy): Kaikki tuotteemme ovat laktoosittomia.
+A (new): Kaikki tuotteemme ovat laktoosittomia.
+
+Q: Onko teillä gluteenittomia tuotteita?
+A (legacy): Meillä ei ole valitettavasti gluteenittomia tuotteita. Tilamme eivät sovellu gluteenittomaan leivontaan muun leivonnan ohella jauhopölyn vuoksi.
+A (new): Meillä ei ole valitettavasti gluteenittomia tuotteita. Tilamme eivät sovellu gluteenittomaan leivontaan muun leivonnan ohella jauhopölyn vuoksi.
+
+Q: Miten voin tilata tuotteita etukäteen?
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>
+
+Q: Voinko maksaa kortilla?
+A (legacy): Kyllä. Tee ennakkotilaus verkkokaupassa ja nouda aukioloaikoina.
+A (new): Maksut vain kortilla, ja lähes kaikki kortit käyvät.
+
+Q: Teettekö tilauskakkuja?
+A (legacy): Emme leivo kakkuja (täytekakkuja, kuivakakkuja), voileipäkakkuja, lihapiirakoita tai konditoriatuotteita. Olemme ensisijaisesti karjalanpiirakkaleipomo.
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>
+
+Q: Onko tuotteita mahdollista saada pakasteena?
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karjalanpiirakat</div><p>Karjalanpiirakat: Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Täytteinä riisi-, ohra- ja perunapuuro sekä vegaaninen riisipuuro. Kaikki piirakat ovat laktoosittomia ja saatavilla uunituoreina tai kotona paistettavina raakapakasteina.</p></div><div class="menu-section"><div class="menu-heading">Samosat ja curry-twistit</div><p>Samosat ovat suolaisia intialaisia leivonnaisia; vegaaninen gobi-samosa tulee Rakan perhereseptistä. Curry-twistissä naan-tyyppisen leivän sisällä on mausteista mungpapucurrya, jossa on lempeä chilin potku.</p></div><div class="menu-section"><div class="menu-heading">Pullat ja makeat</div><p>Pulla vitriinissä vaihtelee: kanelipullat, kinuskipullat, voisilmäpullat ja sesonkileivonnaiset. Kardemumman jauhamme itse kokonaisista siemenistä Intiasta.</p></div><div class="menu-section"><div class="menu-heading">Marjapiirakat ja mustikkakukko</div><p>Marjapiirakoissa vaihtelevat puolukka, mustikka ja punaherukka – erinomaisia vaniljakastikkeen kanssa. Mustikkakukko (aka rättänä) on metsämustikoilla täytetty rukiinen leivonnainen.</p></div><div class="menu-section"><div class="menu-heading">Raakapakastevalikoima</div><p>Useimmat tuotteet saa myös raakapakasteina: karjalanpiirakat (10 tai 20 kpl pakkaukset), vegaaniset samosat sekä mustikkakukot kotiin paistettavaksi.</p></div><div class="menu-note">Hinnat voivat vaihdella; ajantasaiset hinnat löydät verkkokaupastamme.</div></div>
+A (new): <p>Myymme myös raakapakasteita, jotka voit paistaa kotona. Löydät vaihtoehdot valikostamme.</p><div class="suggest"><div class="suggest-title">Haluatko nähdä valikon?</div><a class="btn suggest-btn" data-suggest="Näytä valikko">Näytä valikko</a></div>
+
+Q: Kuinka kauan piirakat säilyvät kotona?
+A (legacy): En löytänyt tietoja aiheesta “Kuinka kauan piirakat säilyvät kotona?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Piirakkamme säilyvät jääkaapissa noin 2–3 päivää. Kaikki paistetut tuotteemme voi myös pakastaa, jolloin ne säilyvät noin kaksi kuukautta.
+
+Q: Voinko ostaa tuotteita verkkokaupan kautta?
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>
+
+Q: Mikä on teidän osoitteenne?
+A (legacy): En löytänyt tietoja aiheesta “Mikä on teidän osoitteenne?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Myymälämme sijaitsee Vallilassa osoitteessa Kumpulantie 15, 00520 Helsinki.
+
+Q: Mitkä ovat aukioloaikanne?
+A (legacy): Olemme avoinna torstaisin ja perjantaisin klo 11-17 ja lauantaisin klo 11-15.
+A (new): Olemme avoinna torstaisin ja perjantaisin klo 11-17 ja lauantaisin klo 11-15.
+
+Q: Pystynkö tilaamaan yritykselle isompia määriä?
+A (legacy): Päätämme asiasta tapauskohtaisesti. Lähetä ystävällisesti sähköpostia osoitteeseen rakaskotileipomo@gmail.com ja kerro tarpeestasi.
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>
+
+Q: Myyttekö lahjakortteja?
+A (legacy): Valitettavasti emme myy lahjakortteja.
+A (new): Valitettavasti emme myy lahjakortteja.
+
+Q: Onko samosat mausteisia?
+A (legacy): En löytänyt tietoja aiheesta “Onko samosat mausteisia?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Samosamme maustetaan kymmenillä intialaisilla mausteilla kuten juustokuminalla, korianterilla, kurkumalla, garam masalalla ja miedolla chilillä. Ne ovat aromikkaita ja lempeän tulisia.
+
+Q: Millä kardemummalla pullat on maustettu?
+A (legacy): En löytänyt tietoja aiheesta “Millä kardemummalla pullat on maustettu?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Käytämme pullissa kokonaisia kardemumman siemeniä, jotka jauhamme itse tuoreiksi juuri ennen taikinan valmistusta. Kardemumma tuodaan perheemme kautta Intiasta, joten aromi on erityisen raikas.
+
+Q: Voinko saada allergialistan tuotteista?
+A (legacy): Yleisimmät allergeenit joita käytämme: maito, gluteeni (vehnä/ruis/ohra) ja kananmuna. Käsittelemme leipomossa viljaa ja maitotuotteita; ristikontaminaatiota ei voida täysin poissulkea.
+A (new): Yleisimmät allergeenit joita käytämme: maito, gluteeni (vehnä/ruis/ohra) ja kananmuna. Käsittelemme leipomossa viljaa ja maitotuotteita; ristikontaminaatiota ei voida täysin poissulkea.
+
+Q: Teettekö toimituksia kotiin?
+A (legacy): En löytänyt tietoja aiheesta “Teettekö toimituksia kotiin?”. Voin auttaa leipomoon liittyvissä asioissa, kuten tuotteet, aukioloajat, menu, tilaukset ja allergiat. Kokeile kysyä: “Mitkä ovat aukioloajat?”, “Voinko tilata etukäteen?”, tai “Karjalanpiirakan ainesosat?”.
+A (new): Emme tarjoa kotiinkuljetusta, mutta voit tilata taksin tai kuljetuspalvelun noutamaan tilauksesi. Luovutamme tuotteet kuskille ja voimme lähettää maksulinkin etukäteen, kun tilaus on vahvistettu.
+
+Q: Näytä valikko
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karjalanpiirakat</div><p>Karjalanpiirakat: Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Täytteinä riisi-, ohra- ja perunapuuro sekä vegaaninen riisipuuro. Kaikki piirakat ovat laktoosittomia ja saatavilla uunituoreina tai kotona paistettavina raakapakasteina.</p></div><div class="menu-section"><div class="menu-heading">Samosat ja curry-twistit</div><p>Samosat ovat suolaisia intialaisia leivonnaisia; vegaaninen gobi-samosa tulee Rakan perhereseptistä. Curry-twistissä naan-tyyppisen leivän sisällä on mausteista mungpapucurrya, jossa on lempeä chilin potku.</p></div><div class="menu-section"><div class="menu-heading">Pullat ja makeat</div><p>Pulla vitriinissä vaihtelee: kanelipullat, kinuskipullat, voisilmäpullat ja sesonkileivonnaiset. Kardemumman jauhamme itse kokonaisista siemenistä Intiasta.</p></div><div class="menu-section"><div class="menu-heading">Marjapiirakat ja mustikkakukko</div><p>Marjapiirakoissa vaihtelevat puolukka, mustikka ja punaherukka – erinomaisia vaniljakastikkeen kanssa. Mustikkakukko (aka rättänä) on metsämustikoilla täytetty rukiinen leivonnainen.</p></div><div class="menu-section"><div class="menu-heading">Raakapakastevalikoima</div><p>Useimmat tuotteet saa myös raakapakasteina: karjalanpiirakat (10 tai 20 kpl pakkaukset), vegaaniset samosat sekä mustikkakukot kotiin paistettavaksi.</p></div><div class="menu-note">Hinnat voivat vaihdella; ajantasaiset hinnat löydät verkkokaupastamme.</div></div>
+A (new): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karjalanpiirakat</div><p>Karjalanpiirakat: Käsintehtyjen piirakoidemme kuoret ovat täyttä ruista ilman vehnää. Täytteinä riisi-, ohra- ja perunapuuro sekä vegaaninen riisipuuro. Kaikki piirakat ovat laktoosittomia ja saatavilla uunituoreina tai kotona paistettavina raakapakasteina.</p></div><div class="menu-section"><div class="menu-heading">Samosat ja curry-twistit</div><p>Samosat ovat suolaisia intialaisia leivonnaisia; vegaaninen gobi-samosa tulee Rakan perhereseptistä. Curry-twistissä naan-tyyppisen leivän sisällä on mausteista mungpapucurrya, jossa on lempeä chilin potku.</p></div><div class="menu-section"><div class="menu-heading">Pullat ja makeat</div><p>Pulla vitriinissä vaihtelee: kanelipullat, kinuskipullat, voisilmäpullat ja sesonkileivonnaiset. Kardemumman jauhamme itse kokonaisista siemenistä Intiasta.</p></div><div class="menu-section"><div class="menu-heading">Marjapiirakat ja mustikkakukko</div><p>Marjapiirakoissa vaihtelevat puolukka, mustikka ja punaherukka – erinomaisia vaniljakastikkeen kanssa. Mustikkakukko (aka rättänä) on metsämustikoilla täytetty rukiinen leivonnainen.</p></div><div class="menu-section"><div class="menu-heading">Raakapakastevalikoima</div><p>Useimmat tuotteet saa myös raakapakasteina: karjalanpiirakat (10 tai 20 kpl pakkaukset), vegaaniset samosat sekä mustikkakukot kotiin paistettavaksi.</p></div><div class="menu-note">Hinnat voivat vaihdella; ajantasaiset hinnat löydät verkkokaupastamme.</div></div>
+
+Q: Tilaus
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Tilaa verkkokaupasta</div>
+  <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Avaa verkkokauppa</a>
+    <button class="btn" data-action="start-order">Tilaa chatissa</button>
+  </div>
+</div>
+
+
+Q: What products are available today?
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelian pies</div><p>Handmade with a 100% rye crust (no wheat). Fillings: rice porridge, barley porridge, mashed potato, plus a vegan rice option. All pies are lactose-free and available fresh or as par-baked frozen packs for finishing at home.</p></div><div class="menu-section"><div class="menu-heading">Savory Indian pastries</div><p>Vegan gobi samosas from Raka’s family recipe and mung curry twists (naan-style bread filled with gently spiced mung bean curry with mild chili heat).</p></div><div class="menu-section"><div class="menu-heading">Finnish buns & sweets</div><p>Cinnamon rolls, caramel (“kinuski”) buns, butter-eye buns and seasonal varieties. We grind whole cardamom pods from India fresh before baking.</p></div><div class="menu-section"><div class="menu-heading">Berry pies & mustikkakukko</div><p>Rotating berry pies — lingonberry, blueberry, redcurrant — delicious with vanilla sauce. Mustikkakukko (“blueberry rye pie”) is filled with wild blueberries.</p></div><div class="menu-section"><div class="menu-heading">Take-home freezer packs</div><p>Most of the range is also available frozen: Karelian pies (packs of 10 or 20), vegan samosas and mustikkakukko to bake or warm up at home.</p></div><div class="menu-note">Prices may change; see the online shop for current pricing.</div></div>
+A (new): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelian pies</div><p>Handmade with a 100% rye crust (no wheat). Fillings: rice porridge, barley porridge, mashed potato, plus a vegan rice option. All pies are lactose-free and available fresh or as par-baked frozen packs for finishing at home.</p></div><div class="menu-section"><div class="menu-heading">Savory Indian pastries</div><p>Vegan gobi samosas from Raka’s family recipe and mung curry twists (naan-style bread filled with gently spiced mung bean curry with mild chili heat).</p></div><div class="menu-section"><div class="menu-heading">Finnish buns & sweets</div><p>Cinnamon rolls, caramel (“kinuski”) buns, butter-eye buns and seasonal varieties. We grind whole cardamom pods from India fresh before baking.</p></div><div class="menu-section"><div class="menu-heading">Berry pies & mustikkakukko</div><p>Rotating berry pies — lingonberry, blueberry, redcurrant — delicious with vanilla sauce. Mustikkakukko (“blueberry rye pie”) is filled with wild blueberries.</p></div><div class="menu-section"><div class="menu-heading">Take-home freezer packs</div><p>Most of the range is also available frozen: Karelian pies (packs of 10 or 20), vegan samosas and mustikkakukko to bake or warm up at home.</p></div><div class="menu-note">Prices may change; see the online shop for current pricing.</div></div>
+
+Q: Do you have vegan options?
+A (legacy): I couldn’t find vegan or dairy‑free items right now. Please check the menu.
+A (new): We have several vegan, dairy‑free items: vegan rice pies, gobi samosas, mung curry twists, and vegan blueberry pies and buns. Vegan items are best preordered in the online shop.
+
+Q: What fillings do your Karelian pies come with?
+A (legacy): Sorry, we do not accept requests for specific flavors, fillings, or designs at the moment.
+A (new): We bake our Karelian pies with four fillings: rice porridge, mashed potato, barley porridge and a vegan rice porridge made without dairy.
+
+Q: Do you use wheat in the pie crust?
+A (legacy): I couldn’t find details about “Do you use wheat in the pie crust?”. I can help with bakery topics like products, opening hours, menu, orders, and allergies. Try asking: “What are your opening hours?”, “Can I preorder?”, or “What are the ingredients?”.
+A (new): Our main product is a 100% whole‑rye Karelian pie. We also offer savory Indian pastries such as samosas and curry twists. On the sweet side we have Finnish buns and blueberry pies (mustikkakukko). We also offer vegan options; we recommend preordering in the online shop.
+
+Q: Are your products lactose-free?
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelian pies</div><p>Handmade with a 100% rye crust (no wheat). Fillings: rice porridge, barley porridge, mashed potato, plus a vegan rice option. All pies are lactose-free and available fresh or as par-baked frozen packs for finishing at home.</p></div><div class="menu-section"><div class="menu-heading">Savory Indian pastries</div><p>Vegan gobi samosas from Raka’s family recipe and mung curry twists (naan-style bread filled with gently spiced mung bean curry with mild chili heat).</p></div><div class="menu-section"><div class="menu-heading">Finnish buns & sweets</div><p>Cinnamon rolls, caramel (“kinuski”) buns, butter-eye buns and seasonal varieties. We grind whole cardamom pods from India fresh before baking.</p></div><div class="menu-section"><div class="menu-heading">Berry pies & mustikkakukko</div><p>Rotating berry pies — lingonberry, blueberry, redcurrant — delicious with vanilla sauce. Mustikkakukko (“blueberry rye pie”) is filled with wild blueberries.</p></div><div class="menu-section"><div class="menu-heading">Take-home freezer packs</div><p>Most of the range is also available frozen: Karelian pies (packs of 10 or 20), vegan samosas and mustikkakukko to bake or warm up at home.</p></div><div class="menu-note">Prices may change; see the online shop for current pricing.</div></div>
+A (new): All our products are lactose-free.
+
+Q: Do you offer gluten-free items?
+A (legacy): Unfortunately we do not have gluten‑free products. Our facilities are not suitable for gluten‑free baking alongside other baking due to flour dust.
+A (new): Unfortunately we do not offer gluten-free products. Our bakery handles plenty of wheat and rye flour so we can’t guarantee a gluten-free environment.
+
+Q: How can I place a preorder?
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Order Online</div>
+  <div class="order-sub">Pickup in store, pay at pickup.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Open Online Shop</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Order Online</div>
+  <div class="order-sub">Pickup in store, pay at pickup.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Open Online Shop</a>
+    <button class="btn" data-action="start-order">Order in chat</button>
+  </div>
+</div>
+
+Q: Can I pay by card?
+A (legacy): It’s easiest to order in our online shop or through this chat. As a small business, we don’t reliably have time to answer phone calls.
+A (new): Payment by card only, but almost all cards are accepted.
+
+Q: Do you make custom cakes?
+A (legacy): We don’t bake cakes (layer cakes, loaf cakes), sandwich cakes, meat pies, or confectionery items. We are primarily a Karelian pie bakery.
+A (new): We don’t bake cakes (layer cakes, loaf cakes), sandwich cakes, meat pies, or confectionery items. We are primarily a Karelian pie bakery.
+
+Q: Are your products available frozen?
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelian pies</div><p>Handmade with a 100% rye crust (no wheat). Fillings: rice porridge, barley porridge, mashed potato, plus a vegan rice option. All pies are lactose-free and available fresh or as par-baked frozen packs for finishing at home.</p></div><div class="menu-section"><div class="menu-heading">Savory Indian pastries</div><p>Vegan gobi samosas from Raka’s family recipe and mung curry twists (naan-style bread filled with gently spiced mung bean curry with mild chili heat).</p></div><div class="menu-section"><div class="menu-heading">Finnish buns & sweets</div><p>Cinnamon rolls, caramel (“kinuski”) buns, butter-eye buns and seasonal varieties. We grind whole cardamom pods from India fresh before baking.</p></div><div class="menu-section"><div class="menu-heading">Berry pies & mustikkakukko</div><p>Rotating berry pies — lingonberry, blueberry, redcurrant — delicious with vanilla sauce. Mustikkakukko (“blueberry rye pie”) is filled with wild blueberries.</p></div><div class="menu-section"><div class="menu-heading">Take-home freezer packs</div><p>Most of the range is also available frozen: Karelian pies (packs of 10 or 20), vegan samosas and mustikkakukko to bake or warm up at home.</p></div><div class="menu-note">Prices may change; see the online shop for current pricing.</div></div>
+A (new): <p>We also sell par-baked frozen items that you can finish at home. You’ll find them in our menu.</p><div class="suggest"><div class="suggest-title">Would you like to see the menu?</div><a class="btn suggest-btn" data-suggest="Show me the menu">Show menu</a></div>
+
+Q: How long do the pies keep at home?
+A (legacy): I couldn’t find details about “How long do the pies keep at home?”. I can help with bakery topics like products, opening hours, menu, orders, and allergies. Try asking: “What are your opening hours?”, “Can I preorder?”, or “What are the ingredients?”.
+A (new): Our pies keep in the fridge for about 2–3 days. All of our baked products can also be frozen, and they keep for roughly two months in the freezer.
+
+Q: Can I order through your online shop?
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Order Online</div>
+  <div class="order-sub">Pickup in store, pay at pickup.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Open Online Shop</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Order Online</div>
+  <div class="order-sub">Pickup in store, pay at pickup.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Open Online Shop</a>
+    <button class="btn" data-action="start-order">Order in chat</button>
+  </div>
+</div>
+
+Q: What is your address?
+A (legacy): We are located in Vallila at Kumpulantie 15, 00520, Helsinki. Welcome! The shop is at street level and street parking is available for a fee. Nearest stops: [add here] If you placed an online order, please bring your order confirmation email.
+A (new): Our bakery is in Vallila at Kumpulantie 15, 00520 Helsinki.
+
+Q: What are your opening hours?
+A (legacy): We are open on Thursdays and Fridays from 11 am to 5 pm, and on Saturdays from 11 am to 3 pm.
+A (new): Yes, you can place preorders in our online shop. Pick up during opening hours.
+
+Q: Can I order larger quantities for a company?
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Order Online</div>
+  <div class="order-sub">Pickup in store, pay at pickup.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Open Online Shop</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Order Online</div>
+  <div class="order-sub">Pickup in store, pay at pickup.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Open Online Shop</a>
+    <button class="btn" data-action="start-order">Order in chat</button>
+  </div>
+</div>
+
+Q: Do you sell gift cards?
+A (legacy): We sell gift cards with a minimum value of €10 and they are valid for 6 months.
+A (new): Unfortunately we do not sell gift cards.
+
+Q: Are the samosas spicy?
+A (legacy): I couldn’t find details about “Are the samosas spicy?”. I can help with bakery topics like products, opening hours, menu, orders, and allergies. Try asking: “What are your opening hours?”, “Can I preorder?”, or “What are the ingredients?”.
+A (new): Our samosas are seasoned with a dozen Indian spices – cumin, coriander, turmeric, garam masala and a mild chili, among others. They’re flavorful with a gentle heat.
+
+Q: What kind of cardamom do you use in your buns?
+A (legacy): I couldn’t find details about “What kind of cardamom do you use in your buns?”. I can help with bakery topics like products, opening hours, menu, orders, and allergies. Try asking: “What are your opening hours?”, “Can I preorder?”, or “What are the ingredients?”.
+A (new): For our buns we use whole cardamom seeds that we grind ourselves right before mixing the dough. The cardamom is sourced from family growers in India, so the flavor stays intensely fresh.
+
+Q: Can I get an allergen list of your products?
+A (legacy): Common allergens we handle: milk, gluten (wheat/rye/barley) and egg. We handle cereals and dairy in the bakery; cross‑contamination cannot be fully excluded.
+A (new): The main allergens we handle are milk, gluten (wheat/rye/barley) and egg. We work with flour and dairy in the bakery, so cross-contamination cannot be completely ruled out.
+
+Q: Do you offer home delivery?
+A (legacy): 
+<div class="order-ui">
+  <div class="order-sub">We currently do not offer delivery. Pickup in-store during opening hours.</div>
+  <div class="order-title">Order Online</div>
+  <div class="order-sub">Pickup in store, pay at pickup.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Open Online Shop</a>
+    
+  </div>
+</div>
+
+A (new): We don’t provide home delivery ourselves, but you’re welcome to book a taxi or courier to pick up your order. We’ll hand the products to the driver and can send a payment link in advance once the order is confirmed.
+
+Q: Show menu
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelian pies</div><p>Handmade with a 100% rye crust (no wheat). Fillings: rice porridge, barley porridge, mashed potato, plus a vegan rice option. All pies are lactose-free and available fresh or as par-baked frozen packs for finishing at home.</p></div><div class="menu-section"><div class="menu-heading">Savory Indian pastries</div><p>Vegan gobi samosas from Raka’s family recipe and mung curry twists (naan-style bread filled with gently spiced mung bean curry with mild chili heat).</p></div><div class="menu-section"><div class="menu-heading">Finnish buns & sweets</div><p>Cinnamon rolls, caramel (“kinuski”) buns, butter-eye buns and seasonal varieties. We grind whole cardamom pods from India fresh before baking.</p></div><div class="menu-section"><div class="menu-heading">Berry pies & mustikkakukko</div><p>Rotating berry pies — lingonberry, blueberry, redcurrant — delicious with vanilla sauce. Mustikkakukko (“blueberry rye pie”) is filled with wild blueberries.</p></div><div class="menu-section"><div class="menu-heading">Take-home freezer packs</div><p>Most of the range is also available frozen: Karelian pies (packs of 10 or 20), vegan samosas and mustikkakukko to bake or warm up at home.</p></div><div class="menu-note">Prices may change; see the online shop for current pricing.</div></div>
+A (new): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelian pies</div><p>Handmade with a 100% rye crust (no wheat). Fillings: rice porridge, barley porridge, mashed potato, plus a vegan rice option. All pies are lactose-free and available fresh or as par-baked frozen packs for finishing at home.</p></div><div class="menu-section"><div class="menu-heading">Savory Indian pastries</div><p>Vegan gobi samosas from Raka’s family recipe and mung curry twists (naan-style bread filled with gently spiced mung bean curry with mild chili heat).</p></div><div class="menu-section"><div class="menu-heading">Finnish buns & sweets</div><p>Cinnamon rolls, caramel (“kinuski”) buns, butter-eye buns and seasonal varieties. We grind whole cardamom pods from India fresh before baking.</p></div><div class="menu-section"><div class="menu-heading">Berry pies & mustikkakukko</div><p>Rotating berry pies — lingonberry, blueberry, redcurrant — delicious with vanilla sauce. Mustikkakukko (“blueberry rye pie”) is filled with wild blueberries.</p></div><div class="menu-section"><div class="menu-heading">Take-home freezer packs</div><p>Most of the range is also available frozen: Karelian pies (packs of 10 or 20), vegan samosas and mustikkakukko to bake or warm up at home.</p></div><div class="menu-note">Prices may change; see the online shop for current pricing.</div></div>
+
+Q: Order
+A (legacy): 
+<div class="order-ui">
+  <div class="order-title">Order Online</div>
+  <div class="order-sub">Pickup in store, pay at pickup.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Open Online Shop</a>
+    
+  </div>
+</div>
+
+A (new): <div class="order-ui">
+  <div class="order-title">Order Online</div>
+  <div class="order-sub">Pickup in store, pay at pickup.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Open Online Shop</a>
+    <button class="btn" data-action="start-order">Order in chat</button>
+  </div>
+</div>
+
+
+Q: Vilka produkter har ni till försäljning idag?
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelska piroger</div><p>Handgjorda med 100 % rågskal utan vete. Fyllningar: risgröt, korngröt, potatismos samt en vegansk risvariant. Alla piroger är laktosfria och finns både nygräddade och som råfrysta för hemmagräddning.</p></div><div class="menu-section"><div class="menu-heading">Indiska salta bakverk</div><p>Veganska gobi-samosor enligt Rakas familjerecept och curry twists – naanliknande bröd fyllt med kryddig mungbönscurry med mild chili.</p></div><div class="menu-section"><div class="menu-heading">Bullarna & det söta</div><p>Kanelbullar, kola-/kinuskibullar, smöröga-bullar och säsongsbakelser. Kardemumman mals alltid färsk från hela kapslar som importeras från Indien.</p></div><div class="menu-section"><div class="menu-heading">Bärpajer & mustikkakukko</div><p>Bärpajerna varierar mellan lingon, blåbär och vinbär – goda med vaniljsås. Mustikkakukko är ett mindre rågskal fyllt med vilda blåbär.</p></div><div class="menu-section"><div class="menu-heading">Råfrysta produkter</div><p>De flesta bakverk finns även råfrysta: karelska piroger (10 eller 20 st förpackningar), veganska samosor och mustikkakukko för att grädda hemma.</p></div><div class="menu-note">Priser kan ändras; se webbutiken för aktuella priser.</div></div>
+A (new): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelska piroger</div><p>Handgjorda med 100 % rågskal utan vete. Fyllningar: risgröt, korngröt, potatismos samt en vegansk risvariant. Alla piroger är laktosfria och finns både nygräddade och som råfrysta för hemmagräddning.</p></div><div class="menu-section"><div class="menu-heading">Indiska salta bakverk</div><p>Veganska gobi-samosor enligt Rakas familjerecept och curry twists – naanliknande bröd fyllt med kryddig mungbönscurry med mild chili.</p></div><div class="menu-section"><div class="menu-heading">Bullarna & det söta</div><p>Kanelbullar, kola-/kinuskibullar, smöröga-bullar och säsongsbakelser. Kardemumman mals alltid färsk från hela kapslar som importeras från Indien.</p></div><div class="menu-section"><div class="menu-heading">Bärpajer & mustikkakukko</div><p>Bärpajerna varierar mellan lingon, blåbär och vinbär – goda med vaniljsås. Mustikkakukko är ett mindre rågskal fyllt med vilda blåbär.</p></div><div class="menu-section"><div class="menu-heading">Råfrysta produkter</div><p>De flesta bakverk finns även råfrysta: karelska piroger (10 eller 20 st förpackningar), veganska samosor och mustikkakukko för att grädda hemma.</p></div><div class="menu-note">Priser kan ändras; se webbutiken för aktuella priser.</div></div>
+
+Q: Har ni veganska alternativ?
+A (legacy): För tillfället kunde jag inte hitta veganska eller mjölkfria produkter. Vänligen kontrollera menyn.
+A (new): Vi har flera veganska produkter utan mjölk: veganska rispiroger, gobi‑samosor, mungcurry‑twists samt veganska blåbärspajer och bullar. Veganska produkter lönar sig att förbeställa i webbutiken.
+
+Q: Vilka fyllningar finns i era karelska piroger?
+A (legacy): Tyvärr tar vi inte emot önskemål om specifika smaker, fyllningar eller designer för tillfället.
+A (new): Våra karelska piroger finns med fyra fyllningar: risgrynsgröt, potatismos, korngröt och en vegansk risgröt utan mejeriprodukter.
+
+Q: Använder ni vete i pirogskalet?
+A (legacy): Jag kunde inte hitta information om “Använder ni vete i pirogskalet?”. Jag kan hjälpa till med bagerifrågor som produkter, öppettider, meny, beställningar och allergier. Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Ingredienser för Karjalanpiirakka?”.
+A (new): Vår huvudprodukt är karelsk pirog bakad på fullkornsråg. Dessutom erbjuder vi salta indiska bakverk såsom samosor och currytwists. På den söta sidan har vi finska bullar och blåbärspajer (mustikkakukko). Vi har också veganska alternativ; förbeställ gärna i webbutiken.
+
+Q: Är era produkter laktosfria?
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelska piroger</div><p>Handgjorda med 100 % rågskal utan vete. Fyllningar: risgröt, korngröt, potatismos samt en vegansk risvariant. Alla piroger är laktosfria och finns både nygräddade och som råfrysta för hemmagräddning.</p></div><div class="menu-section"><div class="menu-heading">Indiska salta bakverk</div><p>Veganska gobi-samosor enligt Rakas familjerecept och curry twists – naanliknande bröd fyllt med kryddig mungbönscurry med mild chili.</p></div><div class="menu-section"><div class="menu-heading">Bullarna & det söta</div><p>Kanelbullar, kola-/kinuskibullar, smöröga-bullar och säsongsbakelser. Kardemumman mals alltid färsk från hela kapslar som importeras från Indien.</p></div><div class="menu-section"><div class="menu-heading">Bärpajer & mustikkakukko</div><p>Bärpajerna varierar mellan lingon, blåbär och vinbär – goda med vaniljsås. Mustikkakukko är ett mindre rågskal fyllt med vilda blåbär.</p></div><div class="menu-section"><div class="menu-heading">Råfrysta produkter</div><p>De flesta bakverk finns även råfrysta: karelska piroger (10 eller 20 st förpackningar), veganska samosor och mustikkakukko för att grädda hemma.</p></div><div class="menu-note">Priser kan ändras; se webbutiken för aktuella priser.</div></div>
+A (new): Alla våra produkter är laktosfria.
+
+Q: Har ni glutenfria produkter?
+A (legacy): Tyvärr har vi inga glutenfria produkter. Våra lokaler lämpar sig inte för glutenfri bakning tillsammans med annan bakning på grund av mjöldamm.
+A (new): Tyvärr erbjuder vi inga glutenfria produkter. Bageriet hanterar vetemjöl och rågmjöl, så miljön är inte glutenfri.
+
+Q: Hur kan jag förbeställa?
+A (legacy): Jag kunde inte hitta information om “Hur kan jag förbeställa?”. Jag kan hjälpa till med bagerifrågor som produkter, öppettider, meny, beställningar och allergier. Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Ingredienser för Karjalanpiirakka?”.
+A (new): <div class="order-ui">
+  <div class="order-title">Beställ i webbutiken</div>
+  <div class="order-sub">Avhämtning i butiken, betalning på plats.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Öppna webbutiken</a>
+    <button class="btn" data-action="start-order">Beställ i chatten</button>
+  </div>
+</div>
+
+Q: Kan jag betala med kort?
+A (legacy): Ja. Gör en förbeställning i webbutiken och hämta under öppettider.
+A (new): Vi tar endast kort, men nästan alla kort fungerar.
+
+Q: Gör ni beställningstårtor?
+A (legacy): Vi bakar inte tårtor (gräddtårtor, sockerkakor), smörgåstårtor, köttpiroger eller konditorivaror. Vi är i första hand ett karelskt pirogbageri.
+A (new): <div class="order-ui">
+  <div class="order-title">Beställ i webbutiken</div>
+  <div class="order-sub">Avhämtning i butiken, betalning på plats.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Öppna webbutiken</a>
+    <button class="btn" data-action="start-order">Beställ i chatten</button>
+  </div>
+</div>
+
+Q: Finns era produkter som djupfrysta?
+A (legacy): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelska piroger</div><p>Handgjorda med 100 % rågskal utan vete. Fyllningar: risgröt, korngröt, potatismos samt en vegansk risvariant. Alla piroger är laktosfria och finns både nygräddade och som råfrysta för hemmagräddning.</p></div><div class="menu-section"><div class="menu-heading">Indiska salta bakverk</div><p>Veganska gobi-samosor enligt Rakas familjerecept och curry twists – naanliknande bröd fyllt med kryddig mungbönscurry med mild chili.</p></div><div class="menu-section"><div class="menu-heading">Bullarna & det söta</div><p>Kanelbullar, kola-/kinuskibullar, smöröga-bullar och säsongsbakelser. Kardemumman mals alltid färsk från hela kapslar som importeras från Indien.</p></div><div class="menu-section"><div class="menu-heading">Bärpajer & mustikkakukko</div><p>Bärpajerna varierar mellan lingon, blåbär och vinbär – goda med vaniljsås. Mustikkakukko är ett mindre rågskal fyllt med vilda blåbär.</p></div><div class="menu-section"><div class="menu-heading">Råfrysta produkter</div><p>De flesta bakverk finns även råfrysta: karelska piroger (10 eller 20 st förpackningar), veganska samosor och mustikkakukko för att grädda hemma.</p></div><div class="menu-note">Priser kan ändras; se webbutiken för aktuella priser.</div></div>
+A (new): <p>Vi säljer också råfrysta bakverk som du kan grädda hemma. Du hittar dem i vår meny.</p><div class="suggest"><div class="suggest-title">Vill du se menyn?</div><a class="btn suggest-btn" data-suggest="Visa menyn">Visa menyn</a></div>
+
+Q: Hur länge håller pirogerna hemma?
+A (legacy): Jag kunde inte hitta information om “Hur länge håller pirogerna hemma?”. Jag kan hjälpa till med bagerifrågor som produkter, öppettider, meny, beställningar och allergier. Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Ingredienser för Karjalanpiirakka?”.
+A (new): Våra piroger håller i kylskåp i cirka 2–3 dagar. Alla bakverk går även att frysa in och håller då ungefär två månader i frysen.
+
+Q: Kan jag beställa via er webbutik?
+A (legacy): Jag kunde inte hitta information om “Kan jag beställa via er webbutik?”. Jag kan hjälpa till med bagerifrågor som produkter, öppettider, meny, beställningar och allergier. Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Ingredienser för Karjalanpiirakka?”.
+A (new): <div class="order-ui">
+  <div class="order-title">Beställ i webbutiken</div>
+  <div class="order-sub">Avhämtning i butiken, betalning på plats.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Öppna webbutiken</a>
+    <button class="btn" data-action="start-order">Beställ i chatten</button>
+  </div>
+</div>
+
+Q: Vad är er adress?
+A (legacy): Vi finns i Vallila på Kumpulantie 15, 00520, Helsingfors. Välkommen! Butiken ligger på gatuplan och gatuparkering finns mot avgift. Närmaste hållplatser: [lägg till här] Om du har gjort en webborder, ta med orderbekräftelsen (från e‑posten).
+A (new): Vår butik finns i Vallila på Kumpulantie 15, 00520 Helsingfors.
+
+Q: Vilka är era öppettider?
+A (legacy): Vi har öppet på torsdagar och fredagar kl. 11–17 samt på lördagar kl. 11–15.
+A (new): Vi har öppet på torsdagar och fredagar kl. 11–17 samt på lördagar kl. 11–15.
+
+Q: Kan jag beställa större mängder till företag?
+A (legacy): Jag kunde inte hitta information om “Kan jag beställa större mängder till företag?”. Jag kan hjälpa till med bagerifrågor som produkter, öppettider, meny, beställningar och allergier. Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Ingredienser för Karjalanpiirakka?”.
+A (new): <div class="order-ui">
+  <div class="order-title">Beställ i webbutiken</div>
+  <div class="order-sub">Avhämtning i butiken, betalning på plats.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Öppna webbutiken</a>
+    <button class="btn" data-action="start-order">Beställ i chatten</button>
+  </div>
+</div>
+
+Q: Säljer ni presentkort?
+A (legacy): Tyvärr säljer vi inte presentkort.
+A (new): Tyvärr säljer vi inte presentkort.
+
+Q: Är samosorna kryddstarka?
+A (legacy): Jag kunde inte hitta information om “Är samosorna kryddstarka?”. Jag kan hjälpa till med bagerifrågor som produkter, öppettider, meny, beställningar och allergier. Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Ingredienser för Karjalanpiirakka?”.
+A (new): Våra samosor kryddas med ett tiotal indiska kryddor som spiskummin, koriander, gurkmeja, garam masala och mild chili. De är smakrika med mjuk hetta.
+
+Q: Med vilken kardemumma kryddar ni bullarna?
+A (legacy): Jag kunde inte hitta information om “Med vilken kardemumma kryddar ni bullarna?”. Jag kan hjälpa till med bagerifrågor som produkter, öppettider, meny, beställningar och allergier. Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Ingredienser för Karjalanpiirakka?”.
+A (new): Till bullarna använder vi hela kardemummafrön som vi mal själva precis innan degen blandas. Kardemumman kommer från vår familj i Indien, vilket ger en extra frisk och aromatisk smak.
+
+Q: Kan jag få en allergenlista över era produkter?
+A (legacy): Vanliga allergener vi använder: mjölk, gluten (vete/råg/korn) och ägg. Vi hanterar spannmål och mejeriprodukter i bageriet; korskontaminering kan inte helt uteslutas.
+A (new): De vanligaste allergenerna vi använder är mjölk, gluten (vete/råg/korn) och ägg. Vi hanterar mjöl och mejeriprodukter i bageriet, så korskontaminering kan inte uteslutas helt.
+
+Q: Erbjuder ni hemleverans?
+A (legacy): 
+<div class="order-ui">
+  <div class="order-sub">Vi erbjuder för närvarande ingen leverans. Avhämtning i butiken under öppettider.</div>
+  <div class="order-title">Beställ i webbutiken</div>
+  <div class="order-sub">Hämta i butiken, betalning på plats.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Öppna webbutiken</a>
+    
+  </div>
+</div>
+
+A (new): Vi erbjuder ingen egen hemleverans, men du kan boka en taxi eller budtjänst som hämtar din beställning. Vi lämnar över produkterna till föraren och kan skicka en betalningslänk i förväg när beställningen är bekräftad.
+
+Q: Visa menyn
+A (legacy): Ja. Gör en förbeställning i webbutiken och hämta under öppettider.
+A (new): <div class="menu-static"><div class="menu-section"><div class="menu-heading">Karelska piroger</div><p>Handgjorda med 100 % rågskal utan vete. Fyllningar: risgröt, korngröt, potatismos samt en vegansk risvariant. Alla piroger är laktosfria och finns både nygräddade och som råfrysta för hemmagräddning.</p></div><div class="menu-section"><div class="menu-heading">Indiska salta bakverk</div><p>Veganska gobi-samosor enligt Rakas familjerecept och curry twists – naanliknande bröd fyllt med kryddig mungbönscurry med mild chili.</p></div><div class="menu-section"><div class="menu-heading">Bullarna & det söta</div><p>Kanelbullar, kola-/kinuskibullar, smöröga-bullar och säsongsbakelser. Kardemumman mals alltid färsk från hela kapslar som importeras från Indien.</p></div><div class="menu-section"><div class="menu-heading">Bärpajer & mustikkakukko</div><p>Bärpajerna varierar mellan lingon, blåbär och vinbär – goda med vaniljsås. Mustikkakukko är ett mindre rågskal fyllt med vilda blåbär.</p></div><div class="menu-section"><div class="menu-heading">Råfrysta produkter</div><p>De flesta bakverk finns även råfrysta: karelska piroger (10 eller 20 st förpackningar), veganska samosor och mustikkakukko för att grädda hemma.</p></div><div class="menu-note">Priser kan ändras; se webbutiken för aktuella priser.</div></div>
+
+Q: Beställ
+A (legacy): Jag kunde inte hitta information om “Beställ”. Jag kan hjälpa till med bagerifrågor som produkter, öppettider, meny, beställningar och allergier. Prova att fråga: ”Vilka är öppettiderna?”, ”Kan jag förbeställa?” eller ”Ingredienser för Karjalanpiirakka?”.
+A (new): <div class="order-ui">
+  <div class="order-title">Beställ i webbutiken</div>
+  <div class="order-sub">Avhämtning i butiken, betalning på plats.</div>
+  <div class="order-buttons">
+    <a class="btn" href="https://rakaskotileipomo.fi/verkkokauppa" target="_blank" rel="noopener">Öppna webbutiken</a>
+    <button class="btn" data-action="start-order">Beställ i chatten</button>
+  </div>
+</div>

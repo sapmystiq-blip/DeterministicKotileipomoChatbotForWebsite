@@ -2,23 +2,11 @@
   {
     "title": "Allergies",
     "question": "Do your Karelian pies contain gluten?",
-    "answer": "Classic Karelian pies have a rye crust and are not gluten‑free. Please ask in store if we have special options."
+    "answer": "Classic Karelian pies have a rye crust and are not gluten‑free."
   },
   {
     "question": "Sisältävätkö karjalanpiirakat gluteenia?",
-    "answer": "Perinteisessä karjalanpiirakassa on ruispohja, joten se ei ole gluteeniton. Kysy henkilökunnalta mahdollisista erikoisvaihtoehdoista."
-  },
-  {
-    "question": "Are your fillings lactose‑free?",
-    "answer": "Rice porridge typically contains dairy. Kysy henkilökunnalta laktoosittomista vaihtoehdoista – ne voivat vaihdella."
-  },
-  {
-    "question": "Do products contain nuts?",
-    "answer": "We do not intentionally add nuts to our pies, but traces may occur in a bakery environment. Ask staff if you have a severe allergy."
-  },
-  {
-    "question": "Onko tuotteissa pähkinää?",
-    "answer": "Emme yleensä käytä pähkinöitä piirakoissa, mutta leipomoympäristössä voi esiintyä jäämiä. Kysy henkilökunnalta, jos sinulla on voimakas allergia."
+    "answer": "Perinteisessä karjalanpiirakassa on ruispohja, joten se ei ole gluteeniton."
   }
 ]
 

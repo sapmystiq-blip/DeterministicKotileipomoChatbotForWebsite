@@ -100,6 +100,31 @@ LEGACY_KB_DIR = KB_DIR / "deprecated"
 KB_FILES = [p.name for p in sorted(LEGACY_KB_DIR.glob("*.json"))]
 
 # ============================================================
+# Optional RAG (external repo): kotileipomo-rag
+# ============================================================
+RAG_ENABLED = False
+try:
+    import sys as _sys
+    _RAG_SRC = (REPO_ROOT / "kotileipomo-rag" / "src")
+    if _RAG_SRC.exists():
+        _sys.path.insert(0, str(_RAG_SRC))
+        from rag.ingest import load_kb_docs as _rag_load, chunk_docs as _rag_chunk
+        from rag.index_bm25 import BM25Index as _RagBM
+        from rag.index_embeddings import EmbIndex as _RagEmb
+        from rag.retrieve import Retriever as _RagRet
+        from rag.generate import compose_answer as _rag_compose, _special_answer as _rag_special
+        _RAG_DOCS = _rag_chunk(_rag_load())
+        _RAG_BM = _RagBM(_RAG_DOCS)
+        _RAG_EMB = _RagEmb()
+        _RAG_RET = _RagRet(_RAG_BM, _RAG_EMB)
+        RAG_ENABLED = True
+        logger.info(f"RAG ready: {len(_RAG_DOCS)} docs")
+    else:
+        logger.info("RAG not found (kotileipomo-rag/src missing)")
+except Exception as e:
+    logger.exception(f"RAG init failed: {e}")
+
+# ============================================================
 # Database (optional; e.g., Railway Postgres)
 # ============================================================
 DB_URL = os.getenv("DATABASE_URL") or os.getenv("DB_URL")
@@ -365,6 +390,14 @@ class ChatResponse(BaseModel):
     match: float | None = None
     session_id: str | None = None
 
+class ChatDualResponse(BaseModel):
+    legacy: ChatResponse
+    rag: ChatResponse
+
+class ChatDualRequest(ChatRequest):
+    legacy: bool | None = None
+    rag: bool | None = None
+
 
 class FeedbackPayload(BaseModel):
     name: str | None = None
@@ -416,12 +449,57 @@ def _normalize(text: str) -> str:
     t = re.sub(r"\s+", " ", t)
     return t
 
+def _strip_accents(s: str) -> str:
+    try:
+        import unicodedata as _ud
+        norm = _ud.normalize("NFD", s)
+        return "".join(ch for ch in norm if _ud.category(ch) != "Mn")
+    except Exception:
+        return s
+
+def _stem_token(tok: str) -> str:
+    # Lightweight, language-agnostic stemming for FI/SV/EN
+    w = tok
+    # Finnish common case and plural endings (longest-first)
+    fi_suf = [
+        "hinsa","hänsä","nsä","mme","nne",
+        "issaan","issä","issa","istä","ista","isiin","ihin","iin","een",
+        "ssa","ssä","sta","stä","lla","llä","lta","ltä","lle",
+        "na","nä","ksi","tta","ttä","kin",
+        "ita","itä","ien","jen","ja","jä",
+        "t","n","a","ä",
+    ]
+    for sfx in sorted(fi_suf, key=len, reverse=True):
+        if w.endswith(sfx) and len(w) - len(sfx) >= 3:
+            w = w[: -len(sfx)]
+            break
+    # Swedish plural/definite/common endings
+    sv_suf = ["arnas","ernas","ornas","andes","endes","arna","erna","orna","heten","ande","ende","en","et","na","ar","er","or","n","s"]
+    for sfx in sorted(sv_suf, key=len, reverse=True):
+        if w.endswith(sfx) and len(w) - len(sfx) >= 3:
+            w = w[: -len(sfx)]
+            break
+    # English simple plural/possessive
+    if w.endswith("'s") and len(w) > 3:
+        w = w[:-2]
+    elif w.endswith("es") and len(w) > 4:
+        w = w[:-2]
+    elif w.endswith("s") and len(w) > 3:
+        w = w[:-1]
+    return w
+
 def _tokens(text: str):
     for tok in _normalize(text).split():
         if tok in STOPWORDS:
             continue
-        tok = SYNONYMS.get(tok, tok)  # map synonyms
-        yield tok
+        base = SYNONYMS.get(tok, tok)  # map synonyms
+        stem = _stem_token(base)
+        # yield base, stem, and accentless variants to improve recall
+        yielded = set()
+        for v in (base, stem, _strip_accents(base), _strip_accents(stem)):
+            if v and v not in yielded:
+                yielded.add(v)
+                yield v
 
 def _ratio(a: str, b: str) -> float:
     return SequenceMatcher(None, _normalize(a), _normalize(b)).ratio()
@@ -477,6 +555,33 @@ def load_kb_clean() -> List[Dict[str, Any]]:
             logger.exception(f"Error reading KB file {fname}: {e}")
             continue
     logger.info(f"Loaded {len(kb)} KB entries from {len(KB_FILES)} files")
+    # Also flatten multilingual FAQ into KB for retrieval (FI/SV/EN)
+    try:
+        faq_path = KB_DIR / "faq.json"
+        if faq_path.exists():
+            faq = json.loads(faq_path.read_text(encoding="utf-8"))
+            if isinstance(faq, list):
+                for row in faq:
+                    q = row.get("q") or {}
+                    a = row.get("a") or {}
+                    for lang in ("fi","sv","en"):
+                        ql = (q.get(lang) or "").strip()
+                        al = (a.get(lang) or "").strip()
+                        if not ql or not al:
+                            continue
+                        key = (_normalize(ql), _normalize(al))
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        kb.append({
+                            "question": ql,
+                            "answer": al,
+                            "title": row.get("title") or "",
+                            "file": f"faq.json:{lang}"
+                        })
+        logger.info(f"After adding FAQ, total KB entries: {len(kb)}")
+    except Exception as e:
+        logger.exception(f"Error flattening FAQ into KB index: {e}")
     return kb
 
 def build_index(kb: List[Dict[str, Any]]):
@@ -1254,11 +1359,17 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
         # EN
         "eco friendly packaging", "eco-friendly packaging", "sustainable packaging", "recyclable packaging", "packaging", "paper bags", "hdpe",
         # FI
-        "ekologinen", "ympäristöystävällinen", "kierrätettävä", "kierrätettäviä", "pakkaus", "pakkaukset", "paperipussi", "paperipussit", "leivosrasia", "leivosrasiat", "hdpe",
+        "ekologinen", "ympäristöystävällinen", "ympäristöystävällisiä", "kierrätettävä", "kierrätettäviä", "pakkaus", "pakkaukset", "paperipussi", "paperipussit", "leivosrasia", "leivosrasiat", "hdpe",
         # SV
         "miljövänlig", "miljovänlig", "hållbar", "återvinningsbar", "återvinningsbara", "förpackning", "förpackningar", "papperspåse", "papperspåsar", "hdpe",
     }
-    if any(k in text for k in PACKAGING_KWS):
+    # Also allow stem/prefix matches for FI/SV forms
+    PACKAGING_STEMS = {"ympäristöystävällis", "ymparistoystavallis", "kierrätettäv", "miljövänl", "miljovanl"}
+    toks = set(_tokens(user_msg))
+    if (
+        any(k in text for k in PACKAGING_KWS)
+        or any(any(stem in tok for stem in PACKAGING_STEMS) for tok in toks)
+    ):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
         if lang == "sv":
             return (
@@ -1997,6 +2108,102 @@ def chat(req: ChatRequest, request: Request, response: Response):
     except Exception:
         pass
     return ChatResponse(reply=reply, source=src, match=best_score, session_id=session_id)
+
+def _answer_legacy(user_msg: str, respond_lang: str | None, session_id: str | None = None) -> ChatResponse:
+    try:
+        matches0 = find_best_kb_match(user_msg, top_k=5)
+    except Exception:
+        matches0 = []
+    if matches0:
+        nq = _normalize(user_msg)
+        for blend, bm25, fuzzy, jacc, it in matches0:
+            if _normalize(it.get("question") or "") == nq:
+                ans = (it.get("answer") or "").strip()
+                if ans:
+                    return ChatResponse(reply=ans, source="KB", match=float(blend), session_id=session_id)
+    rb = rule_based_answer(user_msg, respond_lang)
+    if rb:
+        return ChatResponse(reply=rb, source="Rules", match=1.0, session_id=session_id)
+    try:
+        routed = IR.answer(user_msg, respond_lang or PRIMARY_LANG)
+    except Exception:
+        routed = None
+    if routed:
+        return ChatResponse(reply=routed, source="Intent", match=1.0, session_id=session_id)
+    matches = find_best_kb_match(user_msg, top_k=5)
+    if matches:
+        blend, bm25, fuzzy, jacc, best_item = matches[0]
+        if (blend >= MIN_ACCEPT_SCORE) and (bm25 >= MIN_BM25_SIGNAL or jacc >= MIN_JACCARD or fuzzy >= MIN_FUZZY):
+            if LLM_ENABLED and OPENAI_CLIENT:
+                kb_items = [m[4] for m in matches]
+                reply = generate_llm_answer(user_msg, kb_items, respond_lang=respond_lang or PRIMARY_LANG)
+                return ChatResponse(reply=reply, source="KB • LLM", match=float(blend), session_id=session_id)
+            else:
+                reply = (best_item.get("answer") or "").strip() or None
+                if reply:
+                    return ChatResponse(reply=reply, source="KB", match=float(blend), session_id=session_id)
+    reply = llm_like_answer(user_msg, [], respond_lang or PRIMARY_LANG)
+    return ChatResponse(reply=reply, source="Fallback", match=0.0, session_id=session_id)
+
+@app.post("/api/chat_dual", response_model=ChatDualResponse)
+def chat_dual(req: ChatDualRequest, request: Request, response: Response):
+    user_msg = (req.message or "").strip()
+    if not user_msg:
+        raise HTTPException(status_code=400, detail="Message cannot be empty.")
+
+    try:
+        session_id = (req.session_id or request.cookies.get("chat_session") or "").strip()
+    except Exception:
+        session_id = None
+
+    chosen_lang = (req.lang or request.cookies.get("chat_lang") or "").strip().lower()
+    if chosen_lang not in {"fi","sv","en"}:
+        chosen_lang = None
+    user_lang = detect_lang(user_msg)
+    respond_lang = chosen_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else user_lang)
+
+    # Which answers to compute/show (default both True)
+    want_legacy = True if req.legacy is None else bool(req.legacy)
+    want_rag = True if req.rag is None else bool(req.rag)
+    if not want_legacy and not want_rag:
+        want_legacy = True  # ensure at least one
+
+    # Legacy answer
+    if want_legacy:
+        legacy = _answer_legacy(user_msg, respond_lang, session_id)
+    else:
+        legacy = ChatResponse(reply="", source="Legacy (disabled)", match=None, session_id=session_id)
+
+    # RAG answer
+    if want_rag:
+        if RAG_ENABLED:
+            try:
+                # If the user's query is a menu/products request, return the same legacy menu rendering
+                same_menu = False
+                try:
+                    same_menu = (IR.detect_intent(user_msg) == "menu")
+                except Exception:
+                    same_menu = False
+                rag_special = None
+                try:
+                    rag_special = _rag_special(user_msg, respond_lang or PRIMARY_LANG)
+                except Exception:
+                    rag_special = None
+                if rag_special:
+                    rag_reply = rag_special
+                elif same_menu:
+                    rag_reply = IR.resolve_menu(respond_lang or PRIMARY_LANG, query=user_msg)
+                else:
+                    hits = _RAG_RET.retrieve(user_msg, respond_lang or PRIMARY_LANG, top_k=6)
+                    rag_reply = _rag_compose(user_msg, hits, respond_lang or PRIMARY_LANG)
+                rag = ChatResponse(reply=rag_reply, source="RAG", match=None, session_id=session_id)
+            except Exception as e:
+                rag = ChatResponse(reply=f"RAG error: {e}", source="RAG", match=None, session_id=session_id)
+        else:
+            rag = ChatResponse(reply="RAG not enabled.", source="RAG", match=None, session_id=session_id)
+    else:
+        rag = ChatResponse(reply="", source="RAG (disabled)", match=None, session_id=session_id)
+    return ChatDualResponse(legacy=legacy, rag=rag)
 
 # Simple feedback endpoint (logs to DB if available)
 @app.post("/api/feedback")
