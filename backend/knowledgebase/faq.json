@@ -10,7 +10,11 @@
       "sv": "Ja. Gör en förbeställning i webbutiken och hämta under öppettider.",
       "en": "Yes. Place a preorder in the online shop and pick up during opening hours."
     },
-    "tags": ["preorder", "order", "ennakkotilaus"]
+    "tags": [
+      "preorder",
+      "order",
+      "ennakkotilaus"
+    ]
   },
   {
     "q": {
@@ -23,180 +27,593 @@
       "sv": "Hämta i butiken på Kumpulantie 15, 00520 Helsingfors (gatuplan) under öppettider. Gatuparkering finns mot avgift. Ta med ordernumret.",
       "en": "Pick up from our shop at Kumpulantie 15, 00520 Helsinki (street level) during opening hours. Street parking is available for a fee. Bring your order number."
     },
-    "tags": ["pickup", "nouto", "address", "osoite"]
-  },
-  {
-    "q": { "fi": "Mitkä ovat aukioloaikanne?", "sv": "Vilka är era öppettider?", "en": "What are your opening hours?" },
-    "a": { "fi": "Olemme avoinna torstaisin ja perjantaisin klo 11-17 ja lauantaisin klo 11-15.", "sv": "Vi har öppet på torsdagar och fredagar kl. 11–17 samt på lördagar kl. 11–15.", "en": "We are open on Thursdays and Fridays 11:00–17:00, and on Saturdays 11:00–15:00." },
-    "tags": ["aukioloajat", "aukiolo", "auki"]
-  },
-  {
-    "q": { "fi": "Missä sijaitsette?", "sv": "Var ligger ni?", "en": "Where are you located?" },
-    "a": { "fi": "Leipomomyymälämme sijaitsee osoitteessa Kumpulantie 15, 00520 Helsinki", "sv": "Vår butik ligger på Kumpulantie 15, 00520 Helsingfors.", "en": "Our shop is at Kumpulantie 15, 00520 Helsinki." },
-    "tags": ["sijainti", "osoite", "missä"]
-  },
-  {
-    "q": { "fi": "Tarjoatteko kotiinkuljetusta tai noutoa?", "sv": "Erbjuder ni hemleverans eller avhämtning?", "en": "Do you offer home delivery or pickup?" },
-    "a": { "fi": "Noudot onnistuvat aukioloaikojemme puitteissa. Isommat tilauset myös tiistaisin ja keskiviikkoisin. Meillä ei ole kotiinkuljetusta, mutta voit esim. lähettää taksin tai Uberin noutamaan tilauksen meiltä. Tällöin lähetämme maksulinkin etukäteen ja tilaus on maksettava ennen noutoa.", "sv": "Avhämtning går bra under våra öppettider. Större beställningar kan även hämtas tisdagar och onsdagar. Vi har ingen hemleverans, men du kan t.ex. skicka en taxi eller Uber för att hämta beställningen hos oss. Vi skickar då en betalningslänk i förväg och beställningen måste vara betald före hämtning.", "en": "Pickup is available during our opening hours. For larger orders, pickup is also possible on Tuesdays and Wednesdays. We don’t provide home delivery, but you can send a taxi or Uber to collect your order. We will send a payment link in advance, and the order must be paid before pickup." },
-    "tags": ["kotiinkuljetus", "nouto", "kuljetus"]
-  },
-  {
-    "q": { "fi": "Onko teillä asiakaspaikkoja liikkeessä?", "sv": "Har ni sittplatser i butiken?", "en": "Do you have seating in the shop?" },
-    "a": { "fi": "Myymälässämme ei ole asiakaspaikkoja eikä kahvia.", "sv": "Vi har inga sittplatser i butiken och inget kaffe.", "en": "We don’t have customer seating or coffee." },
-    "tags": ["kahvila", "asiakaspaikka", "istumapaikat"]
-  },
-  {
-    "q": { "fi": "Voinko tehdä tilauksia puhelimitse tai verkossa?", "sv": "Kan jag beställa per telefon eller på nätet?", "en": "Can I order by phone or online?" },
-    "a": { "fi": "Tuotteemme on helpointa tilata verkkokaupastamme tai tämän chatin kautta. Puhelimeen emme ehdi pienenä yrityksenä oikein vastailemaan.", "sv": "Det är enklast att beställa i vår webbutik eller via denna chatt. Som ett litet företag hinner vi tyvärr inte alltid svara i telefon.", "en": "It’s easiest to order in our online shop or through this chat. As a small business, we don’t reliably have time to answer phone calls." },
-    "tags": ["tilaus", "puhelin", "verkkokauppa"]
-  },
-  {
-    "q": { "fi": "Minkälaisia leipiä/leivonnaisia/kakkuja myytte?", "sv": "Vilka bröd/bakverk/tårtor säljer ni?", "en": "What kinds of breads/pastries/cakes do you sell?" },
-    "a": { "fi": "Päätuotteemme on täysrukiinen karjalanpiirakka. Lisäksi meillä on mm. suolaisia intialaisia leivonnaisia ja suomalaisia pullia ja mustikkakukkoja. Useat tuotteistamme ovat saatavilla myös kotona paistettavina raakapakasteina.", "sv": "Vår huvudprodukt är karelsk pirog bakad på fullkornsråg. Dessutom har vi bl.a. salta indiska bakverk samt finska bullar och blåbärspajer. Många av våra produkter finns också som råfrysta för gräddning hemma.", "en": "Our main product is a 100% whole‑rye Karelian pie. We also offer savory Indian pastries as well as Finnish buns and blueberry pies. Many items are available as raw‑frozen for baking at home." },
-    "tags": ["leivonnaiset", "tuotteet", "valikoima"]
-  },
-  {
-    "q": { "fi": "Leivotteko kaiken tuoreena päivittäin?", "sv": "Bakars allt färskt varje dag?", "en": "Do you bake everything fresh daily?" },
-    "a": { "fi": "Kaikki on aina saman päivän aamuna paistettua.", "sv": "Allt bakas alltid samma morgon.", "en": "Everything is always baked the same morning." },
-    "tags": ["onko tuoretta", "tuore", "paistettu"]
-  },
-  {
-    "q": { "fi": "Käytättekö paikallisia tai luomuraaka-aineita?", "sv": "Använder ni lokala eller ekologiska råvaror?", "en": "Do you use local or organic ingredients?" },
-    "a": { "fi": "Pyrimme käyttämään aina suomalaisia raaka-aineita. Intialaisissa tuotteissa käytämme toki intialaisia mausteita.", "sv": "Vi strävar efter att alltid använda finländska råvaror. I indiska produkter använder vi förstås indiska kryddor.", "en": "We aim to use Finnish ingredients whenever possible. For Indian items we of course use Indian spices." },
-    "tags": ["paikallinen", "luomu", "raaka-aineet"]
-  },
-  {
-    "q": { "fi": "Valmistatteko tuotteet alusta asti vai käytättekö valmisseoksia?", "sv": "Tillverkar ni produkterna från grunden eller använder ni färdiga blandningar?", "en": "Do you make everything from scratch or use mixes?" },
-    "a": { "fi": "Valmistamme kaiken itse alusta asti. Emme käytä valmisseoksia.", "sv": "Vi tillverkar allt själva från grunden. Vi använder inte färdiga blandningar.", "en": "We make everything ourselves from scratch. We do not use mixes." },
-    "tags": ["teettekö kaiken itse", "valmisseos", "alusta asti"]
-  },
-  {
-    "q": { "fi": "Onko teillä kausituotteita tai erikoistarjouksia?", "sv": "Har ni säsongsprodukter eller specialerbjudanden?", "en": "Do you have seasonal products or special offers?" },
-    "a": { "fi": "Leivomme mm. Runebergin torttuja ja laskiaispullia. Reiluun ale-hintaan meillä on aina tarjolla kypsiä pakasteita eli myymälästä ylijääneitä hävikkituotteita.", "sv": "Vi bakar bl.a. Runebergstårtor och fastlagsbullar. Vi erbjuder alltid färdiggräddade frysta svinnprodukter från butiken till rejält nedsatt pris.", "en": "We bake e.g. Runeberg tortes and Shrove buns. We always offer ready‑baked frozen surplus products from the shop at a significant discount." },
     "tags": [
-      "kausituotteet", "kausituote", "kausi", "kausi tuote", "kausi tuotteet", "kausi tuotteita",
-      "sesonki", "sesonkituote", "erikoistarjoukset", "erikoistarjous", "tarjoukset", "hävikkituotteet"
+      "pickup",
+      "nouto",
+      "address",
+      "osoite"
     ]
   },
   {
-    "q": { "fi": "Onko teillä gluteenittomia vaihtoehtoja?", "sv": "Har ni glutenfria alternativ?", "en": "Do you have gluten‑free options?" },
-    "a": { "fi": "Meillä ei ole valitettavasti gluteenittomia tuotteita. Tilamme eivät sovellu gluteenittomaan leivontaan muun leivonnan ohella jauhopölyn vuoksi.", "sv": "Tyvärr har vi inga glutenfria produkter. Våra lokaler lämpar sig inte för glutenfri bakning tillsammans med annan bakning på grund av mjöldamm.", "en": "Unfortunately we do not have gluten‑free products. Our facilities are not suitable for gluten‑free baking alongside other baking due to flour dust." },
-    "tags": ["gluteeniton", "gluteeni"]
+    "q": {
+      "fi": "Mitkä ovat aukioloaikanne?",
+      "sv": "Vilka är era öppettider?",
+      "en": "What are your opening hours?"
+    },
+    "a": {
+      "fi": "Olemme avoinna torstaisin ja perjantaisin klo 11-17 ja lauantaisin klo 11-15.",
+      "sv": "Vi har öppet på torsdagar och fredagar kl. 11–17 samt på lördagar kl. 11–15.",
+      "en": "We are open on Thursdays and Fridays 11:00–17:00, and on Saturdays 11:00–15:00."
+    },
+    "tags": [
+      "aukioloajat",
+      "aukiolo",
+      "auki"
+    ]
   },
   {
-    "q": { "fi": "Onko teillä vegaanisia tai maidottomia tuotteita?", "sv": "Har ni veganska eller mjölkfria produkter?", "en": "Do you have vegan or dairy‑free products?" },
-    "a": { "fi": "Meillä on useita vegaanisia tuotteita ilman maitoa: vegaaniset riisipiirakat, gobi-samosat, mungcurry-twistit, sekä vegaaniset mustikkakukot ja pullat. Vegaanituotteet kannattaa tilata etukäteen verkkokaupasta.", "sv": "Vi har flera veganska produkter utan mjölk: veganska rispiroger, gobi‑samosor, mungcurry‑twists samt veganska blåbärspajer och bullar. Veganska produkter lönar sig att förbeställa i webbutiken.", "en": "We have several vegan, dairy‑free items: vegan rice pies, gobi samosas, mung curry twists, and vegan blueberry pies and buns. Vegan items are best preordered in the online shop." },
-    "tags": ["vegaaninen", "maidoton", "vegaani"]
+    "q": {
+      "fi": "Missä sijaitsette?",
+      "sv": "Var ligger ni?",
+      "en": "Where are you located?"
+    },
+    "a": {
+      "fi": "Leipomomyymälämme sijaitsee osoitteessa Kumpulantie 15, 00520 Helsinki",
+      "sv": "Vår butik ligger på Kumpulantie 15, 00520 Helsingfors.",
+      "en": "Our shop is at Kumpulantie 15, 00520 Helsinki."
+    },
+    "tags": [
+      "sijainti",
+      "osoite",
+      "missä"
+    ]
   },
   {
-    "q": { "fi": "Miten huomioitte pähkinäallergiat?", "sv": "Hur beaktar ni nötallergier?", "en": "How do you handle nut allergies?" },
-    "a": { "fi": "Tuotteissamme ja leipomossamme ei ole pähkinöitä.", "sv": "Våra produkter och vårt bageri innehåller inga nötter.", "en": "There are no nuts in our products or bakery." },
-    "tags": ["pähkinät", "pähkinä", "pähkin", "allergia", "nöt", "nötter", "nut", "nuts", "allergy"]
+    "q": {
+      "fi": "Tarjoatteko kotiinkuljetusta tai noutoa?",
+      "sv": "Erbjuder ni hemleverans eller avhämtning?",
+      "en": "Do you offer home delivery or pickup?"
+    },
+    "a": {
+      "fi": "Kyllä, tilaukset voi noutaa myymälästämme aukioloaikoina; suuremmat erät onnistuvat myös tiistaisin ja keskiviikkoisin sopimalla etukäteen. Emme tarjoa kotiinkuljetusta, mutta voit tilata taksin tai muun kuljetuspalvelun hakemaan tilauksen. Luovutamme tuotteet kuljettajalle ja lähetämme tarvittaessa maksulinkin etukäteen, kun tilaus on vahvistettu.",
+      "sv": "Ja, du kan hämta beställningar i vår butik under öppettiderna; större satser kan hämtas även tisdagar och onsdagar enligt överenskommelse. Vi erbjuder ingen hemleverans, men du kan boka en taxi eller annan transport att hämta beställningen. Vi lämnar över varorna till föraren och skickar vid behov en betalningslänk i förväg när beställningen är bekräftad.",
+      "en": "Yes, you can pick up orders from our shop during opening hours; larger batches can also be collected on Tuesdays and Wednesdays by arrangement. We don’t offer home delivery, but you can book a taxi or courier to collect your order. We hand the items to the driver and can send a payment link in advance once the order is confirmed."
+    },
+    "tags": [
+      "kotiinkuljetus",
+      "nouto",
+      "kuljetus"
+    ]
   },
   {
-    "q": { "fi": "Voitteko antaa ainesosa-/allergeenilistat?", "sv": "Kan ni ge ingrediens-/allergenlistor?", "en": "Can you provide ingredient/allergen lists?" },
-    "a": { "fi": "Yleisimmät allergeenit joita käytämme: maito, gluteeni (vehnä/ruis/ohra) ja kananmuna. Ainesosat ja allergeenit löytyvät täydellisinä verkkokaupan tuotekuvauksista. Kaikki tuotteemme ovat laktoosittomia. Vegaaniset tuotteet ovat maidottomia.", "sv": "De vanligaste allergenerna vi använder är mjölk, gluten (vete/råg/korn) och ägg. Fullständiga ingrediens- och allergenuppgifter finns i produktbeskrivningarna i webbutiken. Alla våra produkter är laktosfria. Veganska produkter är mjölkfria.", "en": "The most common allergens we use are milk, gluten (wheat/rye/barley) and egg. Full ingredient and allergen details are listed in the product descriptions in our online shop. All our products are lactose‑free. Vegan products are dairy‑free." },
-    "tags": ["ainesosat", "allergeenit", "laktoositon"]
+    "q": {
+      "fi": "Onko teillä asiakaspaikkoja liikkeessä?",
+      "sv": "Har ni sittplatser i butiken?",
+      "en": "Do you have seating in the shop?"
+    },
+    "a": {
+      "fi": "Myymälässämme ei ole asiakaspaikkoja eikä kahvia.",
+      "sv": "Vi har inga sittplatser i butiken och inget kaffe.",
+      "en": "We don’t have customer seating or coffee."
+    },
+    "tags": [
+      "kahvila",
+      "asiakaspaikka",
+      "istumapaikat"
+    ]
   },
   {
-    "q": { "fi": "Valmistetaanko gluteenittomat tuotteet erillisessä tilassa?", "sv": "Tillverkas glutenfria produkter i ett separat utrymme?", "en": "Are gluten‑free products prepared in a separate area?" },
-    "a": { "fi": "Meillä ei ole valitettavasti gluteenittomia tuotteita. Tilamme eivät sovellu gluteenittomaan leivontaan muun leivonnan ohella jauhopölyn vuoksi.", "sv": "Tyvärr har vi inga glutenfria produkter. Våra lokaler lämpar sig inte för glutenfri bakning tillsammans med annan bakning på grund av mjöldamm.", "en": "Unfortunately we do not have gluten‑free products. Our facilities are not suitable for gluten‑free baking alongside other baking due to flour dust." },
-    "tags": ["gluteeniton", "erillinen tila"]
+    "q": {
+      "fi": "Voinko tehdä tilauksia puhelimitse tai verkossa?",
+      "sv": "Kan jag beställa per telefon eller på nätet?",
+      "en": "Can I order by phone or online?"
+    },
+    "a": {
+      "fi": "Emme normaalisti ota tilauksia puhelimitse – pienenä leipomona emme ehdi vastaamaan. Tee tilaus verkkokaupassamme tai tässä chatissa, tai piipahda myymälään tekemään tilauksen paikan päällä.",
+      "sv": "Vi tar i regel inte emot telefonbeställningar – som ett litet bageri hinner vi inte svara. Lägg beställningen i webbutiken eller i den här chatten, eller kom förbi butiken och beställ på plats.",
+      "en": "We normally don’t take orders by phone—we’re a small bakery and can’t reliably answer calls. Place your order in the online shop or in this chat, or drop by the shop to order in person."
+    },
+    "tags": [
+      "tilaus",
+      "puhelin",
+      "verkkokauppa"
+    ]
   },
   {
-    "q": { "fi": "Valmistatteko tilaustyönä kakkuja tai leivonnaisia?", "sv": "Gör ni beställningsarbeten som tårtor eller bakverk?", "en": "Do you make custom cakes or pastries?" },
-    "a": { "fi": "Emme leivo kakkuja (täytekakkuja, kuivakakkuja), voileipäkakkuja, lihapiirakoita tai konditoriatuotteita. Olemme ensisijaisesti karjalanpiirakkaleipomo. Otamme kuitenkin ennakkotilauksia isompiin juhliin ja tilaisuuksiin – valikoimamme tuotteista. Haluatko nähdä valikon?", "sv": "Vi bakar inte tårtor (gräddtårtor, sockerkakor), smörgåstårtor, köttpiroger eller konditorivaror. Vi är i första hand ett karelskt pirogbageri. Vi tar dock emot förbeställningar till större fester och evenemang – ur vårt ordinarie sortiment. Vill du se menyn?", "en": "We don’t bake cakes (layer cakes, loaf cakes), sandwich cakes, meat pies, or confectionery items. We are primarily a Karelian pie bakery. However, we do accept preorders for larger events using items from our menu. Would you like to see the menu?" },
-    "tags": ["teettekö kakkuja", "kakku", "tilaustyö"]
+    "q": {
+      "fi": "Minkälaisia leipiä/leivonnaisia/kakkuja myytte?",
+      "sv": "Vilka bröd/bakverk/tårtor säljer ni?",
+      "en": "What kinds of breads/pastries/cakes do you sell?"
+    },
+    "a": {
+      "fi": "Päätuotteemme on 100 % rukiisella kuorella leivottu karjalanpiirakka. Lisäksi myymme suolaisia intialaisia leivonnaisia kuten samosat ja mungcurry-twistit sekä suomalaisia pullia ja mustikkakukkoa. Emme leivo täyte- tai voileipäkakkuja emmekä muita konditoriatuotteita. Haluatko nähdä valikon?",
+      "sv": "Vår huvudprodukt är karelska piroger med 100 % rågskal. Vi säljer också salta indiska bakverk som samosor och mungcurry-twists samt finska bullar och blåbärspaj (mustikkakukko). Vi bakar inte tårtor eller smörgåstårtor eller andra konditorivaror. Vill du se menyn?",
+      "en": "Our signature product is the Karelian pie with a 100% rye crust. We also offer savoury Indian pastries such as samosas and mung curry twists, plus Finnish buns and blueberry pie (mustikkakukko). We don’t bake cakes, sandwich cakes or other confectionery. Would you like to see the menu?"
+    },
+    "tags": [
+      "leivonnaiset",
+      "tuotteet",
+      "valikoima"
+    ]
   },
   {
-    "q": { "fi": "Kuinka ajoissa minun tulee tehdä tilaus?", "sv": "Hur långt i förväg bör jag beställa?", "en": "How early should I place my order?" },
-    "a": { "fi": "Verkkokauppatilaukset tulee tehdä edellisenä päivänä. Isommat tilaukset mielellään jo aiemmin.", "sv": "Beställningar i webbutiken bör göras dagen innan. Större beställningar gärna tidigare.", "en": "Online shop orders should be placed the day before. Larger orders preferably earlier." },
-    "tags": ["milloin pitää tilata", "ennakkoon", "edellisenä päivänä"]
+    "q": {
+      "fi": "Leivotteko kaiken tuoreena päivittäin?",
+      "sv": "Bakars allt färskt varje dag?",
+      "en": "Do you bake everything fresh daily?"
+    },
+    "a": {
+      "fi": "Kaikki on aina saman päivän aamuna paistettua.",
+      "sv": "Allt bakas alltid samma morgon.",
+      "en": "Everything is always baked the same morning."
+    },
+    "tags": [
+      "onko tuoretta",
+      "tuore",
+      "paistettu"
+    ]
   },
   {
-    "q": { "fi": "Vaaditteko ennakkomaksua tilaustuotteista?", "sv": "Kräver ni förskottsbetalning för beställningsprodukter?", "en": "Do you require prepayment for orders?" },
-    "a": { "fi": "Tuotteet maksetaan noudettaessa. Tarvittaessa (yli 150€) tuotteet voi maksaa etukäteen maksulinkin kautta.", "sv": "Produkter betalas vid hämtning. Vid behov (över 150 €) kan produkterna betalas i förväg via en betalningslänk.", "en": "Orders are paid at pickup. If needed (over €150), we can send a payment link in advance so you can pay ahead." },
-    "tags": ["ennakkomaksu", "maksu"]
+    "q": {
+      "fi": "Käytättekö paikallisia tai luomuraaka-aineita?",
+      "sv": "Använder ni lokala eller ekologiska råvaror?",
+      "en": "Do you use local or organic ingredients?"
+    },
+    "a": {
+      "fi": "Pyrimme käyttämään aina suomalaisia raaka-aineita. Intialaisissa tuotteissa käytämme toki intialaisia mausteita.",
+      "sv": "Vi strävar efter att alltid använda finländska råvaror. I indiska produkter använder vi förstås indiska kryddor.",
+      "en": "We aim to use Finnish ingredients whenever possible. For Indian items we of course use Indian spices."
+    },
+    "tags": [
+      "paikallinen",
+      "luomu",
+      "raaka-aineet"
+    ]
   },
   {
-    "q": { "fi": "Voinko pyytää tiettyjä makuja, täytteitä tai koristeita?", "sv": "Kan jag be om särskilda smaker, fyllningar eller dekorationer?", "en": "Can I request specific flavors, fillings, or decorations?" },
-    "a": { "fi": "Emme valitettavasti juurikaan muokkaa tuotteita toiveiden mukaan. Pullista voimme jättää esim. voiteluun käytettävän kananmunan pois", "sv": "Tyvärr anpassar vi i regel inte produkterna enligt önskemål. I bullar kan vi t.ex. utelämna ägg som används till pensling.", "en": "Unfortunately we generally don’t customize products to specific requests. For buns, we can, for example, omit the egg used for glazing." },
-    "tags": ["lisäpyyntö", "toive", "muokkaus"]
+    "q": {
+      "fi": "Valmistatteko tuotteet alusta asti vai käytättekö valmisseoksia?",
+      "sv": "Tillverkar ni produkterna från grunden eller använder ni färdiga blandningar?",
+      "en": "Do you make everything from scratch or use mixes?"
+    },
+    "a": {
+      "fi": "Valmistamme kaikki tuotteet käsin alusta asti omassa leipomossamme. Emme käytä valmisseoksia tai puolivalmisteita.",
+      "sv": "Vi tillverkar alla produkter för hand från grunden i vårt bageri. Vi använder inga färdiga blandningar eller halvfabrikat.",
+      "en": "We make every product by hand from scratch in our bakery. We don’t use mixes or semi-finished bases."
+    },
+    "tags": [
+      "teettekö kaiken itse",
+      "valmisseos",
+      "alusta asti"
+    ]
   },
   {
-    "q": { "fi": "Valmistatteko hääkakkuja tai suuria pitopalvelutilauksia?", "sv": "Gör ni bröllopstårtor eller stora cateringbeställningar?", "en": "Do you make wedding cakes or large catering orders?" },
-    "a": { "fi": "Emme valmista kakkuja eikä meiltä saa pitopalvelua. Isoja tilauksia toki paistamme noutoa varten.", "sv": "Vi gör inte tårtor och vi erbjuder inte catering. Stora beställningar bakar vi gärna för avhämtning.", "en": "We don’t make cakes and we do not provide catering. We can bake large orders for pickup, though." },
-    "tags": ["hääkakku", "pitopalvelu", "catering"]
+    "q": {
+      "fi": "Onko teillä kausituotteita tai erikoistarjouksia?",
+      "sv": "Har ni säsongsprodukter eller specialerbjudanden?",
+      "en": "Do you have seasonal products or special offers?"
+    },
+    "a": {
+      "fi": "Kyllä, meillä on kausituotteita ja erikoisuuksia kuten Runebergin torttu, laskiaispulla, raparperipiirakka, marjapiirakka ja paljon muuta.",
+      "sv": "Ja, vi har säsongsprodukter och specialiteter som Runebergstårta, fastlagsbulle, rabarberpaj, bärpaj och mycket mer.",
+      "en": "Yes, we offer seasonal items and specials such as Runeberg torte, Shrove bun, rhubarb pie, berry pies and much more."
+    },
+    "tags": [
+      "kausituotteet",
+      "kausituote",
+      "kausi",
+      "kausi tuote",
+      "kausi tuotteet",
+      "kausi tuotteita",
+      "sesonki",
+      "sesonkituote",
+      "erikoistarjoukset",
+      "erikoistarjous",
+      "tarjoukset",
+      "hävikkituotteet"
+    ]
   },
   {
-    "q": { "fi": "Mikä on hintatasonne?", "sv": "Vad är er prisnivå?", "en": "What is your price level?" },
-    "a": { "fi": "Hintamme ovat maltilliset. Kun ostat meiltä, ostat suoraan pientuottajalta. Siitä kiitos.", "sv": "Våra priser är rimliga. När du handlar hos oss köper du direkt av en småproducent. Tack.", "en": "Our prices are reasonable. When you buy from us, you buy directly from a small producer. Thank you." },
-    "tags": ["hinnat", "hintataso"]
+    "q": {
+      "fi": "Onko teillä gluteenittomia vaihtoehtoja?",
+      "sv": "Har ni glutenfria alternativ?",
+      "en": "Do you have gluten‑free options?"
+    },
+    "a": {
+      "fi": "Meillä ei ole valitettavasti gluteenittomia tuotteita. Tilamme eivät sovellu gluteenittomaan leivontaan muun leivonnan ohella jauhopölyn vuoksi.",
+      "sv": "Tyvärr har vi inga glutenfria produkter. Våra lokaler lämpar sig inte för glutenfri bakning tillsammans med annan bakning på grund av mjöldamm.",
+      "en": "Unfortunately we do not have gluten‑free products. Our facilities are not suitable for gluten‑free baking alongside other baking due to flour dust."
+    },
+    "tags": [
+      "gluteeniton",
+      "gluteeni"
+    ]
   },
   {
-    "q": { "fi": "Onko minimitilausmäärää?", "sv": "Har ni någon minsta beställning?", "en": "Is there a minimum order amount?" },
-    "a": { "fi": "Minimitilaus on 10 euroa. Myymälästä saa toki tulla ostamaan yhdenkin piirakan kerrallaan.", "sv": "Minsta beställningen är 10 euro. I butiken kan du förstås köpa även en enda pirog i taget.", "en": "The minimum order is €10. In the shop you can of course buy just a single pie." },
-    "tags": ["minimitilaus", "minimi"]
+    "q": {
+      "fi": "Onko teillä vegaanisia tai maidottomia tuotteita?",
+      "sv": "Har ni veganska eller mjölkfria produkter?",
+      "en": "Do you have vegan or dairy‑free products?"
+    },
+    "a": {
+      "fi": "<p><strong>Vegaaniset</strong></p><ul><li>Voisilmäpulla (vegaani), paistettu, 4 kpl</li><li>Mustikkakukko (vegaani), raakapakaste, 5 kpl</li><li>Mustikkakukko (vegaani), paistettu, 2 kpl</li><li>Mungcurry-twist (vegaani), paistettu, 4 kpl</li><li>Gobi-samosa (vegaani), paistettu, 4 kpl</li><li>Vegaanipiirakka, paistettu, 10 kpl</li><li>Vegaanipiirakka (riisi), raakapakaste, 10 kpl</li><li>Gobi-samosa (vegaani), raakapakaste, 5 kpl</li></ul><p><strong>Maidottomat (ei-vegaaniset)</strong></p><ul><li>Lihacurry-pasteija (laktoositon), paistettu, 4 kpl</li></ul>",
+      "sv": "<p><strong>Veganska</strong></p><ul><li>Voisilmäpulla (vegansk), nygräddad, 4 st</li><li>Mustikkakukko (vegansk), råfryst, 5 st</li><li>Mustikkakukko (vegansk), nygräddad, 2 st</li><li>Mungcurry-twist (vegansk), nygräddad, 4 st</li><li>Gobi-samosa (vegansk), nygräddad, 4 st</li><li>Vegansk pirog, nygräddad, 10 st</li><li>Vegansk pirog (ris), råfryst, 10 st</li><li>Gobi-samosa (vegansk), råfryst, 5 st</li></ul><p><strong>Mjölkfria (ej veganska)</strong></p><ul><li>Lihacurry-pasteija (laktosfri), nygräddad, 4 st</li></ul>",
+      "en": "<p><strong>Vegan options</strong></p><ul><li>Voisilmäpulla (vegan), baked, 4 pcs</li><li>Mustikkakukko (vegan), frozen, 5 pcs</li><li>Mustikkakukko (vegan), baked, 2 pcs</li><li>Mung curry twist (vegan), baked, 4 pcs</li><li>Gobi samosa (vegan), baked, 4 pcs</li><li>Vegan rice pie, baked, 10 pcs</li><li>Vegan rice pie (rice), frozen, 10 pcs</li><li>Gobi samosa (vegan), frozen, 5 pcs</li></ul><p><strong>Dairy-free (non-vegan)</strong></p><ul><li>Lihacurry pastry (lactose-free), baked, 4 pcs</li></ul>"
+    },
+    "tags": [
+      "vegaaninen",
+      "maidoton",
+      "vegaani"
+    ]
   },
   {
-    "q": { "fi": "Hyväksyttekö maksukortit ja mobiilimaksut?", "sv": "Accepterar ni betalkort och mobilbetalningar?", "en": "Do you accept payment cards and mobile payments?" },
-    "a": { "fi": "Maksut vain kortilla, mutta lähes kaikki kortit käyvät.", "sv": "Vi tar endast kort, men nästan alla kort fungerar.", "en": "Payment by card only, but almost all cards are accepted." },
-    "tags": ["maksutapa", "maksu", "kortti"]
+    "q": {
+      "fi": "Miten huomioitte pähkinäallergiat?",
+      "sv": "Hur beaktar ni nötallergier?",
+      "en": "How do you handle nut allergies?"
+    },
+    "a": {
+      "fi": "Tuotteissamme ja leipomossamme ei ole pähkinöitä.",
+      "sv": "Våra produkter och vårt bageri innehåller inga nötter.",
+      "en": "There are no nuts in our products or bakery."
+    },
+    "tags": [
+      "pähkinät",
+      "pähkinä",
+      "pähkin",
+      "allergia",
+      "nöt",
+      "nötter",
+      "nut",
+      "nuts",
+      "allergy"
+    ]
   },
   {
-    "q": { "fi": "Tarjoatteko alennuksia suur- tai tukkutilauksista?", "sv": "Erbjuder ni rabatter för stora eller grossistbeställningar?", "en": "Do you offer discounts for large or wholesale orders?" },
-    "a": { "fi": "Tarjoamme alennuksia tapauskohtaisesti etenkin yritystilauksissa.", "sv": "Vi erbjuder rabatter från fall till fall, särskilt för företagsbeställningar.", "en": "We offer case‑by‑case discounts, especially for business orders." },
-    "tags": ["tukkualennus", "alennus", "tukku"]
+    "q": {
+      "fi": "Voitteko antaa ainesosa-/allergeenilistat?",
+      "sv": "Kan ni ge ingrediens-/allergenlistor?",
+      "en": "Can you provide ingredient/allergen lists?"
+    },
+    "a": {
+      "fi": "Yleisimmät allergeenit joita käytämme: maito, gluteeni (vehnä/ruis/ohra) ja kananmuna. Ainesosat ja allergeenit löytyvät täydellisinä verkkokaupan tuotekuvauksista. Kaikki tuotteemme ovat laktoosittomia. Vegaaniset tuotteet ovat maidottomia.",
+      "sv": "De vanligaste allergenerna vi använder är mjölk, gluten (vete/råg/korn) och ägg. Fullständiga ingrediens- och allergenuppgifter finns i produktbeskrivningarna i webbutiken. Alla våra produkter är laktosfria. Veganska produkter är mjölkfria.",
+      "en": "The most common allergens we use are milk, gluten (wheat/rye/barley) and egg. Full ingredient and allergen details are listed in the product descriptions in our online shop. All our products are lactose‑free. Vegan products are dairy‑free."
+    },
+    "tags": [
+      "ainesosat",
+      "allergeenit",
+      "laktoositon"
+    ]
   },
   {
-    "q": { "fi": "Myyttekö lahjakortteja?", "sv": "Säljer ni presentkort?", "en": "Do you sell gift cards?" },
-    "a": { "fi": "Valitettavasti emme myy lahjakortteja.", "sv": "Tyvärr säljer vi inte presentkort.", "en": "Unfortunately we do not sell gift cards." },
-    "tags": ["lahjakortti"]
+    "q": {
+      "fi": "Valmistetaanko gluteenittomat tuotteet erillisessä tilassa?",
+      "sv": "Tillverkas glutenfria produkter i ett separat utrymme?",
+      "en": "Are gluten‑free products prepared in a separate area?"
+    },
+    "a": {
+      "fi": "Meillä ei ole valitettavasti gluteenittomia tuotteita. Tilamme eivät sovellu gluteenittomaan leivontaan muun leivonnan ohella jauhopölyn vuoksi.",
+      "sv": "Tyvärr har vi inga glutenfria produkter. Våra lokaler lämpar sig inte för glutenfri bakning tillsammans med annan bakning på grund av mjöldamm.",
+      "en": "Unfortunately we do not have gluten‑free products. Our facilities are not suitable for gluten‑free baking alongside other baking due to flour dust."
+    },
+    "tags": [
+      "gluteeniton",
+      "erillinen tila"
+    ]
   },
   {
-    "q": { "fi": "Lahjoitatteko myymättä jääneet tuotteet?", "sv": "Donerar ni osålda produkter?", "en": "Do you donate unsold products?" },
-    "a": { "fi": "Hävikkituotteet myymme runsaasti alennettuun hintaan kypsinä pakasteina myymälästämme.", "sv": "Vi säljer svinnprodukter som färdiggräddade frysta till rejält nedsatt pris i butiken.", "en": "We sell surplus items as ready‑baked frozen products in the shop at a significant discount." },
-    "tags": ["lahjoitus", "hävikkituotteet"]
+    "q": {
+      "fi": "Valmistatteko tilaustyönä kakkuja tai leivonnaisia?",
+      "sv": "Gör ni beställningsarbeten som tårtor eller bakverk?",
+      "en": "Do you make custom cakes or pastries?"
+    },
+    "a": {
+      "fi": "Emme leivo kakkuja (täytekakkuja, kuivakakkuja), voileipäkakkuja, lihapiirakoita tai konditoriatuotteita. Olemme ensisijaisesti karjalanpiirakkaleipomo. Otamme kuitenkin ennakkotilauksia isompiin juhliin ja tilaisuuksiin – valikoimamme tuotteista. Haluatko nähdä valikon?",
+      "sv": "Vi bakar inte tårtor (gräddtårtor, sockerkakor), smörgåstårtor, köttpiroger eller konditorivaror. Vi är i första hand ett karelskt pirogbageri. Vi tar dock emot förbeställningar till större fester och evenemang – ur vårt ordinarie sortiment. Vill du se menyn?",
+      "en": "We don’t bake cakes (layer cakes, loaf cakes), sandwich cakes, meat pies, or confectionery items. We are primarily a Karelian pie bakery. However, we do accept preorders for larger events using items from our menu. Would you like to see the menu?"
+    },
+    "tags": [
+      "teettekö kakkuja",
+      "kakku",
+      "tilaustyö"
+    ]
   },
   {
-    "q": { "fi": "Saako asiakkaat tuoda omia uudelleenkäytettäviä pakkauksia?", "sv": "Får kunder ta med egna återanvändbara förpackningar?", "en": "Can customers bring their own reusable containers?" },
-    "a": { "fi": "Toki. Kannelliset muovirasiat ovat hyviä.", "sv": "Självklart. Plastlådor med lock fungerar bra.", "en": "Sure. Lidded plastic containers work well." },
-    "tags": ["omat pakkaukset", "pakkaukset", "astiat"]
+    "q": {
+      "fi": "Kuinka ajoissa minun tulee tehdä tilaus?",
+      "sv": "Hur långt i förväg bör jag beställa?",
+      "en": "How early should I place my order?"
+    },
+    "a": {
+      "fi": "Verkkokauppatilaukset tulee tehdä edellisenä päivänä. Isommat tilaukset mielellään jo aiemmin.",
+      "sv": "Beställningar i webbutiken bör göras dagen innan. Större beställningar gärna tidigare.",
+      "en": "Online shop orders should be placed the day before. Larger orders preferably earlier."
+    },
+    "tags": [
+      "milloin pitää tilata",
+      "ennakkoon",
+      "edellisenä päivänä"
+    ]
   },
   {
-    "q": { "fi": "Käytättekö ympäristöystävällisiä pakkauksia?", "sv": "Använder ni miljövänliga förpackningar?", "en": "Do you use environmentally friendly packaging?" },
-    "a": { "fi": "Käytämme paperipusseja.", "sv": "Vi använder papperspåsar.", "en": "We use paper bags." },
-    "tags": ["ympäristöystävällisyys", "pakkaukset"]
+    "q": {
+      "fi": "Vaaditteko ennakkomaksua tilaustuotteista?",
+      "sv": "Kräver ni förskottsbetalning för beställningsprodukter?",
+      "en": "Do you require prepayment for orders?"
+    },
+    "a": {
+      "fi": "Tuotteet maksetaan noudettaessa. Tarvittaessa (yli 150€) tuotteet voi maksaa etukäteen maksulinkin kautta.",
+      "sv": "Produkter betalas vid hämtning. Vid behov (över 150 €) kan produkterna betalas i förväg via en betalningslänk.",
+      "en": "Orders are paid at pickup. If needed (over €150), we can send a payment link in advance so you can pay ahead."
+    },
+    "tags": [
+      "ennakkomaksu",
+      "maksu"
+    ]
   },
   {
-    "q": { "fi": "Teettekö yhteistyötä paikallisten tuottajien kanssa?", "sv": "Samarbetar ni med lokala producenter?", "en": "Do you work with local producers?" },
-    "a": { "fi": "Raaka-aineemme ostamme pääasiassa pienemmiltä perheomisteisilta tukkuyrityksiltä.", "sv": "Vi köper främst råvaror från mindre familjeägda grossistföretag.", "en": "We mainly purchase ingredients from smaller family‑owned wholesalers." },
-    "tags": ["paikalliset tuottajat", "tuottajat", "yhteistyö"]
+    "q": {
+      "fi": "Voinko pyytää tiettyjä makuja, täytteitä tai koristeita?",
+      "sv": "Kan jag be om särskilda smaker, fyllningar eller dekorationer?",
+      "en": "Can I request specific flavors, fillings, or decorations?"
+    },
+    "a": {
+      "fi": "Emme valitettavasti juurikaan muokkaa tuotteita toiveiden mukaan. Pullista voimme jättää esim. voiteluun käytettävän kananmunan pois",
+      "sv": "Tyvärr anpassar vi i regel inte produkterna enligt önskemål. I bullar kan vi t.ex. utelämna ägg som används till pensling.",
+      "en": "Unfortunately we generally don’t customize products to specific requests. For buns, we can, for example, omit the egg used for glazing."
+    },
+    "tags": [
+      "lisäpyyntö",
+      "toive",
+      "muokkaus"
+    ]
   },
   {
-    "q": { "fi": "Tarjoatteko maistiaisia?", "sv": "Erbjuder ni provsmakningar?", "en": "Do you offer tastings?" },
-    "a": { "fi": "Silloin tällöin myymälään paloitellaan jotain hyvää.", "sv": "Ibland bjuder vi på små smakprov i butiken.", "en": "From time to time we put out small samples in the shop." },
-    "tags": ["maistiaiset", "maistiainen"]
+    "q": {
+      "fi": "Valmistatteko hääkakkuja tai suuria pitopalvelutilauksia?",
+      "sv": "Gör ni bröllopstårtor eller stora cateringbeställningar?",
+      "en": "Do you make wedding cakes or large catering orders?"
+    },
+    "a": {
+      "fi": "Emme valmista kakkuja eikä meiltä saa pitopalvelua. Isoja tilauksia toki paistamme noutoa varten.",
+      "sv": "Vi gör inte tårtor och vi erbjuder inte catering. Stora beställningar bakar vi gärna för avhämtning.",
+      "en": "We don’t make cakes and we do not provide catering. We can bake large orders for pickup, though."
+    },
+    "tags": [
+      "hääkakku",
+      "pitopalvelu",
+      "catering"
+    ]
   },
   {
-    "q": { "fi": "Voinko tehdä ennakkotilauksen jonon ohittamiseksi?", "sv": "Kan jag förbeställa för att slippa köa?", "en": "Can I preorder to skip the line?" },
-    "a": { "fi": "Hirmusia jonoja meillä ei ole ellei Hesarissa ole juttua. Ennakkotilaus toki jouduttaa aina toimintaa ja helpottaa ennakointia sen suhteen paljonko meidän tarvitsee paistaa päivittäin. Olemme kiitollisia ennakkotilauksista.", "sv": "Vi har sällan långa köer om det inte finns en artikel i Helsingin Sanomat. En förbeställning påskyndar ändå processen och hjälper oss planera hur mycket vi bör baka. Vi uppskattar förbeställningar.", "en": "We rarely have long lines unless there’s a newspaper feature. Preordering still speeds things up and helps us plan how much to bake. We appreciate preorders." },
-    "tags": ["ennakkotilaus", "jono", "ohitus"]
+    "q": {
+      "fi": "Mikä on hintatasonne?",
+      "sv": "Vad är er prisnivå?",
+      "en": "What is your price level?"
+    },
+    "a": {
+      "fi": "Hintamme ovat maltilliset. Kun ostat meiltä, ostat suoraan pientuottajalta. Siitä kiitos.",
+      "sv": "Våra priser är rimliga. När du handlar hos oss köper du direkt av en småproducent. Tack.",
+      "en": "Our prices are reasonable. When you buy from us, you buy directly from a small producer. Thank you."
+    },
+    "tags": [
+      "hinnat",
+      "hintataso"
+    ]
   },
   {
-    "q": { "fi": "Onko teillä kanta-asiakasohjelmaa?", "sv": "Har ni ett lojalitetsprogram?", "en": "Do you have a loyalty program?" },
-    "a": { "fi": "Erillistä ohjelmaa ei ole, mutta tunnemme toki asiakkaamme.", "sv": "Inget separat program, men vi känner förstås igen våra kunder.", "en": "No separate program, but we do know our regulars." },
-    "tags": ["kanta-asiakas", "ohjelma"]
+    "q": {
+      "fi": "Onko minimitilausmäärää?",
+      "sv": "Har ni någon minsta beställning?",
+      "en": "Is there a minimum order amount?"
+    },
+    "a": {
+      "fi": "Minimitilaus on 10 euroa. Myymälästä saa toki tulla ostamaan yhdenkin piirakan kerrallaan.",
+      "sv": "Minsta beställningen är 10 euro. I butiken kan du förstås köpa även en enda pirog i taget.",
+      "en": "The minimum order is €10. In the shop you can of course buy just a single pie."
+    },
+    "tags": [
+      "minimitilaus",
+      "minimi"
+    ]
   },
   {
-    "q": { "fi": "Järjestättekö leivontakursseja tai tapahtumia?", "sv": "Ordnar ni bakkurser eller evenemang?", "en": "Do you run baking courses or events?" },
-    "a": { "fi": "Emme järjestä kursseja. Aikamme ei valitettavasti riitä", "sv": "Vi ordnar inte kurser. Tyvärr räcker vår tid inte till.", "en": "We don’t organize courses. Unfortunately we don’t have the time." },
-    "tags": ["kurssit", "tapahtumat"]
+    "q": {
+      "fi": "Hyväksyttekö maksukortit ja mobiilimaksut?",
+      "sv": "Accepterar ni betalkort och mobilbetalningar?",
+      "en": "Do you accept payment cards and mobile payments?"
+    },
+    "a": {
+      "fi": "Maksut vain kortilla, mutta lähes kaikki kortit käyvät.",
+      "sv": "Vi tar endast kort, men nästan alla kort fungerar.",
+      "en": "Payment by card only, but almost all cards are accepted."
+    },
+    "tags": [
+      "maksutapa",
+      "maksu",
+      "kortti"
+    ]
   },
   {
-    "q": { "fi": "Miten voin antaa palautetta tai arvostelun?", "sv": "Hur kan jag ge feedback eller en recension?", "en": "How can I leave feedback or a review?" },
-    "a": { "fi": "Paras tapa on jättää arvostelu Googlessa (linkki), kiitos.", "sv": "Det bästa sättet är att lämna en recension på Google (länk). Tack.", "en": "The best way is to leave a review on Google (link). Thank you." },
-    "tags": ["palaute", "arvostelu", "review"]
+    "q": {
+      "fi": "Tarjoatteko alennuksia suur- tai tukkutilauksista?",
+      "sv": "Erbjuder ni rabatter för stora eller grossistbeställningar?",
+      "en": "Do you offer discounts for large or wholesale orders?"
+    },
+    "a": {
+      "fi": "Päätämme alennuksista tapauskohtaisesti. Lähetä ystävällisesti sähköpostia osoitteeseen rakaskotileipomo@gmail.com ja kerro tarpeestasi.",
+      "sv": "Vi avgör rabatter från fall till fall. Skicka gärna e-post till rakaskotileipomo@gmail.com och berätta vad du behöver.",
+      "en": "We decide discounts case by case. Please email rakaskotileipomo@gmail.com with the details of your request."
+    },
+    "tags": [
+      "tukkualennus",
+      "alennus",
+      "tukku"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Myyttekö lahjakortteja?",
+      "sv": "Säljer ni presentkort?",
+      "en": "Do you sell gift cards?"
+    },
+    "a": {
+      "fi": "Valitettavasti emme myy lahjakortteja.",
+      "sv": "Tyvärr säljer vi inte presentkort.",
+      "en": "Unfortunately we do not sell gift cards."
+    },
+    "tags": [
+      "lahjakortti"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Lahjoitatteko myymättä jääneet tuotteet?",
+      "sv": "Donerar ni osålda produkter?",
+      "en": "Do you donate unsold products?"
+    },
+    "a": {
+      "fi": "Emme usko ruokahävikkiin. Meillä on ‘hävikki-pakastin’: päivän päätteeksi pussitamme ja pakastamme myymättä jääneet leivonnaiset ja myymme ne myöhemmin reilusti alennettuun hintaan.",
+      "sv": "Vi tror inte på matsvinn. Vi har en ‘svinnfrys’: i slutet av dagen packar vi de osålda bakverken, fryser in dem och säljer dem senare till rejält nedsatt pris.",
+      "en": "We work to avoid food waste. We keep a “surplus freezer”: at the end of the day we bag and freeze any unsold pastries and sell them later at a deep discount."
+    },
+    "tags": [
+      "lahjoitus",
+      "hävikkituotteet"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Saako asiakkaat tuoda omia uudelleenkäytettäviä pakkauksia?",
+      "sv": "Får kunder ta med egna återanvändbara förpackningar?",
+      "en": "Can customers bring their own reusable containers?"
+    },
+    "a": {
+      "fi": "Toki. Kannelliset muovirasiat ovat hyviä.",
+      "sv": "Självklart. Plastlådor med lock fungerar bra.",
+      "en": "Sure. Lidded plastic containers work well."
+    },
+    "tags": [
+      "omat pakkaukset",
+      "pakkaukset",
+      "astiat"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Käytättekö ympäristöystävällisiä pakkauksia?",
+      "sv": "Använder ni miljövänliga förpackningar?",
+      "en": "Do you use environmentally friendly packaging?"
+    },
+    "a": {
+      "fi": "Käytämme ainoastaan kierrätettäviä paperipusseja ja leivosrasioita leivonnaisten pakkaamiseen. Pakasteet pakataan kierrätettäviin HDPE-pusseihin. Tarjoamme myös ruskeita paperikasseja kierretyillä kantokahvoilla; ne ovat uudelleenkäytettäviä ja kierrätettäviä.",
+      "sv": "Vi använder enbart återvinningsbara papperspåsar och bakelseaskar för våra bakverk. Frysta produkter packas i återvinningsbara HDPE-påsar. Vi erbjuder också bruna papperskassar med tvinnade handtag som kan återanvändas och återvinnas.",
+      "en": "We use only recyclable paper bags and pastry boxes for our baked goods. Frozen items are packed in recyclable HDPE bags. We also offer brown paper carry bags with twisted handles; they can be reused and recycled."
+    },
+    "tags": [
+      "ympäristöystävällisyys",
+      "pakkaukset"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Teettekö yhteistyötä paikallisten tuottajien kanssa?",
+      "sv": "Samarbetar ni med lokala producenter?",
+      "en": "Do you work with local producers?"
+    },
+    "a": {
+      "fi": "Raaka-aineemme ostamme pääasiassa pienemmiltä perheomisteisilta tukkuyrityksiltä.",
+      "sv": "Vi köper främst råvaror från mindre familjeägda grossistföretag.",
+      "en": "We mainly purchase ingredients from smaller family‑owned wholesalers."
+    },
+    "tags": [
+      "paikalliset tuottajat",
+      "tuottajat",
+      "yhteistyö"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Tarjoatteko maistiaisia?",
+      "sv": "Erbjuder ni provsmakningar?",
+      "en": "Do you offer tastings?"
+    },
+    "a": {
+      "fi": "Silloin tällöin myymälään paloitellaan jotain hyvää.",
+      "sv": "Ibland bjuder vi på små smakprov i butiken.",
+      "en": "From time to time we put out small samples in the shop."
+    },
+    "tags": [
+      "maistiaiset",
+      "maistiainen"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Voinko tehdä ennakkotilauksen jonon ohittamiseksi?",
+      "sv": "Kan jag förbeställa för att slippa köa?",
+      "en": "Can I preorder to skip the line?"
+    },
+    "a": {
+      "fi": "Hirmusia jonoja meillä ei ole ellei Hesarissa ole juttua. Ennakkotilaus toki jouduttaa aina toimintaa ja helpottaa ennakointia sen suhteen paljonko meidän tarvitsee paistaa päivittäin. Olemme kiitollisia ennakkotilauksista.",
+      "sv": "Vi har sällan långa köer om det inte finns en artikel i Helsingin Sanomat. En förbeställning påskyndar ändå processen och hjälper oss planera hur mycket vi bör baka. Vi uppskattar förbeställningar.",
+      "en": "We rarely have long lines unless there’s a newspaper feature. Preordering still speeds things up and helps us plan how much to bake. We appreciate preorders."
+    },
+    "tags": [
+      "ennakkotilaus",
+      "jono",
+      "ohitus"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Onko teillä kanta-asiakasohjelmaa?",
+      "sv": "Har ni ett lojalitetsprogram?",
+      "en": "Do you have a loyalty program?"
+    },
+    "a": {
+      "fi": "Erillistä ohjelmaa ei ole, mutta tunnemme toki asiakkaamme.",
+      "sv": "Inget separat program, men vi känner förstås igen våra kunder.",
+      "en": "No separate program, but we do know our regulars."
+    },
+    "tags": [
+      "kanta-asiakas",
+      "ohjelma"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Järjestättekö leivontakursseja tai tapahtumia?",
+      "sv": "Ordnar ni bakkurser eller evenemang?",
+      "en": "Do you run baking courses or events?"
+    },
+    "a": {
+      "fi": "Emme järjestä kursseja. Aikamme ei valitettavasti riitä",
+      "sv": "Vi ordnar inte kurser. Tyvärr räcker vår tid inte till.",
+      "en": "We don’t organize courses. Unfortunately we don’t have the time."
+    },
+    "tags": [
+      "kurssit",
+      "tapahtumat"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Miten voin antaa palautetta tai arvostelun?",
+      "sv": "Hur kan jag ge feedback eller en recension?",
+      "en": "How can I leave feedback or a review?"
+    },
+    "a": {
+      "fi": "<div class=\"feedback-ui\">\n  <div class=\"title\">Anna palaute tai jätä arvostelu</div>\n  <form class=\"feedback-form\">\n    <div class=\"row\"><input type=\"text\" name=\"name\" placeholder=\"Nimi (valinnainen)\"></div>\n    <div class=\"row\"><input type=\"email\" name=\"email\" placeholder=\"Sähköposti (valinnainen)\"></div>\n    <div class=\"row\"><textarea name=\"message\" rows=\"3\" placeholder=\"Palaute\" required></textarea></div>\n    <div class=\"actions\"><button type=\"submit\" class=\"btn btn-primary\">Lähetä</button>\n      <a class=\"btn btn-review\" href=\"https://www.google.com/search?q=Raka%27s+kotileipomo&sca_esv=6c7f7ca6e8ee6a34&rlz=1C5CHFA_enFI1167FI1167&hl=fi-FI&biw=1164&bih=754&tbm=lcl&ei=gxvEaJ7VH_G0wPAPhfyKqAY&ved=0ahUKEwjeos7mpdOPAxVxGhAIHQW-AmUQ4dUDCAo&uact=5&oq=Raka%27s+kotileipomo&gs_lp=Eg1nd3Mtd2l6LWxvY2FsIhJSYWthJ3Mga290aWxlaXBvbW8yBRAAGIAEMgUQABiABDIGEAAYFhgeMgYQABgWGB4yBhAAGBYYHjICECYyCBAAGIAEGKIEMggQABiABBiiBDIIEAAYogQYiQVIvAhQxAZYxAZwAHgAkAEAmAF-oAGmAqoBAzIuMbgBA8gBAPgBAZgCA6ACwAKYAwCIBgGSBwMxLjKgB64PsgcDMS4yuAfAAsIHBTItMi4xyAcW&sclient=gws-wiz-local#lkt=LocalPoiReviews&rlfi=hd:;si:7666209392203396731,l,ChJSYWthJ3Mga290aWxlaXBvbW9I2M7x8PS1gIAIWiQQABABGAAYASIScmFrYSdzIGtvdGlsZWlwb21vKgYIAhAAEAGSAQZiYWtlcnmqAUoKDS9nLzExcHk3MXN0dnMQATIfEAEiG12RikuLePke45zt2cmJ_CcYGIZmNEHDLSGmJzIWEAIiEnJha2EncyBrb3RpbGVpcG9tbw,y,n4xN2WK8BF4;mv:[[60.197882977319026,24.947339021027446],[60.19752302268097,24.946614778972545]]&lrd=0x468df9bf012e8049:0x6a63d8d32c0bf67b,3,,,,\" target=\"_blank\" rel=\"noopener\">Jätä Google-arvostelu</a></div>\n  </form>\n</div>",
+      "sv": "<div class=\"feedback-ui\">\n  <div class=\"title\">Lämna feedback eller recension</div>\n  <form class=\"feedback-form\">\n    <div class=\"row\"><input type=\"text\" name=\"name\" placeholder=\"Namn (valfritt)\"></div>\n    <div class=\"row\"><input type=\"email\" name=\"email\" placeholder=\"E-post (valfritt)\"></div>\n    <div class=\"row\"><textarea name=\"message\" rows=\"3\" placeholder=\"Feedback\" required></textarea></div>\n    <div class=\"actions\"><button type=\"submit\" class=\"btn btn-primary\">Skicka</button>\n      <a class=\"btn btn-review\" href=\"https://www.google.com/search?q=Raka%27s+kotileipomo&sca_esv=6c7f7ca6e8ee6a34&rlz=1C5CHFA_enFI1167FI1167&hl=fi-FI&biw=1164&bih=754&tbm=lcl&ei=gxvEaJ7VH_G0wPAPhfyKqAY&ved=0ahUKEwjeos7mpdOPAxVxGhAIHQW-AmUQ4dUDCAo&uact=5&oq=Raka%27s+kotileipomo&gs_lp=Eg1nd3Mtd2l6LWxvY2FsIhJSYWthJ3Mga290aWxlaXBvbW8yBRAAGIAEMgUQABiABDIGEAAYFhgeMgYQABgWGB4yBhAAGBYYHjICECYyCBAAGIAEGKIEMggQABiABBiiBDIIEAAYogQYiQVIvAhQxAZYxAZwAHgAkAEAmAF-oAGmAqoBAzIuMbgBA8gBAPgBAZgCA6ACwAKYAwCIBgGSBwMxLjKgB64PsgcDMS4yuAfAAsIHBTItMi4xyAcW&sclient=gws-wiz-local#lkt=LocalPoiReviews&rlfi=hd:;si:7666209392203396731,l,ChJSYWthJ3Mga290aWxlaXBvbW9I2M7x8PS1gIAIWiQQABABGAAYASIScmFrYSdzIGtvdGlsZWlwb21vKgYIAhAAEAGSAQZiYWtlcnmqAUoKDS9nLzExcHk3MXN0dnMQATIfEAEiG12RikuLePke45zt2cmJ_CcYGIZmNEHDLSGmJzIWEAIiEnJha2EncyBrb3RpbGVpcG9tbw,y,n4xN2WK8BF4;mv:[[60.197882977319026,24.947339021027446],[60.19752302268097,24.946614778972545]]&lrd=0x468df9bf012e8049:0x6a63d8d32c0bf67b,3,,,,\" target=\"_blank\" rel=\"noopener\">Lämna Google-recension</a></div>\n  </form>\n</div>",
+      "en": "<div class=\"feedback-ui\">\n  <div class=\"title\">Send feedback or leave a review</div>\n  <form class=\"feedback-form\">\n    <div class=\"row\"><input type=\"text\" name=\"name\" placeholder=\"Name (optional)\"></div>\n    <div class=\"row\"><input type=\"email\" name=\"email\" placeholder=\"Email (optional)\"></div>\n    <div class=\"row\"><textarea name=\"message\" rows=\"3\" placeholder=\"Feedback\" required></textarea></div>\n    <div class=\"actions\"><button type=\"submit\" class=\"btn btn-primary\">Send</button>\n      <a class=\"btn btn-review\" href=\"https://www.google.com/search?q=Raka%27s+kotileipomo&sca_esv=6c7f7ca6e8ee6a34&rlz=1C5CHFA_enFI1167FI1167&hl=fi-FI&biw=1164&bih=754&tbm=lcl&ei=gxvEaJ7VH_G0wPAPhfyKqAY&ved=0ahUKEwjeos7mpdOPAxVxGhAIHQW-AmUQ4dUDCAo&uact=5&oq=Raka%27s+kotileipomo&gs_lp=Eg1nd3Mtd2l6LWxvY2FsIhJSYWthJ3Mga290aWxlaXBvbW8yBRAAGIAEMgUQABiABDIGEAAYFhgeMgYQABgWGB4yBhAAGBYYHjICECYyCBAAGIAEGKIEMggQABiABBiiBDIIEAAYogQYiQVIvAhQxAZYxAZwAHgAkAEAmAF-oAGmAqoBAzIuMbgBA8gBAPgBAZgCA6ACwAKYAwCIBgGSBwMxLjKgB64PsgcDMS4yuAfAAsIHBTItMi4xyAcW&sclient=gws-wiz-local#lkt=LocalPoiReviews&rlfi=hd:;si:7666209392203396731,l,ChJSYWthJ3Mga290aWxlaXBvbW9I2M7x8PS1gIAIWiQQABABGAAYASIScmFrYSdzIGtvdGlsZWlwb21vKgYIAhAAEAGSAQZiYWtlcnmqAUoKDS9nLzExcHk3MXN0dnMQATIfEAEiG12RikuLePke45zt2cmJ_CcYGIZmNEHDLSGmJzIWEAIiEnJha2EncyBrb3RpbGVpcG9tbw,y,n4xN2WK8BF4;mv:[[60.197882977319026,24.947339021027446],[60.19752302268097,24.946614778972545]]&lrd=0x468df9bf012e8049:0x6a63d8d32c0bf67b,3,,,,\" target=\"_blank\" rel=\"noopener\">Leave a Google review</a></div>\n  </form>\n</div>"
+    },
+    "tags": [
+      "palaute",
+      "arvostelu",
+      "review"
+    ]
   },
   {
     "q": {
@@ -209,7 +626,15 @@
       "sv": "Karjalanpiirakka är ett traditionellt finskt bakverk med en tunn rågbotten fylld med ris eller korngröt eller potatismos.",
       "en": "Karjalanpiirakka (Karelian pasty) is a traditional Finnish pastry with a thin rye crust filled with rice or barley porridge, or mashed potatoes."
     },
-    "tags": ["section:karjalanpiirakka", "karjalanpiirakka", "karelsk pirog", "karelian pie", "mikä", "vad", "what"]
+    "tags": [
+      "section:karjalanpiirakka",
+      "karjalanpiirakka",
+      "karelsk pirog",
+      "karelian pie",
+      "mikä",
+      "vad",
+      "what"
+    ]
   },
   {
     "q": {
@@ -222,7 +647,15 @@
       "sv": "Ja, Karjalanpiirakka är registrerad som en Garanterad Traditionell Specialitet (GTS) av Europeiska kommissionen.",
       "en": "Yes, Karjalanpiirakka is registered as a Traditional Speciality Guaranteed (TSG) product by the European Commission."
     },
-    "tags": ["section:karjalanpiirakka", "apt", "tsg", "gts", "eu", "suojattu", "skyddad"]
+    "tags": [
+      "section:karjalanpiirakka",
+      "apt",
+      "tsg",
+      "gts",
+      "eu",
+      "suojattu",
+      "skyddad"
+    ]
   },
   {
     "q": {
@@ -235,7 +668,12 @@
       "sv": "De första skriftliga uppgifterna om Karjalanpiirakka är från år 1686.",
       "en": "The first written record of Karjalanpiirakka dates back to 1686."
     },
-    "tags": ["section:karjalanpiirakka", "historia", "history", "1686"]
+    "tags": [
+      "section:karjalanpiirakka",
+      "historia",
+      "history",
+      "1686"
+    ]
   },
   {
     "q": {
@@ -248,7 +686,13 @@
       "sv": "Bottnen kavlas mycket tunn, fylls med gröt, kanterna rynkas och pirogerna gräddas snabbt vid 250–300 °C för att förbli krispiga.",
       "en": "The crust is rolled very thin, filled with porridge, the edges are crimped, and the pies are baked quickly at 250–300°C to stay crispy."
     },
-    "tags": ["section:karjalanpiirakka", "valmistus", "tillagning", "preparation", "resepti"]
+    "tags": [
+      "section:karjalanpiirakka",
+      "valmistus",
+      "tillagning",
+      "preparation",
+      "resepti"
+    ]
   },
   {
     "q": {
@@ -261,53 +705,184 @@
       "sv": "De är vanligtvis 7–20 cm stora, ovala eller rundaktiga, med ungefär en tredjedel botten och två tredjedelar fyllning.",
       "en": "They are usually 7–20 cm in size, oval or round in shape, with about one-third crust and two-thirds filling."
     },
-    "tags": ["section:karjalanpiirakka", "koko", "storlek", "size", "mitat"]
-  }
-  ,
-  {
-    "q": { "fi": "Milloin karjalanpiirakka levisi koko Suomeen?", "sv": "När spreds Karjalanpiirakka över hela Finland?", "en": "When did Karjalanpiirakka spread across Finland?" },
-    "a": { "fi": "Karjalanpiirakka kulkeutui 1600–1700-luvuilla Itä-Suomeen ja myöhemmin ympäri maata. Ensimmäiset kirjalliset tiedot ovat vuodelta 1686.", "sv": "Karjalanpiirakka spreds till östra Finland på 1600–1700-talen och senare över hela landet. De första skriftliga uppgifterna är från 1686.", "en": "Karjalanpiirakka spread to Eastern Finland in the 1600–1700s and later across the whole country. The first written records date from 1686." },
-    "tags": ["section:karjalanpiirakka", "historia", "leviäminen", "spridning", "history"]
+    "tags": [
+      "section:karjalanpiirakka",
+      "koko",
+      "storlek",
+      "size",
+      "mitat"
+    ]
   },
   {
-    "q": { "fi": "Milloin karjalanpiirakka rekisteröitiin APT-tuotteeksi?", "sv": "När registrerades Karjalanpiirakka som GTS?", "en": "When was Karjalanpiirakka registered as a TSG (APT) product?" },
-    "a": { "fi": "Se rekisteröitiin Euroopan unionin aidoksi perinteiseksi tuotteeksi (APT) vuonna 2003.", "sv": "Den registrerades av Europeiska unionen som en Garanterad Traditionell Specialitet (GTS) år 2003.", "en": "It was registered by the European Union as a Traditional Speciality Guaranteed (TSG) in 2003." },
-    "tags": ["section:karjalanpiirakka", "apt", "tsg", "gts", "2003", "eu"]
+    "q": {
+      "fi": "Milloin karjalanpiirakka levisi koko Suomeen?",
+      "sv": "När spreds Karjalanpiirakka över hela Finland?",
+      "en": "When did Karjalanpiirakka spread across Finland?"
+    },
+    "a": {
+      "fi": "Karjalanpiirakka kulkeutui 1600–1700-luvuilla Itä-Suomeen ja myöhemmin ympäri maata. Ensimmäiset kirjalliset tiedot ovat vuodelta 1686.",
+      "sv": "Karjalanpiirakka spreds till östra Finland på 1600–1700-talen och senare över hela landet. De första skriftliga uppgifterna är från 1686.",
+      "en": "Karjalanpiirakka spread to Eastern Finland in the 1600–1700s and later across the whole country. The first written records date from 1686."
+    },
+    "tags": [
+      "section:karjalanpiirakka",
+      "historia",
+      "leviäminen",
+      "spridning",
+      "history"
+    ]
   },
   {
-    "q": { "fi": "Kuka haki EU:n nimisuojaa karjalanpiirakalle?", "sv": "Vem ansökte om EU-skyddet för Karjalanpiirakka?", "en": "Who applied for the EU protection for Karjalanpiirakka?" },
-    "a": { "fi": "EU:n APT-nimisuojaa haki Pohjois-Karjalan maaseutukeskuksen maa- ja kotitalousnaisten piirikeskus.", "sv": "Ansökan lämnades in av Norra Karelens landsbygdscentrums hushållskvinnornas distriktscentrum.", "en": "The application was submitted by the Rural Advisory Centre of North Karelia’s Home Economics Women’s District Centre." },
-    "tags": ["section:karjalanpiirakka", "apt", "hakija", "ansökan", "applicant"]
+    "q": {
+      "fi": "Milloin karjalanpiirakka rekisteröitiin APT-tuotteeksi?",
+      "sv": "När registrerades Karjalanpiirakka som GTS?",
+      "en": "When was Karjalanpiirakka registered as a TSG (APT) product?"
+    },
+    "a": {
+      "fi": "Se rekisteröitiin Euroopan unionin aidoksi perinteiseksi tuotteeksi (APT) vuonna 2003.",
+      "sv": "Den registrerades av Europeiska unionen som en Garanterad Traditionell Specialitet (GTS) år 2003.",
+      "en": "It was registered by the European Union as a Traditional Speciality Guaranteed (TSG) in 2003."
+    },
+    "tags": [
+      "section:karjalanpiirakka",
+      "apt",
+      "tsg",
+      "gts",
+      "2003",
+      "eu"
+    ]
   },
   {
-    "q": { "fi": "Mitä EU:n nimisuoja korostaa karjalanpiirakassa?", "sv": "Vad betonar EU-skyddet för Karjalanpiirakka?", "en": "What does the EU protection emphasize for Karjalanpiirakka?" },
-    "a": { "fi": "APT-nimisuoja korostaa karjalanpiirakan perinteisiä ainesosia ja tuotantotapaa.", "sv": "GTS-skyddet betonar de traditionella ingredienserna och tillverkningssättet för bakverket.", "en": "The TSG protection emphasizes the traditional ingredients and production method of the pastry." },
-    "tags": ["section:karjalanpiirakka", "apt", "perinne", "tradition", "ingredients", "method"]
+    "q": {
+      "fi": "Kuka haki EU:n nimisuojaa karjalanpiirakalle?",
+      "sv": "Vem ansökte om EU-skyddet för Karjalanpiirakka?",
+      "en": "Who applied for the EU protection for Karjalanpiirakka?"
+    },
+    "a": {
+      "fi": "EU:n APT-nimisuojaa haki Pohjois-Karjalan maaseutukeskuksen maa- ja kotitalousnaisten piirikeskus.",
+      "sv": "Ansökan lämnades in av Norra Karelens landsbygdscentrums hushållskvinnornas distriktscentrum.",
+      "en": "The application was submitted by the Rural Advisory Centre of North Karelia’s Home Economics Women’s District Centre."
+    },
+    "tags": [
+      "section:karjalanpiirakka",
+      "apt",
+      "hakija",
+      "ansökan",
+      "applicant"
+    ]
   },
   {
-    "q": { "fi": "Mitä ainesosia karjalanpiirakan kuoreen sallitaan?", "sv": "Vilka ingredienser är tillåtna i Karjalanpiirakkas botten?", "en": "What ingredients are allowed in the crust of Karjalanpiirakka?" },
-    "a": { "fi": "Kuori saa sisältää vettä, suolaa, ruis- ja vehnäjauhoja.", "sv": "Bottnen får innehålla vatten, salt, råg- och vetemjöl.", "en": "The crust may contain water, salt, rye flour, and wheat flour." },
-    "tags": ["section:karjalanpiirakka", "kuori", "skorpa", "crust", "ainesosat", "ingredienser"]
+    "q": {
+      "fi": "Mitä EU:n nimisuoja korostaa karjalanpiirakassa?",
+      "sv": "Vad betonar EU-skyddet för Karjalanpiirakka?",
+      "en": "What does the EU protection emphasize for Karjalanpiirakka?"
+    },
+    "a": {
+      "fi": "APT-nimisuoja korostaa karjalanpiirakan perinteisiä ainesosia ja tuotantotapaa.",
+      "sv": "GTS-skyddet betonar de traditionella ingredienserna och tillverkningssättet för bakverket.",
+      "en": "The TSG protection emphasizes the traditional ingredients and production method of the pastry."
+    },
+    "tags": [
+      "section:karjalanpiirakka",
+      "apt",
+      "perinne",
+      "tradition",
+      "ingredients",
+      "method"
+    ]
   },
   {
-    "q": { "fi": "Mitä täytteitä karjalanpiirakkaan sallitaan?", "sv": "Vilka fyllningar är tillåtna i Karjalanpiirakka?", "en": "What fillings are permitted in Karjalanpiirakka?" },
-    "a": { "fi": "Täytteeksi voidaan käyttää ohra- tai riisipuuroa, perunasosetta (perunahiutaleet sallittu) tai survottuja kasviksia. Vuodesta 2019 valmistuksessa on saanut käyttää myös laktoositonta maitojuomaa ja maitojauhetta.", "sv": "Fyllningen kan vara korn- eller risgröt, potatismos (även potatisflingor tillåtna) eller mosade grönsaker. Sedan 2019 får även laktosfri mjölkdryck och mjölkpulver användas.", "en": "The filling can be barley or rice porridge, mashed potatoes (also potato flakes allowed), or mashed vegetables. Since 2019, lactose-free milk drink and milk powder may also be used." },
-    "tags": ["section:karjalanpiirakka", "täyte", "fyllning", "filling", "ainesosat"]
+    "q": {
+      "fi": "Mitä ainesosia karjalanpiirakan kuoreen sallitaan?",
+      "sv": "Vilka ingredienser är tillåtna i Karjalanpiirakkas botten?",
+      "en": "What ingredients are allowed in the crust of Karjalanpiirakka?"
+    },
+    "a": {
+      "fi": "Kuori saa sisältää vettä, suolaa, ruis- ja vehnäjauhoja.",
+      "sv": "Bottnen får innehålla vatten, salt, råg- och vetemjöl.",
+      "en": "The crust may contain water, salt, rye flour, and wheat flour."
+    },
+    "tags": [
+      "section:karjalanpiirakka",
+      "kuori",
+      "skorpa",
+      "crust",
+      "ainesosat",
+      "ingredienser"
+    ]
   },
   {
-    "q": { "fi": "Miten karjalanpiirakka muotoillaan ja paistetaan?", "sv": "Hur ska Karjalanpiirakka formas och gräddas?", "en": "How must Karjalanpiirakka be shaped and baked?" },
-    "a": { "fi": "Taikina kaulitaan ohuiksi, halkaisijaltaan 10–24 cm:n pyöreiksi tai soikeiksi levyiksi. Täyte levitetään 1–2 cm päähän reunoista, reunat rypytetään ja piirakat paistetaan nopeasti korkeassa lämpötilassa, jolloin tuloksena on rapea kuori ja mehevä täyte.", "sv": "Dejen kavlas tunn till rundlar eller ovaler på 10–24 cm, fyllningen sprids med 1–2 cm från kanterna, kanterna rynkas och pirogerna gräddas snabbt i hög temperatur för att ge en krispig botten och saftig fyllning.", "en": "The dough is rolled thin into 10–24 cm rounds or ovals, filled leaving 1–2 cm from the edges, the edges are crimped, and the pies are baked quickly at high temperature to get a crispy crust and moist filling." },
-    "tags": ["section:karjalanpiirakka", "muoto", "shape", "paisto", "baking"]
+    "q": {
+      "fi": "Mitä täytteitä karjalanpiirakkaan sallitaan?",
+      "sv": "Vilka fyllningar är tillåtna i Karjalanpiirakka?",
+      "en": "What fillings are permitted in Karjalanpiirakka?"
+    },
+    "a": {
+      "fi": "Täytteeksi voidaan käyttää ohra- tai riisipuuroa, perunasosetta (perunahiutaleet sallittu) tai survottuja kasviksia. Vuodesta 2019 valmistuksessa on saanut käyttää myös laktoositonta maitojuomaa ja maitojauhetta.",
+      "sv": "Fyllningen kan vara korn- eller risgröt, potatismos (även potatisflingor tillåtna) eller mosade grönsaker. Sedan 2019 får även laktosfri mjölkdryck och mjölkpulver användas.",
+      "en": "The filling can be barley or rice porridge, mashed potatoes (also potato flakes allowed), or mashed vegetables. Since 2019, lactose-free milk drink and milk powder may also be used."
+    },
+    "tags": [
+      "section:karjalanpiirakka",
+      "täyte",
+      "fyllning",
+      "filling",
+      "ainesosat"
+    ]
   },
   {
-    "q": { "fi": "Miten paistetut karjalanpiirakat voidellaan?", "sv": "Hur glaseras/ penslas gräddade Karjalanpiirakka?", "en": "How are baked Karjalanpiirakka glazed?" },
-    "a": { "fi": "Paiston jälkeen karjalanpiirakat voidellaan voilla, öljyllä tai vesimaitoseoksella.", "sv": "Efter gräddningen penslas de med smör, olja eller en vatten-mjölkblandning.", "en": "After baking, they are glazed with butter, oil, or a water-milk mixture." },
-    "tags": ["section:karjalanpiirakka", "voitelu", "glasering", "glaze"]
+    "q": {
+      "fi": "Miten karjalanpiirakka muotoillaan ja paistetaan?",
+      "sv": "Hur ska Karjalanpiirakka formas och gräddas?",
+      "en": "How must Karjalanpiirakka be shaped and baked?"
+    },
+    "a": {
+      "fi": "Taikina kaulitaan ohuiksi, halkaisijaltaan 10–24 cm:n pyöreiksi tai soikeiksi levyiksi. Täyte levitetään 1–2 cm päähän reunoista, reunat rypytetään ja piirakat paistetaan nopeasti korkeassa lämpötilassa, jolloin tuloksena on rapea kuori ja mehevä täyte.",
+      "sv": "Dejen kavlas tunn till rundlar eller ovaler på 10–24 cm, fyllningen sprids med 1–2 cm från kanterna, kanterna rynkas och pirogerna gräddas snabbt i hög temperatur för att ge en krispig botten och saftig fyllning.",
+      "en": "The dough is rolled thin into 10–24 cm rounds or ovals, filled leaving 1–2 cm from the edges, the edges are crimped, and the pies are baked quickly at high temperature to get a crispy crust and moist filling."
+    },
+    "tags": [
+      "section:karjalanpiirakka",
+      "muoto",
+      "shape",
+      "paisto",
+      "baking"
+    ]
   },
   {
-    "q": { "fi": "Mitä tapahtuu jos riisitäytteeseen lisätään esim. kananmuna, voi tai kerma?", "sv": "Vad händer om ingredienser som ägg, smör eller grädde tillsätts i risfyllningen?", "en": "What happens if extra ingredients like egg, butter, or cream are added to the rice filling?" },
-    "a": { "fi": "Jos riisitäytteeseen lisätään esimerkiksi kananmunaa, voita tai kermaa, tuotetta ei saa kutsua karjalanpiirakaksi vaan esimerkiksi riisipiirakaksi.", "sv": "Om ingredienser som ägg, smör eller grädde tillsätts i risfyllningen får produkten inte kallas Karjalanpiirakka utan ska säljas som till exempel rispirog (riisipiirakka).",
-           "en": "If such ingredients are added, the product cannot be called Karjalanpiirakka but must be sold under another name, such as rice pasty (riisipiirakka)." },
-    "tags": ["section:karjalanpiirakka", "nimisuoja", "name protection", "rules"]
+    "q": {
+      "fi": "Miten paistetut karjalanpiirakat voidellaan?",
+      "sv": "Hur glaseras/ penslas gräddade Karjalanpiirakka?",
+      "en": "How are baked Karjalanpiirakka glazed?"
+    },
+    "a": {
+      "fi": "Paiston jälkeen karjalanpiirakat voidellaan voilla, öljyllä tai vesimaitoseoksella.",
+      "sv": "Efter gräddningen penslas de med smör, olja eller en vatten-mjölkblandning.",
+      "en": "After baking, they are glazed with butter, oil, or a water-milk mixture."
+    },
+    "tags": [
+      "section:karjalanpiirakka",
+      "voitelu",
+      "glasering",
+      "glaze"
+    ]
+  },
+  {
+    "q": {
+      "fi": "Mitä tapahtuu jos riisitäytteeseen lisätään esim. kananmuna, voi tai kerma?",
+      "sv": "Vad händer om ingredienser som ägg, smör eller grädde tillsätts i risfyllningen?",
+      "en": "What happens if extra ingredients like egg, butter, or cream are added to the rice filling?"
+    },
+    "a": {
+      "fi": "Jos riisitäytteeseen lisätään esimerkiksi kananmunaa, voita tai kermaa, tuotetta ei saa kutsua karjalanpiirakaksi vaan esimerkiksi riisipiirakaksi.",
+      "sv": "Om ingredienser som ägg, smör eller grädde tillsätts i risfyllningen får produkten inte kallas Karjalanpiirakka utan ska säljas som till exempel rispirog (riisipiirakka).",
+      "en": "If such ingredients are added, the product cannot be called Karjalanpiirakka but must be sold under another name, such as rice pasty (riisipiirakka)."
+    },
+    "tags": [
+      "section:karjalanpiirakka",
+      "nimisuoja",
+      "name protection",
+      "rules"
+    ]
   }
 ]

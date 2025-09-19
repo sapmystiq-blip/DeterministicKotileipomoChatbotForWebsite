@@ -1,6 +1,6 @@
 # Piirakkabotti – Bakery Chatbot
 
-A FastAPI + vanilla JS chatbot for Raka's Kotileipomo. It serves a static chat widget (frontend/) and a JSON Q&A knowledge base (backend/knowledgebase) with lightweight retrieval and optional LLM grounding. Includes an Ecwid order launcher (opens your shop) and is ready for programmatic Ecwid ordering via backend APIs.
+A FastAPI + vanilla JS chatbot for Raka's Kotileipomo. It serves a static chat widget (frontend/) and a JSON Q&A knowledge base (backend/knowledgebase) with lightweight retrieval and optional LLM grounding. Includes an Ecwid order launcher (opens your shop) and has direct Ecwid store ordering enabled via the backend APIs once credentials are configured.
 
 ## Quick Start
 
@@ -93,17 +93,17 @@ Add/modify JSON files under `backend/knowledgebase` and restart the app.
 
 ## Ordering via Ecwid
 
-Today, the chatbot shows an in‑chat button that opens your Ecwid shop (`ECWID_STORE_URL`). Because Ecwid API tokens must be kept secret, any “order without opening the shop” flow needs to run on the server:
+The chatbot shows an in‑chat button that opens your Ecwid shop (`ECWID_STORE_URL`) and, when `ECWID_STORE_ID` and `ECWID_API_TOKEN` are set, can submit pickup orders straight to Ecwid. The backend flow:
 
-- Collect order details in‑chat (items + quantities, pickup date/time, name, phone/email).
-- POST to a new backend endpoint (e.g. `/api/order`).
-- Backend uses Ecwid REST API (store ID + API token) to create an order with:
+- Collects order details in‑chat (items + quantities, pickup date/time, name, phone/email).
+- POSTs them to `/api/order`.
+- Uses the Ecwid REST API to create an order with:
   - payment method: “Pay at pickup”
   - payment status: `AWAITING_PAYMENT`
   - shipping method: “Pickup”
-- Return an order confirmation number to the chat.
+- Returns the Ecwid confirmation number to the chat.
 
-If you want this implemented, share your `ECWID_STORE_ID`, `ECWID_API_TOKEN`, and (ideally) a mapping of product IDs/SKUs to the names you want to expose in chat.
+Map your Ecwid product IDs/SKUs to the names you expose in chat so the order payload matches your catalog.
 
 ## Deploy
 

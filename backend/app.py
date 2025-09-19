@@ -2181,7 +2181,11 @@ def chat_dual(req: ChatDualRequest, request: Request, response: Response):
                 # If the user's query is a menu/products request, return the same legacy menu rendering
                 same_menu = False
                 try:
-                    same_menu = (IR.detect_intent(user_msg) == "menu")
+                    intent = IR.detect_intent(user_msg)
+                    same_menu = intent == "menu"
+                    lower_msg = user_msg.lower()
+                    if same_menu and any(k in lower_msg for k in ["valmisseos", "valmisseoksia", "alusta asti", "mix", "premix", "lahjoit", "hävik", "haavik"]):
+                        same_menu = False
                 except Exception:
                     same_menu = False
                 rag_special = None

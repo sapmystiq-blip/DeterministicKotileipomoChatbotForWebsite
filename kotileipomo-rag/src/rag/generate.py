@@ -110,7 +110,7 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
-    if _contains(qn, ["etukäteen", "ennakk", "preorder", "pre-order", "pre order", "förbeställ", "förbeställning"]):
+    if _contains(qn, ["etukäteen", "ennakk", "preorder", "pre-order", "pre order", "förbeställ", "förbeställning"]) and not _contains(qn, ["ennakkomaks", "jono", "jonot", "jonon"]):
         return _order_ui_block(ln)
 
     if _contains(qn, ["verkkokaup", "nettisivu", "online shop", "online store", "webbutik", "webbshop", "shop online"]):
@@ -121,7 +121,7 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return _order_with_note(notes[ln], ln)
 
-    if _contains(qn, ["yritys", "yritykselle", "b2b", "suuremp", "isompi erä", "tukku"]) and not _contains(qn, ["lasku", "invoice"]):
+    if _contains(qn, ["yritys", "yritykselle", "b2b"]) and not _contains(qn, ["lasku", "invoice"]):
         notes = {
             "fi": "Yritysasiakkaat voivat tehdä suurempia tilauksia sähköpostitse rakaskotileipomo@gmail.com. Varaathan 2–3 päivää aikaa tuotantoa varten ja muistathan, että nouto tapahtuu myymälästämme.",
             "en": "Business customers can place larger orders by emailing rakaskotileipomo@gmail.com. Please allow 2–3 days for production; pickups are always from our shop.",
@@ -134,6 +134,10 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         and not _contains(qn, ["minimum", "minimi", "minsta", "minimitilaus", "minimumorder"])
         and not _contains(qn, ["kakku", "cake"])
         and not _contains(qn, ["kuitt", "receipt", "muut", "few", "raaka", "ilman", "drop in", "walk in", "wolt", "foodora"])
+        and not _contains(qn, ["puhel", "phone", "call", "soit"])
+        and not _contains(qn, ["ennakkomaks", "prepay", "maksulink"])
+        and not _contains(qn, ["jono", "jonot", "jonon"])
+        and not _contains(qn, ["alennus", "tukku"])
     ):
         notes = {
             "fi": "Tilaukset kannattaa tehdä vähintään päivää ennen noutoa (suuremmat määrät 2–3 päivää etukäteen). Tilaukset ovat noudettavia; emme tee kuljetuksia.",
@@ -619,7 +623,7 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
-    if _contains(qn, ["catering", "pitopalvel", "suur", "isompi", "tilaisu", "juhliin"]):
+    if _contains(qn, ["catering", "pitopalvel", "pitopalvelu", "juhlatilaus"]):
         texts = {
             "fi": "Otamme mielellämme isompiakin tilauksia juhliin ja tapahtumiin. Lähetä toiveesi ja aikataulusi sähköpostilla osoitteeseen rakaskotileipomo@gmail.com, niin suunnittelemme sopivan kokonaisuuden.",
             "en": "We’re happy to prepare larger orders for parties and events. Email your wishlist and timing to rakaskotileipomo@gmail.com and we’ll plan the right selection.",
@@ -653,9 +657,9 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
 
     if _contains(qn, ["toimit", "kuljet", "delivery", "deliver", "hemleverans", "hemleverera", "kotiin", "home delivery"]):
         texts = {
-            "fi": "Emme tarjoa kotiinkuljetusta, mutta voit tilata taksin tai kuljetuspalvelun noutamaan tilauksesi. Luovutamme tuotteet kuskille ja voimme lähettää maksulinkin etukäteen, kun tilaus on vahvistettu.",
-            "en": "We don’t provide home delivery ourselves, but you’re welcome to book a taxi or courier to pick up your order. We’ll hand the products to the driver and can send a payment link in advance once the order is confirmed.",
-            "sv": "Vi erbjuder ingen egen hemleverans, men du kan boka en taxi eller budtjänst som hämtar din beställning. Vi lämnar över produkterna till föraren och kan skicka en betalningslänk i förväg när beställningen är bekräftad.",
+            "fi": "Kyllä, tilaukset voi noutaa myymälästämme aukioloaikoina – suuremmat erät onnistuvat myös tiistaisin ja keskiviikkoisin sopimalla etukäteen. Emme tarjoa kotiinkuljetusta, mutta voit tilata taksin tai muun kuljetuspalvelun noutamaan tilauksen. Luovutamme tuotteet kuljettajalle ja lähetämme tarvittaessa maksulinkin etukäteen, kun tilaus on vahvistettu.",
+            "en": "Yes, you can pick up orders from our shop during opening hours – larger batches can also be collected on Tuesdays and Wednesdays by arrangement. We don’t offer home delivery, but you can book a taxi or courier to collect your order. We hand everything to the driver and can send a payment link in advance once the order is confirmed.",
+            "sv": "Ja, du kan hämta beställningar i vår butik under öppettiderna – större satser kan även hämtas tisdagar och onsdagar enligt överenskommelse. Vi erbjuder ingen hemleverans, men du kan boka en taxi eller annan transport som hämtar beställningen. Vi lämnar över varorna till föraren och kan skicka en betalningslänk i förväg när beställningen är bekräftad.",
         }
         return texts[ln]
 
@@ -750,6 +754,19 @@ def _is_product_inquiry(query: str, lang: str) -> bool:
     if any(k in qn for k in neg) or (toks & neg):
         return False
 
+    # If the question is about dietary filters or seasonal/special items, defer to specific answers
+    exclusions = {
+        "vegaan", "vegansk", "vegan",
+        "maidot", "mjölkfri", "dairy", "milk-free", "milk free",
+        "laktoos", "laktos",
+        "gluteen", "gluten",
+        "kausi", "seson", "season",
+        "erikoistarj", "special offer", "specials",
+        "valmisseos", "premix", "mix", "alusta asti", "from scratch", "ennakkomaks", "lahjoit", "hävikk", "haavik",
+    }
+    if any(term in qn for term in exclusions):
+        return False
+
     if lang == "fi":
         menu_terms = {
             # menu/selection/product nouns
@@ -783,23 +800,48 @@ def _is_product_inquiry(query: str, lang: str) -> bool:
 
 def _compose_products_overview(lang: str) -> str:
     if lang == "sv":
-        main = "Vår huvudprodukt är karelsk pirog bakad på fullkornsråg."
-        savory = "Dessutom erbjuder vi salta indiska bakverk såsom samosor och currytwists."
-        sweet = "På den söta sidan har vi finska bullar och blåbärspajer (mustikkakukko)."
-        vegan = "Vi har också veganska alternativ; förbeställ gärna i webbutiken."
-        return f"{main} {savory} {sweet} {vegan}"
+        body = (
+            "Vår huvudprodukt är karelska piroger med 100 % rågskal. "
+            "På den salta sidan har vi indiska bakverk som samosor och mungcurry-twists. "
+            "Bland de söta alternativen finns finska bullar och blåbärspaj (mustikkakukko). "
+            "Vi bakar inte tårtor, smörgåstårtor eller andra konditorivaror."
+        )
+        return f"{body}\n{_suggest_menu_block(lang)}"
     if lang == "en":
-        main = "Our main product is a 100% whole‑rye Karelian pie."
-        savory = "We also offer savory Indian pastries such as samosas and curry twists."
-        sweet = "On the sweet side we have Finnish buns and blueberry pies (mustikkakukko)."
-        vegan = "We also offer vegan options; we recommend preordering in the online shop."
-        return f"{main} {savory} {sweet} {vegan}"
+        body = (
+            "Our signature product is the Karelian pie with a 100% rye crust. "
+            "Savory options include Indian pastries like samosas and mung curry twists. "
+            "For sweets we bake Finnish buns and blueberry pie (mustikkakukko). "
+            "We don’t bake cakes, sandwich cakes or other confectionery."
+        )
+        return f"{body}\n{_suggest_menu_block(lang)}"
     # fi default
-    main = "Päätuotteemme on täysrukiinen karjalanpiirakka."
-    savory = "Lisäksi tarjoamme suolaisia intialaisia leivonnaisia, kuten samosat ja curry‑twistit."
-    sweet = "Makealta puolelta löytyy suomalaisia pullia ja mustikkakukkoa."
-    vegan = "Tarjoamme myös vegaanisia vaihtoehtoja; vegaanituotteet kannattaa tilata etukäteen verkkokaupasta."
-    return f"{main} {savory} {sweet} {vegan}"
+    body = (
+        "Päätuotteemme on 100 % rukiisella kuorella leivottu karjalanpiirakka. "
+        "Suolaiselta puolelta löytyy myös intialaisia leivonnaisia kuten samosat ja mungcurry-twistit. "
+        "Makeista tarjoamme suomalaisia pullia ja mustikkakukkoa. "
+        "Emme leivo täyte- tai voileipäkakkuja emmekä muita konditoriatuotteita."
+    )
+    return f"{body}\n{_suggest_menu_block(lang)}"
+
+
+def _extract_answer_text(doc: Doc, query_norm: str | None = None) -> Tuple[str, str]:
+    text = doc.text or ""
+    if "\n" in text:
+        q_part, a_part = text.split("\n", 1)
+    else:
+        q_part, a_part = text, ""
+    q_part = q_part.strip()
+    if q_part.lower().startswith("q:"):
+        q_clean = q_part[2:].strip()
+    else:
+        q_clean = q_part
+    a_clean = a_part
+    if a_clean.lower().startswith("a:"):
+        a_clean = a_clean[2:].strip()
+    else:
+        a_clean = a_clean.strip()
+    return q_clean, a_clean
 
 
 def compose_answer(query: str, hits: List[Tuple[float, Doc]], lang: str) -> str:
@@ -814,22 +856,22 @@ def compose_answer(query: str, hits: List[Tuple[float, Doc]], lang: str) -> str:
             return "Jag är inte säker. Kan du precisera frågan?"
         return "I’m not sure. Could you clarify your question?"
 
+    # Prefer an exact FAQ match if present
+    qn = normalize(query)
+    for _, d in hits:
+        dq, da = _extract_answer_text(d)
+        if normalize(dq) == qn:
+            if da:
+                return da
+
     # Enforce preferred ordering for product/menu inquiries
     if _is_product_inquiry(query, lang):
         return _compose_products_overview(lang)
 
     # Default: use the first good FAQ-like snippet
-    def _extract_answer(t: str) -> str:
-        if not t:
-            return ""
-        a = t.split("\nA:", 1)
-        if len(a) == 2:
-            return a[1].strip()
-        return t.strip()
-
     top = hits[:3]
     for _, d in top:
-        txt = _extract_answer(d.text)
+        _, txt = _extract_answer_text(d)
         if txt:
             return txt
     # Fallback to any snippet/meta
