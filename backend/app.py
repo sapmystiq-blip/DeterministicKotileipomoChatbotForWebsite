@@ -144,7 +144,16 @@ DB_URL = os.getenv("DATABASE_URL") or os.getenv("DB_URL")
 # Normalize if a Railway/Heroku style URL is provided.
 if DB_URL and DB_URL.startswith("postgres://"):
     DB_URL = "postgresql://" + DB_URL[len("postgres://"):]
-DB_ENABLED = bool(DB_URL)
+
+_DB_ENABLED_FLAG = os.getenv("DB_ENABLED")
+if _DB_ENABLED_FLAG is not None:
+    DB_ENABLED = _DB_ENABLED_FLAG.strip().lower() in {"1", "true", "yes", "on"}
+else:
+    DB_ENABLED = True
+
+if DB_ENABLED and not DB_URL:
+    logger.warning("DB_ENABLED is true but DATABASE_URL is missing; disabling DB features.")
+    DB_ENABLED = False
 ENGINE = None
 TABLE_READY = False
 ADMIN_KEY = os.getenv("ADMIN_KEY") or os.getenv("BOT_ADMIN_KEY")
@@ -2320,6 +2329,17 @@ def api_feedback_queue(request: Request, status: str = "pending", limit: int = 1
     if not _is_admin(request):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return {"items": _db_feedback_list(status=status, limit=limit)}
+
+
+@app.get("/api/admin/db_status")
+def api_admin_db_status(request: Request):
+    if not _is_admin(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {
+        "enabled": bool(DB_ENABLED),
+        "engine_initialized": ENGINE is not None,
+        "table_ready": bool(TABLE_READY),
+    }
 
 class PromotePayload(BaseModel):
     id: int
