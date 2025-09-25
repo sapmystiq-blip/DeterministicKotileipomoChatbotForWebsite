@@ -86,6 +86,108 @@ def _frozen_response(lang: str) -> str:
 def _special_answer(query: str, lang: str) -> Optional[str]:
     ln = _lang_code(lang)
     qn = normalize(query)
+    words = [w for w in qn.split() if w]
+    greet_terms = {
+        "hei","moi","moikka","morjes","moro","terve","heippa",
+        "hi","hello","hey","hola","ciao"
+    }
+    if words and len(words) <= 4 and all(w in greet_terms for w in words):
+        greetings = {
+            "fi": "Hei! 👋 Kuinka voin auttaa?",
+            "en": "Hi there! 👋 How can I help today?",
+            "sv": "Hej! 👋 Hur kan jag hjälpa till?",
+        }
+        return greetings.get(ln, greetings["fi"])
+
+    weekday_tokens = {
+        "mon": {"maanant", "monday"},
+        "tue": {"tiist", "tuesday"},
+        "wed": {"keskiviik", "keskiv", "wednes"},
+        "thu": {"torst", "thursday"},
+        "fri": {"perjant", "friday"},
+        "sat": {"lauant", "saturday"},
+    }
+
+    def _mentioned(keys: set[str]) -> bool:
+        return any(any(tok in qn for tok in weekday_tokens[k]) for k in keys)
+
+    if _mentioned({"mon"}) and any(k in qn for k in ["auki", "open", "avoin", "avataan", "auke", "milloin", "mihin aikaan", "kello", "time"]):
+        texts = {
+            "fi": (
+                "Maanantaisin myymälä on suljettu. Olemme avoinna torstaisin ja perjantaisin klo 11–17 sekä lauantaisin klo 11–15."
+                " Jos haluat noudon maanantaille, sovi asiasta etukäteen sähköpostitse (rakaskotileipomo@gmail.com), niin katsomme onnistuuko järjestely."
+            ),
+            "en": (
+                "We’re closed on Mondays. Our regular opening hours are Thu–Fri 11:00–17:00 and Sat 11:00–15:00."
+                " If you need a Monday pickup, email us first (rakaskotileipomo@gmail.com) so we can confirm whether it’s possible."
+            ),
+            "sv": (
+                "Vi har stängt på måndagar. Ordinarie öppettider är tors–fre kl. 11–17 och lör kl. 11–15."
+                " Behöver du hämta på måndag? Mejla oss först (rakaskotileipomo@gmail.com) så ser vi om det går att ordna."
+            ),
+        }
+        return texts[ln]
+
+    if _mentioned({"tue"}) and any(k in qn for k in ["auki", "open", "avataan", "auke", "mihin aikaan", "milloin", "kello", "time"]):
+        texts = {
+            "fi": "Tiistaisin varsinainen myymälä on suljettu, mutta ennakkonoudot onnistuvat sopimalla etukäteen sähköpostitse osoitteeseen rakaskotileipomo@gmail.com. Varsinaiset aukiolot ovat to–pe klo 11–17 ja la klo 11–15.",
+            "en": "We’re not open to walk-ins on Tuesdays; pickups require arranging in advance via email (rakaskotileipomo@gmail.com). Regular opening hours are Thu–Fri 11:00–17:00 and Sat 11:00–15:00.",
+            "sv": "Vi håller inte öppet för drop-in på tisdagar; avhämtning kräver överenskommelse via mejl (rakaskotileipomo@gmail.com). Ordinarie öppettider är tors–fre kl. 11–17 och lör kl. 11–15.",
+        }
+        return texts[ln]
+
+    if _mentioned({"wed"}) and any(k in qn for k in ["auki", "open", "avataan", "auke", "mihin aikaan", "milloin", "kello", "time"]):
+        texts = {
+            "fi": "Keskiviikkoisin myymälä on kiinni, mutta ennakkonoudot onnistuvat sopimalla etukäteen sähköpostitse (rakaskotileipomo@gmail.com). Varsinaiset aukiolot ovat to–pe klo 11–17 ja la klo 11–15.",
+            "en": "We’re closed on Wednesdays, but you can arrange a pickup in advance by emailing rakaskotileipomo@gmail.com. Regular hours are Thu–Fri 11:00–17:00 and Sat 11:00–15:00.",
+            "sv": "På onsdagar har vi stängt, men förhandsbokade avhämtningar går att ordna via mejl till rakaskotileipomo@gmail.com. Ordinarie öppettider är tors–fre kl. 11–17 och lör kl. 11–15.",
+        }
+        return texts[ln]
+
+    no_arrangement_terms = {
+        "ilman ennakkosop", "ilman sopim", "ilman soppar", "ilman että", "ilman etukäteist", "ilman etukäteen",
+        "ilman yhteyttä", "ilman kontaktia", "ilman email", "ilman sähköpostia",
+        "without prior", "without agreement", "without arrangement", "without contacting", "without emailing", "without email",
+        "without reaching out", "without contact", "without notice",
+        "utan att kontakta", "utan att höra av", "utan att meddela", "utan att mejla", "utan att maila", "utan kontakt",
+        "ei sopimusta", "ei yhteydenottoa"
+    }
+    pickup_terms = {
+        "nout", "nouto", "noutoon", "nouton", "nouta", "noud", "noudon", "nouda", "noutais", "noutaisin",
+        "pickup", "pick up", "collect", "collection", "hakemaan", "hakua", "haen", "haetta"
+    }
+
+    if _contains(qn, list(no_arrangement_terms)) and _contains(qn, list(pickup_terms)):
+        texts = {
+            "fi": "Nouto aukioloaikojen ulkopuolella edellyttää ennakkosopimusta. Ota yhteyttä sähköpostitse rakaskotileipomo@gmail.com, niin vahvistamme mahdollisen ajan ja järjestelyt.",
+            "en": "Pickups outside normal opening hours need to be agreed in advance. Please email us at rakaskotileipomo@gmail.com so we can confirm the timing and details.",
+            "sv": "Avhämtning utanför ordinarie öppettider måste avtalas i förväg. Mejla oss på rakaskotileipomo@gmail.com så bekräftar vi tid och arrangemang.",
+        }
+        return texts[ln]
+
+    import re as _re
+    orig = (query or "").lower()
+    hours = []
+    for pat in [r"(?:klo|kello)\s*(\d{1,2})", r"\b(\d{1,2})\s*(?:pm|p\.m\.)"]:
+        hours.extend(int(h) for h in _re.findall(pat, orig))
+    if not hours:
+        colon_matches = _re.findall(r"\b(\d{1,2})\s*:\s*(\d{2})", orig)
+        hours.extend(int(hh) for hh, _ in colon_matches)
+    if hours and _contains(qn, list(pickup_terms)):
+        def requires_arrangement(hour: int) -> bool:
+            if hour >= 18 or hour < 8:
+                return True
+            if _mentioned({"sat"}):
+                return hour > 15
+            return hour > 17
+        if any(requires_arrangement(h) for h in hours):
+            texts = {
+                "fi": "Aukioloaikojen ulkopuoliset noudot tulee sopia etukäteen. Lähetä meille sähköpostia osoitteeseen rakaskotileipomo@gmail.com, niin vahvistamme ajan.",
+                "en": "Pickups outside normal opening hours need an email agreement first. Please write to rakaskotileipomo@gmail.com so we can confirm a time.",
+                "sv": "Avhämtningar utanför ordinarie tider måste avtalas i förväg. Mejla oss på rakaskotileipomo@gmail.com så bekräftar vi tiden.",
+            }
+            return texts[ln]
+
     if _contains(qn, ["karjalanpiir", "karelian", "karelsk"]) and _contains(qn, ["täyte", "täytt", "filling", "fyllning", "fyllningar"]):
         texts = {
             "fi": "Karjalanpiirakoissamme on neljä vakituista täytettä: riisipuuro, perunasose, ohrapuuro ja vegaaninen riisipuuro (ilman maitotuotteita).",
@@ -94,11 +196,19 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
+    if _contains(qn, ["karjalanpiir", "karelian", "karelsk"]) and _contains(qn, ["laktoos", "lactose", "laktos", "maito", "milk", "mjölk", "dairy"]):
+        texts = {
+            "fi": "Karjalanpiirakoiden riisipuuro tehdään laktoosittomasta maidosta, joten ne ovat laktoosittomia mutta sisältävät maitotuotteen.",
+            "en": "Our Karelian pies use lactose-free milk in the rice porridge, so they are lactose-free but do contain dairy.",
+            "sv": "Vi kokar risgröten till Karelska piroger med laktosfri mjölk – pirogerna är laktosfria men innehåller mejeriprodukt.",
+        }
+        return texts[ln]
+
     if _contains(qn, ["laktoos", "lactose", "laktos"]):
         texts = {
-            "fi": "Kaikki tuotteemme ovat laktoosittomia.",
-            "en": "All our products are lactose-free.",
-            "sv": "Alla våra produkter är laktosfria.",
+            "fi": "Kyllä, kaikki tuotteemme ovat laktoosittomia, joten laktoosiherkkä voi nauttia niistä huoletta.",
+            "en": "Yes—every product we bake is lactose-free, so you can enjoy them even with lactose intolerance.",
+            "sv": "Ja, alla våra produkter är laktosfria så du kan njuta av dem även om du undviker laktos.",
         }
         return texts[ln]
 
@@ -121,28 +231,20 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return _order_with_note(notes[ln], ln)
 
+    order_terms = {
+        "tilaus", "tilauk", "tilata", "tilausta", "tilaaminen", "orders", "order", "beställ", "beställning", "beställningar"
+    }
+    if _contains(qn, list(order_terms)) and not any(k in qn for k in [
+        "peru", "muuta", "muok", "ennakkomaks", "delivery", "toimitus", "post" , "breakfast", "aamupala", "iltapala",
+        "lasku", "invoice", "yrityk", "business"
+    ]):
+        return _order_ui_block(ln)
+
     if _contains(qn, ["yritys", "yritykselle", "b2b"]) and not _contains(qn, ["lasku", "invoice"]):
         notes = {
             "fi": "Yritysasiakkaat voivat tehdä suurempia tilauksia sähköpostitse rakaskotileipomo@gmail.com. Varaathan 2–3 päivää aikaa tuotantoa varten ja muistathan, että nouto tapahtuu myymälästämme.",
             "en": "Business customers can place larger orders by emailing rakaskotileipomo@gmail.com. Please allow 2–3 days for production; pickups are always from our shop.",
             "sv": "Företagskunder kan lägga större beställningar via e-post till rakaskotileipomo@gmail.com. Räkna med 2–3 dagar för bakningen och hämta beställningen i butiken.",
-        }
-        return _order_with_note(notes[ln], ln)
-
-    if (
-        _contains(qn, ["tilaus", "tilauk", "tilata", "order", "beställ", "bestalla", "beställa", "tilaa"])
-        and not _contains(qn, ["minimum", "minimi", "minsta", "minimitilaus", "minimumorder"])
-        and not _contains(qn, ["kakku", "cake"])
-        and not _contains(qn, ["kuitt", "receipt", "muut", "few", "raaka", "ilman", "drop in", "walk in", "wolt", "foodora"])
-        and not _contains(qn, ["puhel", "phone", "call", "soit"])
-        and not _contains(qn, ["ennakkomaks", "prepay", "maksulink"])
-        and not _contains(qn, ["jono", "jonot", "jonon"])
-        and not _contains(qn, ["alennus", "tukku"])
-    ):
-        notes = {
-            "fi": "Tilaukset kannattaa tehdä vähintään päivää ennen noutoa (suuremmat määrät 2–3 päivää etukäteen). Tilaukset ovat noudettavia; emme tee kuljetuksia.",
-            "en": "Please place orders at least one day in advance; for larger batches allow 2–3 days. Orders are pickup-only; we don’t offer delivery.",
-            "sv": "Lägg beställningar minst en dag i förväg; för större mängder behöver vi 2–3 dagar. Beställningarna hämtas i butiken – vi erbjuder ingen leverans.",
         }
         return _order_with_note(notes[ln], ln)
 
@@ -274,19 +376,19 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
-    if _contains(qn, ["julkis", "tram", "metro", "bus", "bussi", "spårvagn"]):
+    if _contains(qn, ["julkis", "tram", "metro", "bus", "bussi", "spårvagn", "raitiovaunu", "pysäk", "pysak"]) and not _contains(qn, ["y-tunnus", "ytunnus", "y tunnus", "y id", "business id", "company id", "företagsnummer"]):
         texts = {
-            "fi": "Perille pääset helposti julkisilla: raitiovaunut 7 ja 9 sekä bussit 55 ja 71 pysähtyvät Paavalin kirkon kohdalla, parin minuutin kävelymatkan päässä.",
-            "en": "Trams 7 and 9 plus buses 55 and 71 stop near Paavalin kirkko, only a couple of minutes’ walk from us.",
-            "sv": "Spårvagn 7 och 9 samt bussar 55 och 71 stannar vid Paavalin kyrka, någon minuts promenad från oss.",
+            "fi": "Lähimmät pysäkit ovat Mäkelänrinne (bussit 55, 59 ja useita muita linjoja sekä raitiovaunut 1 ja 7) ja Jämsänkatu (raitiovaunu 9 ja bussi 59). Molemmista on parin minuutin kävely leipomolle. Tarkista ajantasaiset reitit osoitteesta hsl.fi.",
+            "en": "The closest stops are Mäkelänrinne—served by buses 55, 59 and numerous other lines plus trams 1 and 7—and Jämsänkatu for tram 9 and bus 59. Both are roughly a two-minute walk away. Please see hsl.fi for current routes.",
+            "sv": "Närmaste hållplatser är Mäkelänrinne (bussarna 55, 59 och flera andra linjer samt spårvagn 1 och 7) och Jämsänkatu där spårvagn 9 och buss 59 stannar. Båda ligger cirka två minuters promenad bort. Se hsl.fi för uppdaterade rutter.",
         }
         return texts[ln]
 
     if _contains(qn, ["esteet", "accessible", "tillgänglig"]):
         texts = {
-            "fi": "Sisäänkäynti on katutasossa ja ovella on matala kynnys. Autamme mielellämme tarvittaessa sisään.",
-            "en": "The entrance is street level with a low threshold—we’re happy to help you in if needed.",
-            "sv": "Ingången är i gatuplan med en låg tröskel – vi hjälper gärna till om du behöver assistans.",
+            "fi": "Sisäänkäynnille johtaa kolme porrasta eikä rampia ole. Autamme mielellämme kantamalla tilauksesi sisään tai ulos.",
+            "en": "There are three steps up to the entrance and no ramp. We’re happy to help carry your order in or out.",
+            "sv": "Det finns tre trappsteg upp till ingången och ingen ramp. Vi hjälper gärna till att bära in eller ut din beställning.",
         }
         return texts[ln]
 
@@ -314,6 +416,92 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
+    if _contains(qn, ["tarjoilu", "vat", "vati", "patar", "serving", "platter", "astiat", "cutlery", "dish", "lautanen", "plate"]) and _contains(qn, ["lain", "vuokra", "rent", "varata", "reserve"]):
+        texts = {
+            "fi": "Emme tarjoa tarjoiluvateja, astioita tai aterimia lainattavaksi – tuotteet pakataan mukaan kertakäyttö- tai kierrätyspakkauksiin.",
+            "en": "We don’t rent serving platters, dishes or cutlery; everything is packed to-go in our own packaging.",
+            "sv": "Vi hyr inte ut serveringsfat, kärl eller bestick – allt packas för avhämtning i våra egna förpackningar.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["työpor", "tyopor", "tiim", "team", "staff"]) and _contains(qn, ["aamupala", "iltapala", "breakfast", "evening snack", "snack"] ) and _contains(qn, ["tilaus", "tilata", "order"]):
+        texts = {
+            "fi": (
+                "Kyllä, tilaukset voi noutaa myymälästämme aukioloaikoina. Suuremmat erät onnistuvat myös maanantaisin, tiistaisin ja keskiviikkoisin sopimalla etukäteen."
+            ),
+            "en": (
+                "Yes, you can pick up from the shop during opening hours. Larger batches can also be prepared for Monday, Tuesday or Wednesday pickups when arranged in advance."
+            ),
+            "sv": (
+                "Ja, du kan hämta beställningen under öppettiderna. Större satser ordnar vi även för måndagar, tisdagar och onsdagar om vi kommer överens i förväg."
+            ),
+        }
+        follow = {
+            "fi": "Kerro ryhmän koko ja toivottu noutoaika sähköpostilla osoitteeseen rakaskotileipomo@gmail.com, niin vahvistamme järjestelyt ja aikataulun.",
+            "en": "Email us at rakaskotileipomo@gmail.com with your headcount and desired pickup time so we can confirm the plan and timing.",
+            "sv": "Mejla oss på rakaskotileipomo@gmail.com med antal personer och önskad avhämtningstid så bekräftar vi upplägget och tidtabellen.",
+        }
+        return f"<p>{texts[ln]}</p><p>{follow[ln]}</p>"
+
+    if _contains(qn, ["post", "posti", "postitse", "ship", "shipping", "delivery", "deliver", "toimitus", "lähett", "lähettäk", "lähettä"]) and _contains(qn, ["tuote", "tuotte", "tuotteet", "tuotteita", "tilaus", "order", "paketti", "products"]):
+        paragraphs = {
+            "fi": (
+                "Tilaukset noudetaan myymälästämme aukioloaikoina. Suuremmat erät onnistuvat myös maanantaisin, tiistaisin ja keskiviikkoisin sopimalla etukäteen."
+            ),
+            "en": (
+                "Orders are picked up from the shop during opening hours. Larger batches can be prepared for Monday, Tuesday or Wednesday pickups when arranged in advance."
+            ),
+            "sv": (
+                "Beställningar hämtas i butiken under öppettiderna. Större satser kan ordnas för hämtning måndagar, tisdagar eller onsdagar efter överenskommelse."
+            ),
+        }
+        follow = {
+            "fi": "Emme valitettavasti tarjoa kotiinkuljetusta, mutta voit tilata taksin tai kuljetuspalvelun hakemaan tilauksen. Luovutamme tuotteet kuljettajalle ja lähetämme tarvittaessa maksulinkin etukäteen, kun tilaus on vahvistettu.",
+            "en": "We do not offer delivery, but you can arrange a taxi or courier to collect the order. We hand everything over to the driver and can send a payment link in advance once the order is confirmed.",
+            "sv": "Vi erbjuder ingen leverans, men du kan boka taxi eller kurir som hämtar beställningen. Vi lämnar över varorna till föraren och kan skicka en betalningslänk i förväg när ordern bekräftats.",
+        }
+        return f"<p>{paragraphs[ln]}</p><p>{follow[ln]}</p>"
+
+    if _contains(qn, ["y-tunnus", "ytunnus", "y tunnus", "y-tunn", "business id", "company id", "företagsnummer", "y id"]):
+        texts = {
+            "fi": "Y-tunnuksemme on 3184994-7.",
+            "en": "Our business ID is 3184994-7.",
+            "sv": "Vårt FO-nummer är 3184994-7.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["lemmik", "eläin", "pet", "hund", "dog", "cat", "kissa", "koira", "kissa"]):
+        large_terms = {"iso", "suuri", "suuret", "suuren", "big", "large", "stor", "stora"}
+        if any(t in qn for t in large_terms):
+            texts = {
+                "fi": "Suuret koirat eivät valitettavasti sovi pieneen myymäläämme. Voimme pakata tilauksen valmiiksi odottamaan ulkopuolelle.",
+                "en": "Large dogs aren’t a good fit inside our small shop. We’re happy to hand the order over outside.",
+                "sv": "Stora hundar passar tyvärr inte i vår lilla butik. Vi lämnar gärna beställningen utanför.",
+            }
+            return texts[ln]
+        texts = {
+            "fi": "Pienet lemmikit ovat tervetulleita mukana käynnille, kunhan ne pysyvät sylissä tai hihnassa ja muiden asiakkaiden huomioiminen onnistuu.",
+            "en": "Small pets are welcome to visit as long as they’re carried or on a leash and comfortable around other customers.",
+            "sv": "Små husdjur är välkomna så länge de bärs eller hålls i koppel och trivs bland andra kunder.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["kuit", "receipt", "lasku", "invoice"]) and _contains(qn, ["yritys", "yrityk", "company", "företag"]):
+        texts = {
+            "fi": "Saat yrityksen nimellä paperikuitin noudon yhteydessä. Jos tarvitset laskun tai muuta lisätietoa, lähetä tilauksen tiedot sähköpostitse osoitteeseen rakaskotileipomo@gmail.com.",
+            "en": "We can provide a paper receipt under your company name when you pick up. If you need an invoice or extra details, email the order information to rakaskotileipomo@gmail.com.",
+            "sv": "Vi kan ge ett papperskvitto i företagets namn vid avhämtning. Behöver du faktura eller fler uppgifter, mejla beställningen till rakaskotileipomo@gmail.com.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["pöyd", "table", "seat"]) and _contains(qn, ["varaa", "varata", "book", "reserve", "reservation", "reservera"]):
+        texts = {
+            "fi": "Emme tarjoa pöytävarauksia tai asiakaspaikkoja – myymälä toimii noutopisteenä.",
+            "en": "We don’t have seating or table reservations—the shop is takeaway only.",
+            "sv": "Vi har inga sittplatser eller bordsbokningar – butiken är en ren avhämtningspunkt.",
+        }
+        return texts[ln]
+
     if _contains(qn, ["wc", "toilet", "restroom"]):
         texts = {
             "fi": "Meillä ei valitettavasti ole asiakas-WC:tä.",
@@ -322,7 +510,10 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
-    if _contains(qn, ["asiakaspaikka", "istumapaikka", "seating", "sit down"]):
+    if _contains(qn, [
+        "asiakaspaikka", "asiakaspaikkoja", "istumapaikka", "istumapaikkoja", "istuma", "istua", "istumaan",
+        "seating", "seat", "sit down", "mahtuu", "kapasiteet", "capacity"
+    ]):
         texts = {
             "fi": "Myymälämme on noutopiste ilman istumapaikkoja – tuotteet pakataan mukaan.",
             "en": "We operate as a takeaway shop—there’s no indoor seating.",
@@ -367,6 +558,23 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
             "fi": "Käytämme lisäaineettomia perunahiutaleita ja keitettyä perunaa – teemme täytteen itse leipomolla.",
             "en": "We combine additive-free potato flakes with cooked potato—so the mash is prepared in-house.",
             "sv": "Vi använder tillsatsfria potatisflingor tillsammans med kokt potatis – fyllningen görs i bageriet.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["ohje", "ohjet", "ohjeet", "paisto-ohje", "paisto-ohjeet"]) and _contains(qn, ["piirakka", "piirak", "pirog"]):
+        texts = {
+            "fi": (
+                "Kotona paista raakapakastepiirakat 250–275 °C uunissa noin 18–20 minuuttia ja anna vetäytyä hetki."
+                " Jos lämmität valmiiksi paistettuja piirakoita, 200–220 °C ja 10–12 minuuttia riittää, kunnes pinta on rapea."
+            ),
+            "en": (
+                "Bake raw-frozen pies at 250–275 °C for about 18–20 minutes, then let them rest briefly."
+                " For reheating already baked pies, use 200–220 °C for roughly 10–12 minutes until crisp."
+            ),
+            "sv": (
+                "Grädda råfrysta piroger i 250–275 °C i cirka 18–20 minuter och låt dem vila en stund."
+                " För att värma färdiggräddade piroger räcker 200–220 °C i ungefär 10–12 minuter tills de är krispiga."
+            ),
         }
         return texts[ln]
 
@@ -529,14 +737,6 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
-    if _contains(qn, ["käteis", "cash"]):
-        texts = {
-            "fi": "Emme valitettavasti ota vastaan käteismaksuja – maksut hoituvat kortilla (lähimaksu käy).",
-            "en": "We don’t accept cash; please pay by card (contactless works).",
-            "sv": "Vi tar tyvärr inte emot kontanter – vänligen betala med kort (kontaktlöst fungerar).",
-        }
-        return texts[ln]
-
     if _contains(qn, ["mobilepay"]):
         texts = {
             "fi": "MobilePay ei valitettavasti käy maksutapana. Suosittelemme korttimaksua.",
@@ -695,11 +895,75 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
-    if _contains(qn, ["muutta", "muokata", "change"]) and _contains(qn, ["tilauk", "order"]):
+    if _contains(qn, ["lahjakort", "gift card", "presentkort", "voucher"]):
         texts = {
-            "fi": "Ilmoita muutoksista mahdollisimman pian sähköpostitse – kun leivonta on alkanut emme aina voi tehdä muutoksia.",
-            "en": "Please email us as soon as possible if you need to change an order; once we start baking, adjustments may not be possible.",
-            "sv": "Meddela oss via e-post så snart som möjligt om du behöver ändra en beställning – när bakningen väl har börjat är ändringar svåra.",
+            "fi": "Valitettavasti emme myy lahjakortteja.",
+            "en": "Unfortunately we do not sell gift cards.",
+            "sv": "Tyvärr säljer vi inte presentkort.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["täsm", "mihin aikaan", "milloin", "what time", "vilken tid", "kellon", "time", "voinko siirt", "kuinka myöh", "how late", "latest pickup", "latest time"]) and \
+       _contains(qn, ["torst", "thursday", "torsdag"]) and \
+       _contains(qn, ["nout", "pick up", "pickup", "hämt", "hamta", "hämta", "noutoon", "noutaa"]):
+        texts = {
+            "fi": "Torstaisin palvelemme klo 11–17. Nouda tilauksesi tuona aikavälinä leipomolta.",
+            "en": "On Thursdays we’re open from 11:00 to 17:00—please pick up your order within that window.",
+            "sv": "På torsdagar har vi öppet kl. 11–17. Hämta din beställning inom det tidsintervallet.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["täsm", "mihin aikaan", "milloin", "what time", "vilken tid", "kellon", "time", "voinko siirt", "kuinka myöh", "how late", "latest pickup", "latest time"]) and \
+       _contains(qn, ["perjant", "friday", "fredag"]) and \
+       _contains(qn, ["nout", "pick up", "pickup", "hämt", "hamta", "hämta", "noutoon", "noutaa"]):
+        texts = {
+            "fi": "Perjantaisin olemme avoinna klo 11–17, joten noudot tulee tehdä tuon aikavälin puitteissa.",
+            "en": "On Fridays we’re open 11:00–17:00, so please plan your pickup within those hours.",
+            "sv": "På fredagar har vi öppet kl. 11–17 – hämta beställningen under den tiden.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["täsm", "mihin aikaan", "milloin", "what time", "vilken tid", "kellon", "time", "voinko siirt", "kuinka myöh", "how late", "latest pickup", "latest time"]) and \
+       _contains(qn, ["lauant", "saturday", "lördag", "lordag"]) and \
+       _contains(qn, ["nout", "pick up", "pickup", "hämt", "hamta", "hämta", "noutoon", "noutaa"]):
+        texts = {
+            "fi": "Lauantaisin palvelemme klo 11–15, joten noudot tulee tehdä viimeistään klo 15 mennessä.",
+            "en": "On Saturdays we’re open 11:00–15:00, so make sure to pick up before 15:00.",
+            "sv": "På lördagar har vi öppet kl. 11–15, så hämta din beställning före kl. 15.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["siirt", "myöh", "parilla tunnilla", "pari tunt", "couple hours", "couple of hours", "later", "delay", "shift", "move", "push", "resched"]) and _contains(qn, ["nout", "pick up", "pickup", "hämt", "hamta", "hämta"]):
+        texts = {
+            "fi": "Voit siirtää noudon samalle päivälle, kunhan ehdit ennen sulkemista: to–pe klo 11–17 ja la klo 11–15. Jos aikataulu muuttuu paljon, laitathan meille viestin osoitteeseen rakaskotileipomo@gmail.com.",
+            "en": "You can shift the pickup later the same day as long as you arrive before closing: Thu–Fri 11:00–17:00 and Sat 11:00–15:00. If the timing changes more, please email us at rakaskotileipomo@gmail.com.",
+            "sv": "Du kan flytta upphämtningen samma dag så länge du kommer före stängning: tors–fre kl. 11–17 och lör kl. 11–15. Om tiden ändras mer, mejla oss gärna på rakaskotileipomo@gmail.com.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["käte", "cash", "kontant", "kontanter", "käteis", "käteisellä"]) or \
+       (_contains(qn, ["maksu", "maksaa", "pay", "payment"]) and _contains(qn, ["käte", "cash", "kontant"])):
+        texts = {
+            "fi": "Hyväksymme yleisimmät pankki- ja luottokortit lähimaksulla. Emme hyväksy MobilePayta, käteistä tai shekkejä.",
+            "en": "We accept major debit and credit cards with contactless. We do not accept MobilePay, cash or checks.",
+            "sv": "Vi accepterar ledande debit- och kreditkort med kontaktlös betalning. Vi accepterar inte MobilePay, kontanter eller checkar.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["muutta", "muokata", "peru", "perua", "cancel", "change", "avboka", "ändra"]) and _contains(qn, ["tilaus", "tilauk", "order", "beställning", "bestallning", "bestall", "order"]):
+        texts = {
+            "fi": (
+                "Jos haluat muuttaa tai perua tilauksen, lähetä sähköpostia osoitteeseen rakaskotileipomo@gmail.com mahdollisimman pian."
+                " Kun leivonta on alkanut, emme aina pysty tekemään muutoksia."
+            ),
+            "en": (
+                "To modify or cancel an order, please email rakaskotileipomo@gmail.com as soon as possible."
+                " Once we begin baking, changes may no longer be possible."
+            ),
+            "sv": (
+                "Behöver du ändra eller avboka en beställning? Mejla oss snarast på rakaskotileipomo@gmail.com."
+                " När bakningen väl har startat kan ändringar vara svåra."
+            ),
         }
         return texts[ln]
 

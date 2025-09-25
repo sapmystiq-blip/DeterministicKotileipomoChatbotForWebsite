@@ -27,6 +27,18 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+def _split_name(full_name: Optional[str]) -> tuple[str, str]:
+    """Return (first, last) components for Ecwid contact payloads."""
+    if not full_name:
+        return "", ""
+    parts = [p for p in full_name.strip().split() if p]
+    if not parts:
+        return "", ""
+    if len(parts) == 1:
+        return parts[0], ""
+    return parts[0], " ".join(parts[1:])
+
+
 def _curate_products(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     keep: List[Dict[str, Any]] = []
     KEYWORDS = [
@@ -405,8 +417,16 @@ def api_order_v2(req: OrderRequest):
         tax_amount = 0.0
         total = 0.0
 
+    first_name, last_name = _split_name(req.name)
+    display_name = " ".join([p for p in (first_name, last_name) if p]) or ((req.name or "").strip()) or "Chat Customer"
+    contact_block = {
+        "name": display_name,
+        "phone": req.phone or "",
+        "email": req.email or "",
+    }
+
     body = {
-        "name": req.name or "Chat Customer",
+        "name": display_name,
         "email": req.email or "",
         "phone": req.phone or "",
         "paymentMethod": "Pay at pickup",
@@ -422,11 +442,8 @@ def api_order_v2(req: OrderRequest):
         "preferredDeliveryDate": pickup_date_str,
         **({"preferredDeliveryTime": pickup_time_only} if pickup_time_only else {}),
         # Provide contact under shippingPerson as well
-        "shippingPerson": {
-            "name": req.name or "",
-            "phone": req.phone or "",
-            "email": req.email or "",
-        },
+        "shippingPerson": dict(contact_block),
+        "billingPerson": dict(contact_block),
         "items": items,
         "customerComment": " | ".join([p for p in [f"Pickup: {req.pickup_time}", req.note] if p]),
     }

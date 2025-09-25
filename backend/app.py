@@ -85,6 +85,18 @@ LANG_NAMES = {
 
 logger = logging.getLogger("uvicorn")
 
+
+def _split_name(full_name: str | None) -> tuple[str, str]:
+    """Return (first, last) tuple for Ecwid contact payloads."""
+    if not full_name:
+        return "", ""
+    parts = [p for p in full_name.strip().split() if p]
+    if not parts:
+        return "", ""
+    if len(parts) == 1:
+        return parts[0], ""
+    return parts[0], " ".join(parts[1:])
+
 # ============================================================
 # Paths
 # ============================================================
@@ -1136,25 +1148,35 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             return "Ei, meillä ei ole minimitilausrajaa."
         return "No, we do not have a minimum order requirement."
 
+    # Gift cards
+    GIFT_KWS = {
+        # EN
+        "gift card", "gift cards", "giftcard", "voucher", "gift voucher",
+        # FI
+        "lahjakortti", "lahjakortteja", "lahjakorte", "lahja kortti",
+        # SV
+        "presentkort", "gåvokort", "gavokort",
+    }
+    if any(k in text for k in GIFT_KWS):
+        lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        if lang == "sv":
+            return "Tyvärr säljer vi inte presentkort."  # align with FAQ answer
+        if lang == "fi":
+            return "Valitettavasti emme myy lahjakortteja."  # align with FAQ answer
+        return "Unfortunately we do not sell gift cards."
+
     # Payment methods (cards/mobile/cash)
     PAYMENT_KWS = {
         # EN
         "credit card", "debit card", "cards accepted", "visa", "mastercard", "amex", "mobile pay", "mobilepay", "cash", "checks", "contactless",
         # FI
-        "kortti", "kortilla", "luottokortti", "pankkikortti", "lähimaksu", "mobilepay", "käteinen", "sekki", "sekkejä",
+        "kortti", "kortilla", "luottokortti", "pankkikortti", "lähimaksu", "mobilepay", "käteinen", "käteistä", "käteisellä", "sekki", "sekkejä",
         # SV
         "kort", "kreditkort", "bankkort", "kontaktlös", "kontaktlöst", "mobilepay", "kontanter", "checkar",
         "betalning", "pay", "payment",
     }
     if any(k in text for k in PAYMENT_KWS):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
-        # Prefer curated FAQ answer if available
-        try:
-            faq_txt = IR.resolve_faq(user_msg, lang)
-            if faq_txt:
-                return faq_txt
-        except Exception:
-            pass
         if lang == "sv":
             return (
                 "Vi accepterar ledande debit- och kreditkort med kontaktlös betalning. "
@@ -1271,22 +1293,24 @@ def rule_based_answer(user_msg: str, respond_lang: str | None = None) -> str | N
             f"This is decided on a case‑by‑case basis. Please email {email} with your query."
         )
 
-    # Gift cards
-    GIFT_KWS = {
+    # Order changes / cancellations
+    ORDER_CHANGE_KWS = {
         # EN
-        "gift card", "gift cards", "giftcard", "voucher", "gift voucher",
+        "change my order", "edit order", "modify order", "cancel order", "order change", "order cancel",
         # FI
-        "lahjakortti", "lahjakortteja", "lahjakorte", "lahja kortti",
+        "muuta tilaus", "muuttaa tilausta", "muokata tilauksen", "muokkaa tilausta", "perua tilaus", "peru tilaus",
+        "perun tilauksen", "tilauksen muutos", "tilauksen peruutus",
         # SV
-        "presentkort", "gåvokort", "gavokort",
+        "ändra beställning", "ändra order", "avboka order", "avboka beställning", "cancelera", "annullera beställning",
     }
-    if any(k in text for k in GIFT_KWS):
+    if any(k in text for k in ORDER_CHANGE_KWS):
         lang = respond_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else detect_lang(user_msg))
+        email = "rakaskotileipomo@gmail.com"
         if lang == "sv":
-            return "Vi säljer presentkort med ett minsta belopp på 10 € och de gäller i 6 månader."
+            return f"För att ändra eller avboka en order, mejla oss på {email}. Vi bekräftar ändringen via e-post."
         if lang == "fi":
-            return "Myymme lahjakortteja; minimisumma on 10 € ja voimassaoloaika 6 kuukautta."
-        return "We sell gift cards with a minimum value of €10 and they are valid for 6 months."
+            return f"Jos haluat muuttaa tai perua tilauksen, lähetä meille sähköpostia osoitteeseen {email}. Vahvistamme muutokset sähköpostitse."
+        return f"To modify or cancel an order, please email us at {email}. We’ll confirm the change over email."
 
     # Price range (per‑piece)
     PRICE_RANGE_KWS = {
@@ -2424,8 +2448,16 @@ def api_order(req: OrderRequest):
         # If constraint check fails unexpectedly, proceed (Ecwid will still validate)
         pass
 
+    first_name, last_name = _split_name(req.name)
+    display_name = " ".join([p for p in (first_name, last_name) if p]) or ((req.name or "").strip()) or "Chat Customer"
+    contact_block = {
+        "name": display_name,
+        "phone": req.phone or "",
+        "email": req.email or "",
+    }
+
     body = {
-        "name": req.name or "Chat Customer",
+        "name": display_name,
         "email": req.email or "",
         "phone": req.phone or "",
         "paymentMethod": "Pay at pickup",
@@ -2440,6 +2472,9 @@ def api_order(req: OrderRequest):
         comment_parts.append(req.note)
     if comment_parts:
         body["customerComment"] = " | ".join(comment_parts)
+
+    body["shippingPerson"] = dict(contact_block)
+    body["billingPerson"] = dict(contact_block)
 
     try:
         base = _ecwid_base()

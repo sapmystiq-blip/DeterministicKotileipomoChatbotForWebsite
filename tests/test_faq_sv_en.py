@@ -35,8 +35,8 @@ class TestFAQAnswersSV(unittest.TestCase):
 
     def test_payment_sv(self):
         reply = self._chat('Accepterar ni betalkort och mobilbetalningar?')
-        self.assertIn('endast kort', reply)
-        self.assertIn('nästan alla', reply)
+        self.assertIn('Vi accepterar ledande debit- och kreditkort', reply)
+        self.assertIn('Vi accepterar inte MobilePay', reply)
 
     def test_prepayment_sv(self):
         reply = self._chat('Kräver ni förskottsbetalning för beställningsprodukter?')
@@ -82,8 +82,8 @@ class TestFAQAnswersEN(unittest.TestCase):
 
     def test_payment_en(self):
         reply = self._chat('Do you accept payment cards and mobile payments?')
-        self.assertIn('card only', reply.lower())
-        self.assertIn('almost all cards', reply.lower())
+        self.assertIn('accept major debit and credit cards', reply.lower())
+        self.assertTrue('do not accept mobilepay' in reply.lower() or 'don’t accept mobilepay' in reply.lower())
 
     def test_prepayment_en(self):
         reply = self._chat('Do you require prepayment for orders?')

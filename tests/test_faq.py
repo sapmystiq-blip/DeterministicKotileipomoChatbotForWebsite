@@ -32,7 +32,8 @@ class TestFAQAnswers(unittest.TestCase):
 
     def test_payment_methods_answer_fi(self):
         reply = self._chat('Hyväksyttekö maksukortit ja mobiilimaksut?')
-        self.assertIn('Maksut vain kortilla, mutta lähes kaikki kortit käyvät', reply)
+        self.assertIn('Hyväksymme yleisimmät pankki- ja luottokortit', reply)
+        self.assertIn('Emme hyväksy MobilePayta', reply)
 
     def test_prepayment_answer_fi(self):
         reply = self._chat('Vaaditteko ennakkomaksua tilaustuotteista?')

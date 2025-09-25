@@ -10,17 +10,15 @@ const sendBtn = qs('#sendBtn');
 
 let currentLang = localStorage.getItem('chat_lang') || 'fi'; // default to Finnish
 // Answer display flags (deterministic vs RAG). If both true → show both.
-let showLegacy = true;
+let showLegacy = false;
 let showRag = true;
 try {
   const params = new URLSearchParams(window.location.search);
-  const lsLegacy = localStorage.getItem('show_legacy');
   const lsRag = localStorage.getItem('show_rag');
-  if (lsLegacy != null) showLegacy = (lsLegacy === '1' || lsLegacy === 'true');
   if (lsRag != null) showRag = (lsRag === '1' || lsRag === 'true');
   if (params.has('legacy')) showLegacy = !['0','false','no','off'].includes((params.get('legacy')||'').toLowerCase());
   if (params.has('rag')) showRag = !['0','false','no','off'].includes((params.get('rag')||'').toLowerCase());
-  if (!showLegacy && !showRag) showLegacy = true; // ensure at least one
+  if (!showLegacy && !showRag) showRag = true; // ensure at least one answer
 } catch(e) {}
 // Persist default language immediately so backend receives a cookie hint as well
 if (!localStorage.getItem('chat_lang')) {
@@ -865,19 +863,28 @@ chatForm.addEventListener('submit', async (e) => {
     setTyping(false);
     // If dual payload: show both legacy and RAG answers. Else fallback to single.
     if (data && (data.legacy || data.rag)) {
-      const labelA = '<div class="subtle" style="font-size:12px;color:#6b5e57;margin-bottom:4px;">Legacy</div>';
-      const labelB = '<div class="subtle" style="font-size:12px;color:#6b5e57;margin-bottom:4px;">New (RAG)</div>';
-      const renderAnswer = (labelHtml, reply) => {
+      const renderAnswer = (reply) => {
         const txt = reply || '';
         const isHtml = /^\s*</.test(txt) || txt.includes('order-ui');
         if (isHtml) {
-          addBotHtml(labelHtml + txt);
+          addBotHtml(txt);
         } else {
-          addBotHtml(labelHtml + `<div>${escapeHtml(txt)}</div>`);
+          addBotHtml(`<div>${escapeHtml(txt)}</div>`);
         }
       };
-      if (showLegacy && data.legacy) renderAnswer(labelA, data.legacy.reply || '');
-      if (showRag && data.rag) renderAnswer(labelB, data.rag.reply || '');
+      let rendered = false;
+      if (showRag && data.rag && data.rag.reply) {
+        renderAnswer(data.rag.reply);
+        rendered = true;
+      }
+      if (!rendered && showLegacy && data.legacy && data.legacy.reply) {
+        renderAnswer(data.legacy.reply);
+        rendered = true;
+      }
+      if (!rendered) {
+        const fallback = (data.rag && data.rag.reply) || (data.legacy && data.legacy.reply) || '';
+        if (fallback) renderAnswer(fallback);
+      }
     } else {
       const reply = data.reply || '...';
       if (/^\s*</.test(reply) || reply.includes('order-ui')) {
