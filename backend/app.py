@@ -228,6 +228,14 @@ def _db_insert_message(session_id: str | None, role: str, message: str, source: 
     try:
         from sqlalchemy import text
         with ENGINE.begin() as conn:
+            logger.debug(
+                "Inserting chat message", extra={
+                    "session_id": session_id,
+                    "role": role,
+                    "source": source,
+                    "match_score": match_score,
+                }
+            )
             conn.execute(
                 text("""
                     INSERT INTO chat_messages (session_id, role, message, source, match_score)
@@ -235,6 +243,7 @@ def _db_insert_message(session_id: str | None, role: str, message: str, source: 
                 """),
                 {"sid": session_id, "role": role, "msg": message, "src": source, "ms": match_score}
             )
+            logger.debug("Chat message insert successful")
     except Exception as e:
         logger.warning(f"DB insert failed: {e}")
 
