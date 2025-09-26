@@ -224,11 +224,20 @@ def _db_connect_and_prepare():
 
 def _db_insert_message(session_id: str | None, role: str, message: str, source: str | None, match_score: float | None):
     if not ENGINE or not TABLE_READY:
+        logger.warning(
+            "DB insert skipped (engine/table not ready)",
+            extra={
+                "engine": bool(ENGINE),
+                "table_ready": bool(TABLE_READY),
+                "session_id": session_id,
+                "role": role,
+            }
+        )
         return
     try:
         from sqlalchemy import text
         with ENGINE.begin() as conn:
-            logger.debug(
+            logger.info(
                 "Inserting chat message", extra={
                     "session_id": session_id,
                     "role": role,
@@ -243,7 +252,7 @@ def _db_insert_message(session_id: str | None, role: str, message: str, source: 
                 """),
                 {"sid": session_id, "role": role, "msg": message, "src": source, "ms": match_score}
             )
-            logger.debug("Chat message insert successful")
+            logger.info("Chat message insert successful")
     except Exception as e:
         logger.warning(f"DB insert failed: {e}")
 
@@ -2198,6 +2207,12 @@ def chat_dual(req: ChatDualRequest, request: Request, response: Response):
     except Exception:
         session_id = None
 
+    # Persist user message if DB ready
+    try:
+        _db_insert_message(session_id, "user", user_msg, None, None)
+    except Exception:
+        logger.debug("Failed to log user message for chat_dual", exc_info=True)
+
     chosen_lang = (req.lang or request.cookies.get("chat_lang") or "").strip().lower()
     if chosen_lang not in {"fi","sv","en"}:
         chosen_lang = None
@@ -2249,6 +2264,16 @@ def chat_dual(req: ChatDualRequest, request: Request, response: Response):
             rag = ChatResponse(reply="RAG not enabled.", source="RAG", match=None, session_id=session_id)
     else:
         rag = ChatResponse(reply="", source="RAG (disabled)", match=None, session_id=session_id)
+
+    # Log assistant replies when available
+    try:
+        if want_legacy and legacy and (legacy.reply or "").strip():
+            _db_insert_message(session_id, "assistant", legacy.reply, legacy.source, legacy.match)
+        if want_rag and rag and (rag.reply or "").strip():
+            _db_insert_message(session_id, "assistant", rag.reply, rag.source, rag.match)
+    except Exception:
+        logger.debug("Failed to log assistant reply for chat_dual", exc_info=True)
+
     return ChatDualResponse(legacy=legacy, rag=rag)
 
 # Simple feedback endpoint (logs to DB if available)

@@ -111,6 +111,37 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
     def _mentioned(keys: set[str]) -> bool:
         return any(any(tok in qn for tok in weekday_tokens[k]) for k in keys)
 
+    hours_triggers = [
+        "auki", "aukiolo", "aukioloa", "aukioloajat", "opening hours", "hours", "öppet",
+        "open now", "open today", "are you open", "milloin olette",
+    ]
+    time_hints = [
+        "milloin", "mihin aikaan", "kello", "time", "tänään", "today", "nyt",
+        "onko teillä auki", "onko avoinna",
+    ]
+    has_hours_token = any(trigger in qn for trigger in hours_triggers)
+    has_time_hint = any(hint in qn for hint in time_hints)
+    if (
+        has_hours_token
+        and (has_time_hint or len(words) <= 3)
+        and not any(_mentioned({dow}) for dow in ["mon", "tue", "wed", "thu", "fri", "sat"])
+    ):
+        texts = {
+            "fi": (
+                "Olemme avoinna torstaisin ja perjantaisin klo 11–17 sekä lauantaisin klo 11–15. "
+                "Maanantaisin ja ti–ke olemme kiinni, mutta noudot aukioloaikojen ulkopuolella onnistuvat sopimalla etukäteen sähköpostitse (rakaskotileipomo@gmail.com)."
+            ),
+            "en": (
+                "We’re open on Thursdays and Fridays from 11:00 to 17:00 and on Saturdays from 11:00 to 15:00. "
+                "Mon–Wed we’re closed, yet pickups outside those hours can sometimes be arranged by email (rakaskotileipomo@gmail.com)."
+            ),
+            "sv": (
+                "Vi har öppet tors–fre kl. 11–17 och lör kl. 11–15. "
+                "Mån–ons håller vi stängt, men avhämtningar utanför öppettiderna kan ibland ordnas via mejl (rakaskotileipomo@gmail.com)."
+            ),
+        }
+        return texts[ln]
+
     if _mentioned({"mon"}) and any(k in qn for k in ["auki", "open", "avoin", "avataan", "auke", "milloin", "mihin aikaan", "kello", "time"]):
         texts = {
             "fi": (
@@ -357,6 +388,14 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
             "fi": "Pullat ovat parhaimmillaan samana päivänä. Ne säilyvät huoneenlämmössä 1–2 päivää tai pidempään pakastettuna.",
             "en": "Buns are best the day they’re baked. Keep them 1–2 days at room temperature or freeze for longer storage.",
             "sv": "Bullarna är bäst samma dag. De håller 1–2 dagar i rumstemperatur eller längre i frysen.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["kakku", "cake", "tårta"]) and not _contains(qn, ["jäätel", "ice cream"]):
+        texts = {
+            "fi": "Emme leivo kakkuja (täyte-, kuivakakkuja tai voileipäkakkuja) emmekä muita konditoriatuotteita. Olemme ensisijaisesti karjalanpiirakoihin erikoistunut leipomo.",
+            "en": "We don’t bake cakes (layer cakes, loaf cakes or sandwich cakes) or other confectionery. We specialise in Karelian pies.",
+            "sv": "Vi bakar inte tårtor (gräddtårtor, sockerkakor eller smörgåstårtor) och inga andra konditorivaror. Vi fokuserar på karelska piroger.",
         }
         return texts[ln]
 
@@ -804,9 +843,6 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
-    if _contains(qn, ["pakaste", "pakast", "frozen", "djupfryst", "frysta"]):
-        return _frozen_response(ln)
-
     if _contains(qn, ["säily", "kuinka kauan", "how long", "hur länge", "keep at home", "säilyvät", "säilyy", "kest" ]) and _contains(qn, ["piir", "pie", "piro"]):
         texts = {
             "fi": "Piirakkamme säilyvät jääkaapissa noin 2–3 päivää. Kaikki paistetut tuotteemme voi myös pakastaa, jolloin ne säilyvät noin kaksi kuukautta.",
@@ -855,11 +891,27 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
+    if _contains(qn, ["vegaan", "vegansk", "vegan"]) and not _contains(qn, ["riisipiir", "piirakka", "samos", "pull", "kaneli", "gobi"]):
+        texts = {
+            "fi": "Kyllä – vakiossa on vegaaninen karjalanpiirakka (kauramaidolla tehty riisipuuro), gobi-samosa sekä mungcurry-twist. Voimme myös leipoa vegaanisia pullia ennakkotilauksesta. Kaikki piirakat ovat laktoosittomia.",
+            "en": "Yes, we have vegan options: the Karelian pie with vegan rice filling, the gobi samosa and the mung curry twist. We can bake vegan buns to preorder as well, and all pies are lactose-free.",
+            "sv": "Ja, vi har veganska alternativ: karelska piroger med vegansk risfyllning, gobi-samosa och mungcurry-twist. Vi bakar även veganska bullar på förbeställning och alla piroger är laktosfria.",
+        }
+        return texts[ln]
+
     if _contains(qn, ["toimit", "kuljet", "delivery", "deliver", "hemleverans", "hemleverera", "kotiin", "home delivery"]):
         texts = {
-            "fi": "Kyllä, tilaukset voi noutaa myymälästämme aukioloaikoina – suuremmat erät onnistuvat myös tiistaisin ja keskiviikkoisin sopimalla etukäteen. Emme tarjoa kotiinkuljetusta, mutta voit tilata taksin tai muun kuljetuspalvelun noutamaan tilauksen. Luovutamme tuotteet kuljettajalle ja lähetämme tarvittaessa maksulinkin etukäteen, kun tilaus on vahvistettu.",
-            "en": "Yes, you can pick up orders from our shop during opening hours – larger batches can also be collected on Tuesdays and Wednesdays by arrangement. We don’t offer home delivery, but you can book a taxi or courier to collect your order. We hand everything to the driver and can send a payment link in advance once the order is confirmed.",
-            "sv": "Ja, du kan hämta beställningar i vår butik under öppettiderna – större satser kan även hämtas tisdagar och onsdagar enligt överenskommelse. Vi erbjuder ingen hemleverans, men du kan boka en taxi eller annan transport som hämtar beställningen. Vi lämnar över varorna till föraren och kan skicka en betalningslänk i förväg när beställningen är bekräftad.",
+            "fi": "Emme tarjoa kotiinkuljetusta. Tilaukset noudetaan myymälästämme aukioloaikoina, ja suuremmat erät voidaan sopia myös maanantaille tai ti–keille sähköpostitse. Halutessasi voit järjestää taksin tai muun kuljetuspalvelun hakemaan tilauksen – luovutamme sen kuljettajalle ja lähetämme tarvittaessa maksulinkin etukäteen.",
+            "en": "We don’t provide home delivery. Please pick up orders from the shop during opening hours; larger batches can be arranged for Mon–Wed by email. You’re welcome to book a taxi or courier to collect the order— we’ll hand it to the driver and can send a payment link in advance.",
+            "sv": "Vi erbjuder ingen hemleverans. Hämta beställningen i butiken under öppettiderna; större mängder kan ordnas mån–ons via mejl. Du kan boka taxi eller kurir som hämtar varorna – vi lämnar dem till föraren och kan skicka betalningslänk i förväg.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["tuore", "fresh", "färsk", "farsk"]):
+        texts = {
+            "fi": "Paistamme karjalanpiirakat, pullat ja samosat joka aamu Vallilan leipomossa. Myymälässä on aina tuore erä, ja loppupäiväksi paistamme lisää tarpeen mukaan. Raakapakasteet leivotaan samoista taikinoista ja ovat valmiita kotipaistoon.",
+            "en": "We bake the pies, buns and samosas fresh in Vallila every morning. There’s always a fresh batch in the shop and we bake more during the day as needed. Our raw-frozen items come from the same doughs and are ready to finish at home.",
+            "sv": "Vi gräddar piroger, bullar och samosor färska i Vallila varje morgon. Det finns alltid en färsk sats i butiken och vi bakar mer vid behov under dagen. Våra råfrysta produkter görs av samma degar och gräddas färdigt hemma.",
         }
         return texts[ln]
 
@@ -879,11 +931,20 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
         }
         return texts[ln]
 
-    if _contains(qn, ["sähköpost", "email"]) and _contains(qn, ["tilaa", "tilauk", "order"]):
+    if _contains(qn, ["sähköpost", "sahkopost", "email"]) and _contains(qn, ["tilaa", "tilauk", "tilata", "order"]):
         texts = {
-            "fi": "Voit tehdä tilauksen myös sähköpostilla – lähetä viesti osoitteeseen rakaskotileipomo@gmail.com ja kerro tuotteet, määrät ja noutoaika.",
-            "en": "Yes, you can order by email: send the products, quantities and desired pickup time to rakaskotileipomo@gmail.com.",
-            "sv": "Ja, du kan beställa via e-post – skriv produkter, mängder och önskad avhämtning till rakaskotileipomo@gmail.com.",
+            "fi": (
+                "Nopein tapa on tehdä tilaus verkkokaupassa tai tässä chatissa. "
+                "Tarvittaessa voit hoitaa tilauksen myös sähköpostitse – lähetä tuotteet, määrät ja toivottu noutoaika osoitteeseen rakaskotileipomo@gmail.com, niin vahvistamme sinulle kaiken."
+            ),
+            "en": (
+                "The fastest way is to order through our online shop or directly in this chat. "
+                "If you prefer email, send the products, quantities and desired pickup time to rakaskotileipomo@gmail.com and we’ll confirm the details."
+            ),
+            "sv": (
+                "Snabbast beställer du i webbutiken eller här i chatten. "
+                "Vill du hellre mejla? Skriv produkter, mängder och önskad avhämtning till rakaskotileipomo@gmail.com så bekräftar vi allt."
+            ),
         }
         return texts[ln]
 
@@ -900,6 +961,31 @@ def _special_answer(query: str, lang: str) -> Optional[str]:
             "fi": "Valitettavasti emme myy lahjakortteja.",
             "en": "Unfortunately we do not sell gift cards.",
             "sv": "Tyvärr säljer vi inte presentkort.",
+        }
+        return texts[ln]
+
+    if _contains(qn, ["karjalanpiir", "karelian", "karelsk"]) and len(words) <= 6:
+        texts = {
+            "fi": (
+                "Karjalanpiirakkamme leivotaan 100 % rukiiseen kuoreen. Vakiotäytteet ovat riisipuuro, perunasose, ohrapuuro ja vegaaninen riisipuuro (kauramaidolla)."
+                " Saat ne sekä uunituoreina että raakapakasteina kotipaistoon."
+            ),
+            "en": (
+                "Our Karelian pies use a 100% rye crust. The standard fillings are rice porridge, mashed potato, barley porridge and a vegan rice option (made with oat milk)."
+                " Available fresh daily and as par-baked freezer packs."
+            ),
+            "sv": (
+                "Våra karelska piroger bakas med 100 % rågskal. Fyllningarna är risgröt, potatismos, korngröt och en vegansk risvariant (gjord på havremjölk)."
+                " Finns både nygräddade och som råfrysta paket för hemmagräddning."
+            ),
+        }
+        return texts[ln]
+
+    if _contains(qn, ["munk", "donits", "donut", "donitsi", "munkki"]):
+        texts = {
+            "fi": "Emme paista munkkeja, mutta makeasta valikoimasta löydät korvapuusteja, kardemummapullia ja mustikkakukkoa.",
+            "en": "We don’t fry doughnuts, but our sweet range includes cinnamon and cardamom buns plus Finnish blueberry pie (mustikkakukko).",
+            "sv": "Vi friterar inte munkar, men bland de söta bakverken finns kanel- och kardemummabullar samt mustikkakukko (blåbärspaj).",
         }
         return texts[ln]
 
@@ -1065,25 +1151,22 @@ def _is_product_inquiry(query: str, lang: str) -> bool:
 def _compose_products_overview(lang: str) -> str:
     if lang == "sv":
         body = (
-            "Vår huvudprodukt är karelska piroger med 100 % rågskal. "
-            "På den salta sidan har vi indiska bakverk som samosor och mungcurry-twists. "
-            "Bland de söta alternativen finns finska bullar och blåbärspaj (mustikkakukko). "
+            "Vår huvudprodukt är karelska piroger med 100 % rågskal – fyllningarna är ris, potatis, korn och en vegansk risvariant. "
+            "Utöver det har vi indiska bakverk som samosor och mungcurry-twists samt söta finska bullar och blåbärspaj (mustikkakukko). "
             "Vi bakar inte tårtor, smörgåstårtor eller andra konditorivaror."
         )
         return f"{body}\n{_suggest_menu_block(lang)}"
     if lang == "en":
         body = (
-            "Our signature product is the Karelian pie with a 100% rye crust. "
-            "Savory options include Indian pastries like samosas and mung curry twists. "
-            "For sweets we bake Finnish buns and blueberry pie (mustikkakukko). "
-            "We don’t bake cakes, sandwich cakes or other confectionery."
+            "Our signature bake is the Karelian pie with a 100% rye crust. The fillings come in rice, potato, barley and a vegan rice option. "
+            "We also make savoury Indian pastries such as samosas and mung curry twists, and on the sweet side Finnish cinnamon and cardamom buns plus blueberry pie (mustikkakukko). "
+            "We don’t bake layer cakes, sandwich cakes or other confectionery items."
         )
         return f"{body}\n{_suggest_menu_block(lang)}"
     # fi default
     body = (
-        "Päätuotteemme on 100 % rukiisella kuorella leivottu karjalanpiirakka. "
-        "Suolaiselta puolelta löytyy myös intialaisia leivonnaisia kuten samosat ja mungcurry-twistit. "
-        "Makeista tarjoamme suomalaisia pullia ja mustikkakukkoa. "
+        "Päätuotteemme on 100 % rukiisella kuorella leivottu karjalanpiirakka – täytevaihtoehdot ovat riisi, peruna, ohra ja vegaaninen riisi. "
+        "Lisäksi suolaisessa valikoimassa on intialaisia leivonnaisia kuten samosat ja mungcurry-twistit, ja makealla puolella suomalaisia pullia sekä mustikkakukko. "
         "Emme leivo täyte- tai voileipäkakkuja emmekä muita konditoriatuotteita."
     )
     return f"{body}\n{_suggest_menu_block(lang)}"

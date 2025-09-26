@@ -632,7 +632,7 @@ def resolve_menu(lang: str, query: Optional[str] = None) -> str:
         # Determine which view to render by query keywords
         qn = (query or "").lower()
         want_pakaste = any(k in qn for k in [
-            "pakaste", "pakasteet", "pakaste tuotteet",
+            "pakaste", "pakasteet", "pakaste tuotteet", "pakastetuotteet",
             "frozen", "frozen goodies",
             "fryst", "frysta", "frysta delikatesser", "frysta godsaker"
         ])
@@ -813,7 +813,7 @@ def resolve_menu(lang: str, query: Optional[str] = None) -> str:
 
         # When rendering the default Uunituoreet view, append a suggestion button to show frozen items
         if not want_pakaste and (paka_savory or paka_sweet):
-            frozen_btn = {"fi": "Pakaste tuotteet", "sv": "Frysta delikatesser", "en": "Frozen goodies"}[lang]
+            frozen_btn = {"fi": "Pakastetuotteet", "sv": "Frysta delikatesser", "en": "Frozen goodies"}[lang]
             html += (
                 "<div class=\"suggest\" style=\"margin-top:8px\">"
                 "<div class=\"buttons\">"
@@ -823,35 +823,15 @@ def resolve_menu(lang: str, query: Optional[str] = None) -> str:
             )
         return html
 
-    # Fallback to flat list if no categories/groups were rendered
-    sections: List[str] = []
-    title = {"fi": "Tuotteet ja hinnat:", "sv": "Produkter och priser:", "en": "Products and prices:"}[lang]
-    sections.append(title)
-    if True:
-        try:
-            items = _get_products_cached(limit=50)
-        except Exception:
-            items = []
-        if not items:
-            static = _static_menu_html(lang)
-            if static:
-                return static
-            if lang == "fi":
-                return "Voin auttaa tuotteissa ja hinnoissa. Tuotelista ei ole saatavilla juuri nyt. Katso verkkokauppa."
-            if lang == "sv":
-                return "Jag kan hjälpa till med produkter och priser. Produktlistan är inte tillgänglig just nu. Se webbutiken."
-            return "I can help with products and prices. Product list is not available right now. See the online store."
-        keep: List[str] = []
-        for it in items:
-            if not it.get("enabled", True):
-                continue
-            name = it.get("name") or ""
-            price = _price_str(it.get("price"))
-            keep.append(f"• {name}" + (f" — {price}" if price else ""))
-            if len(keep) >= 8:
-                break
-        sections.extend(keep)
-    return "\n".join(sections)
+    static = _static_menu_html(lang)
+    if static:
+        return static
+
+    if lang == "fi":
+        return "Tuotelistaa ei voitu hakea juuri nyt. Katso verkkokaupasta ajantasainen valikoima tai kysy minulta tietystä tuotteesta."
+    if lang == "sv":
+        return "Sortimentet kunde inte hämtas just nu. Se webbutiken för aktuellt utbud eller fråga om en specifik produkt."
+    return "Product list is temporarily unavailable. Please check the online shop for current offerings or ask me about a specific item."
 
 
 def _get_products_cached(limit: int = 100, category: Optional[int] = None) -> List[Dict[str, Any]]:

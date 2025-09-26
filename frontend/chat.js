@@ -788,7 +788,7 @@ function setInputEnabled(enabled){
 
 function welcomeForLang(lang){
   switch(lang){
-    case 'fi': return "Hei! Olen Piirakkabotti. Kysy tuotteista, aukioloajoista, ruokalistasta, tilauksista tai allergioista.";
+    case 'fi': return "Hei! Olen Piirakkabotti. Kysy tuotteista, aukioloajoista, menusta, tilauksista tai allergeeneista.";
     case 'sv': return "Hej! Jag är Piirakkabotti. Fråga om produkter, öppettider, meny, beställningar eller allergier.";
     default: return "Hi! I’m Piirakkabotti. Ask about products, opening hours, menu, orders, or allergies.";
   }
