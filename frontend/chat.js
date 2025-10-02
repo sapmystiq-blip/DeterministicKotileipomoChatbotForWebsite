@@ -236,6 +236,12 @@ chatLog.addEventListener('click', async (e) => {
     renderFaqMainMenu();
     return;
   }
+  const openFaqRootBtn = e.target.closest('[data-action="open-faq-root"]');
+  if (openFaqRootBtn) {
+    e.preventDefault();
+    await renderFaqTopicMenu();
+    return;
+  }
   const rootMenuBtn = e.target.closest('[data-action="root-open-menu"]');
   if (rootMenuBtn) {
     e.preventDefault();
@@ -1121,6 +1127,7 @@ const faqState = {
   dietData: null,
   dietLang: null,
   dietVersion: null,
+  context: null, // 'main' | 'faq' | 'ordering' | 'feedback' | null
 };
 
 function trFaq(key){
@@ -1361,6 +1368,12 @@ function buildBreadcrumb(path){
   } else {
     parts.push(`<button type="button" class="faq-crumb" data-faq-path="">${homeLabel}</button>`);
   }
+  // If we are navigating within the UKK (FAQ) context, include an extra crumb level
+  // so the nav shows: Päävalikko › UKK › <Category>
+  if (faqState.context === 'faq' && path.length > 0) {
+    parts.push('<span class="faq-sep">›</span>');
+    parts.push(`<button type="button" class="faq-crumb" data-action="open-faq-root">${escapeHtml(trFaq('rootFaq'))}</button>`);
+  }
   path.forEach((_, idx) => {
     const prefix = path.slice(0, idx + 1);
     const key = pathKey(prefix);
@@ -1570,6 +1583,7 @@ function buildCustomCrumb(label){
 
 function renderFaqMainMenu(){
   faqState.currentPath = [];
+  faqState.context = 'main';
   const crumb = buildBreadcrumb([]);
   const intro = `<div class="faq-intro">${escapeHtml(trFaq('chooseRoot'))}</div>`;
   // Show FAQ (UKK) first in the main actions
@@ -1585,6 +1599,7 @@ function renderFaqMainMenu(){
 async function renderFaqTopicMenu(){
   await ensureFaqTree();
   faqState.currentPath = [];
+  faqState.context = 'faq';
   const crumb = buildCustomCrumb(trFaq('rootFaq'));
   const intro = `<div class="faq-intro">${escapeHtml(trFaq('chooseRoot'))}</div>`;
   const topics = [
