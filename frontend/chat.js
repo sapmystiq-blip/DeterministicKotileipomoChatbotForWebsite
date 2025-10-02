@@ -1627,17 +1627,9 @@ async function renderOrderingHub(){
   const introText = trFaq('orderingIntro') || trFaq('chooseOrdering') || trFaq('chooseSub');
   const intro = `<div class="faq-intro">${escapeHtml(introText)}</div>`;
   const quickActions = `<div class="faq-actions"><button type="button" data-action="menu-order-chat">${escapeHtml(trFaq('orderInChat'))}</button><button type="button" data-action="menu-order-online">${escapeHtml(trFaq('orderOnline'))}</button></div>`;
-  const options = [
-    { path: ['tilaus', 'tilaamisen-peruspolku'] },
-    { path: ['tilaus', 'suuret-ja-rateloidyt'] },
-    { path: ['tilaus', 'nouto-ja-toimitus'] },
-  ];
-  const buttons = options.map((option) => {
-    const label = escapeHtml(labelForPath(option.path));
-    const key = pathKey(option.path);
-    return `<button type="button" class="faq-item" data-faq-path="${key}"><span class="faq-item-label">${label}</span></button>`;
-  }).join('');
-  const content = `<div class="faq-list faq-categories ordering-grid">${buttons}</div>`;
+  // Per request: remove category buttons under Päävalikko > Tilaaminen.
+  // Keep only quick actions (order in chat / online).
+  const content = "";
   const back = `<div class="faq-back"><button type="button" data-action="back-to-root">${escapeHtml(trFaq('goBack'))}</button></div>`;
   renderFaqPanel(`${crumb}${intro}${quickActions}${content}${back}`, []);
 }
