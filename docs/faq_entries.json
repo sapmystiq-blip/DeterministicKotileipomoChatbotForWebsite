@@ -357,55 +357,15 @@
     ]
   },
   {
-    "id": "valmistatteko-tilauksesta-kakkuja",
+    "id": "teetteko-kakkuja-tai-raateloityja-tuotteita",
     "question": {
-      "fi": "Valmistatteko tilauksesta kakkuja?"
+      "fi": "Teettekö kakkuja tai räätälöityjä tuotteita?"
     },
     "category_path": [
-      "menu",
-      "kakut-ja-rateloidyt"
+      "tuotteet"
     ],
     "sources": [
       "full"
-    ]
-  },
-  {
-    "id": "valmistatteko-tilaustyona-kakkuja-tai-leivonnaisia",
-    "question": {
-      "fi": "Valmistatteko tilaustyönä kakkuja tai leivonnaisia?"
-    },
-    "category_path": [
-      "menu",
-      "kakut-ja-rateloidyt"
-    ],
-    "sources": [
-      "business"
-    ]
-  },
-  {
-    "id": "valmistatteko-haakakkuja-tai-suuria-pitopalvelutilauksia",
-    "question": {
-      "fi": "Valmistatteko hääkakkuja tai suuria pitopalvelutilauksia?"
-    },
-    "category_path": [
-      "menu",
-      "kakut-ja-rateloidyt"
-    ],
-    "sources": [
-      "business"
-    ]
-  },
-  {
-    "id": "voinko-pyytaa-tiettyja-makuja-taytteita-tai-koristeita",
-    "question": {
-      "fi": "Voinko pyytää tiettyjä makuja, täytteitä tai koristeita?"
-    },
-    "category_path": [
-      "menu",
-      "kakut-ja-rateloidyt"
-    ],
-    "sources": [
-      "business"
     ]
   },
   {

@@ -64,19 +64,6 @@
         ]
       },
       {
-        "id": "kakut-ja-rateloidyt",
-        "path": [
-          "menu",
-          "kakut-ja-rateloidyt"
-        ],
-        "label": {
-          "fi": "Kakut & räätälöidyt tuotteet",
-          "en": "Cakes & custom items",
-          "sv": "Tårtor & specialprodukter"
-        },
-        "children": []
-      },
-      {
         "id": "ruokavaliot",
         "path": [
           "menu",
