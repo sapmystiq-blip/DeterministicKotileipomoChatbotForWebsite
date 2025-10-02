@@ -180,7 +180,18 @@ def _db_connect_and_prepare():
     try:
         from sqlalchemy import create_engine, text
         # Default pool size is fine for single worker; Railway uses one dyno
-        ENGINE = create_engine(DB_URL, pool_pre_ping=True)
+        _url = DB_URL
+        try:
+            ENGINE = create_engine(_url, pool_pre_ping=True)
+        except Exception as _e:
+            # Fallback: if psycopg2 isn't available (e.g. on Python 3.13),
+            # try psycopg v3 driver by rewriting the URL to postgresql+psycopg://
+            if _url and _url.startswith("postgresql://") and "psycopg2" in str(_e).lower():
+                _url = "postgresql+psycopg://" + _url[len("postgresql://"):]
+                logger.info("DB: retrying connection using psycopg driver")
+                ENGINE = create_engine(_url, pool_pre_ping=True)
+            else:
+                raise
         with ENGINE.begin() as conn:
             conn.execute(text(
                 """
