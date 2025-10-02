@@ -1,20 +1,3 @@
 {
-  "prices": [
-    { "key": "karjalanpiirakka",        "per_piece_eur": 1.40 },
-    { "key": "perunapiirakka",          "per_piece_eur": 1.40 },
-    { "key": "ohrapiirakka",            "per_piece_eur": 1.40 },
-    { "key": "vegaanipiirakka",         "per_piece_eur": 1.40 },
-
-    { "key": "gobi-samosa",             "per_piece_eur": 2.90 },
-    { "key": "gobisamosa",              "per_piece_eur": 2.90 },
-    { "key": "kanasamosa",              "per_piece_eur": 2.90 },
-    { "key": "mungcurry-twist",         "per_piece_eur": 2.90 },
-    { "key": "lihacurry-pasteija",      "per_piece_eur": 2.90 },
-    { "key": "kanelisolmupulla",        "per_piece_eur": 2.90 },
-    { "key": "kanelipulla",             "per_piece_eur": 2.90 },
-    { "key": "voisilmäpulla",           "per_piece_eur": 2.90 },
-    { "key": "vegaaninen voisilmäpulla", "per_piece_eur": 2.90 },
-
-    { "key": "mustikkakukko",           "per_piece_eur": 4.50 }
-  ]
+  "prices": []
 }

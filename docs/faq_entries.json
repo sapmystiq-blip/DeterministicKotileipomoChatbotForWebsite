@@ -1,0 +1,1641 @@
+[
+  {
+    "id": "missa-sijaitsette",
+    "question": {
+      "fi": "Missä sijaitsette?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "paaseeko-perille-julkisilla-helposti",
+    "question": {
+      "fi": "Pääseekö perille julkisilla helposti?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "mitka-bussit-ja-raitiovaunut-pysahtyvat-lahimpana",
+    "question": {
+      "fi": "Mitkä bussit ja raitiovaunut pysähtyvät lähimpänä?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "onko-teilla-parkkipaikkoja-lahella",
+    "question": {
+      "fi": "Onko teillä parkkipaikkoja lähellä?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-sisaankaynti-esteeton",
+    "question": {
+      "fi": "Onko sisäänkäynti esteetön?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-lahella-muita-ruokapaikkoja",
+    "question": {
+      "fi": "Onko lähellä muita ruokapaikkoja?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "mitka-ovat-aukioloaikanne",
+    "question": {
+      "fi": "Mitkä ovat aukioloaikanne?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "full",
+      "business"
+    ]
+  },
+  {
+    "id": "oletteko-auki-lauantaisin",
+    "question": {
+      "fi": "Oletteko auki lauantaisin?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "oletteko-kiinni-sunnuntaisin",
+    "question": {
+      "fi": "Oletteko kiinni sunnuntaisin?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-poikkeuksia-juhlapyhien-aukioloissa",
+    "question": {
+      "fi": "Onko poikkeuksia juhlapyhien aukioloissa?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-teilla-kesa-ja-talviaukioloissa-eroja",
+    "question": {
+      "fi": "Onko teillä kesä- ja talviaukioloissa eroja?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "mihin-aikaan-kannattaa-tulla-jos-haluan-tuoreita-tuotteita",
+    "question": {
+      "fi": "Mihin aikaan kannattaa tulla, jos haluan tuoreita tuotteita?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "milloin-teilla-on-yleensa-eniten-tuoreita-piirakoita-tarjolla",
+    "question": {
+      "fi": "Milloin teillä on yleensä eniten tuoreita piirakoita tarjolla?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-teilla-asiakaspaikkoja-liikkeessa",
+    "question": {
+      "fi": "Onko teillä asiakaspaikkoja liikkeessä?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "onko-myymalassa-istumapaikkoja",
+    "question": {
+      "fi": "Onko myymälässä istumapaikkoja?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-teilla-asiakas-wc",
+    "question": {
+      "fi": "Onko teillä asiakas-wc?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "saako-liikkeesta-kahvia-tuotteiden-kanssa",
+    "question": {
+      "fi": "Saako liikkeestä kahvia tuotteiden kanssa?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "voinko-tehda-ennakkotilauksen-jonon-ohittamiseksi",
+    "question": {
+      "fi": "Voinko tehdä ennakkotilauksen jonon ohittamiseksi?"
+    },
+    "category_path": [
+      "tutustu"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "onko-tuotteita-pakastettuna",
+    "question": {
+      "fi": "Onko tuotteita pakastettuna?"
+    },
+    "category_path": [
+      "menu",
+      "menu-pakasteet",
+      "pakasteet-ja-raakapakasteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-myynnissa-tuoreita-vai-pakastepiirakoita",
+    "question": {
+      "fi": "Onko myynnissä tuoreita vai pakastepiirakoita?"
+    },
+    "category_path": [
+      "menu",
+      "menu-pakasteet",
+      "pakasteet-ja-raakapakasteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "kuinka-lammitan-pakastepiirakan-kotona",
+    "question": {
+      "fi": "Kuinka lämmitän pakastepiirakan kotona?"
+    },
+    "category_path": [
+      "menu",
+      "menu-pakasteet",
+      "pakasteet-ja-raakapakasteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "mika-on-paras-tapa-paistaa-raakapakastepiirakat",
+    "question": {
+      "fi": "Mikä on paras tapa paistaa raakapakastepiirakat?"
+    },
+    "category_path": [
+      "menu",
+      "menu-pakasteet",
+      "pakasteet-ja-raakapakasteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kuinka-kauan-karjalanpiirakat-sailyvat-pakastimessa",
+    "question": {
+      "fi": "Kuinka kauan karjalanpiirakat säilyvät pakastimessa?"
+    },
+    "category_path": [
+      "menu",
+      "menu-pakasteet",
+      "pakasteet-ja-raakapakasteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "voiko-samosat-pakastaa-kotona",
+    "question": {
+      "fi": "Voiko samosat pakastaa kotona?"
+    },
+    "category_path": [
+      "menu",
+      "menu-pakasteet",
+      "pakasteet-ja-raakapakasteet"
+    ],
+    "sources": [
+      "products (overlaps: Samosat & curry-twistit)"
+    ]
+  },
+  {
+    "id": "myytteko-samosoja-pakasteena",
+    "question": {
+      "fi": "Myyttekö samosoja pakasteena?"
+    },
+    "category_path": [
+      "menu",
+      "menu-pakasteet",
+      "pakasteet-ja-raakapakasteet"
+    ],
+    "sources": [
+      "products (overlaps: Samosat & curry-twistit)"
+    ]
+  },
+  {
+    "id": "valmistatteko-tilauksesta-kakkuja",
+    "question": {
+      "fi": "Valmistatteko tilauksesta kakkuja?"
+    },
+    "category_path": [
+      "menu",
+      "kakut-ja-rateloidyt"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "valmistatteko-tilaustyona-kakkuja-tai-leivonnaisia",
+    "question": {
+      "fi": "Valmistatteko tilaustyönä kakkuja tai leivonnaisia?"
+    },
+    "category_path": [
+      "menu",
+      "kakut-ja-rateloidyt"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "valmistatteko-haakakkuja-tai-suuria-pitopalvelutilauksia",
+    "question": {
+      "fi": "Valmistatteko hääkakkuja tai suuria pitopalvelutilauksia?"
+    },
+    "category_path": [
+      "menu",
+      "kakut-ja-rateloidyt"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "voinko-pyytaa-tiettyja-makuja-taytteita-tai-koristeita",
+    "question": {
+      "fi": "Voinko pyytää tiettyjä makuja, täytteitä tai koristeita?"
+    },
+    "category_path": [
+      "menu",
+      "kakut-ja-rateloidyt"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "voinko-saada-allergialistan-tuotteista",
+    "question": {
+      "fi": "Voinko saada allergialistan tuotteista?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "allergeenilistat"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "voitteko-antaa-ainesosa-allergeenilistat",
+    "question": {
+      "fi": "Voitteko antaa ainesosa-/allergeenilistat?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "allergeenilistat"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "miten-huomioitte-pahkinaallergiat",
+    "question": {
+      "fi": "Miten huomioitte pähkinäallergiat?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "allergeenilistat"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "kaytatteko-vehnaa-karjalanpiirakoissa",
+    "question": {
+      "fi": "Käytättekö vehnää karjalanpiirakoissa?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "viljat-ja-gluteeni"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-karjalanpiirakoissanne-pelkkaa-ruista-taikinassa",
+    "question": {
+      "fi": "Onko karjalanpiirakoissanne pelkkää ruista taikinassa?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "viljat-ja-gluteeni"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-teilla-gluteenittomia-tuotteita",
+    "question": {
+      "fi": "Onko teillä gluteenittomia tuotteita?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "viljat-ja-gluteeni"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-teilla-gluteenittomia-vaihtoehtoja",
+    "question": {
+      "fi": "Onko teillä gluteenittomia vaihtoehtoja?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "viljat-ja-gluteeni"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "valmistetaanko-gluteenittomat-tuotteet-erillisessa-tilassa",
+    "question": {
+      "fi": "Valmistetaanko gluteenittomat tuotteet erillisessä tilassa?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "viljat-ja-gluteeni"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "ovatko-tuotteet-laktoosittomia",
+    "question": {
+      "fi": "Ovatko tuotteet laktoosittomia?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "maito-ja-muna"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "sisaltavatko-samosat-maitotuotteita",
+    "question": {
+      "fi": "Sisältävätkö samosat maitotuotteita?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "maito-ja-muna"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-pullissa-kananmunaa",
+    "question": {
+      "fi": "Onko pullissa kananmunaa?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "maito-ja-muna"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-riisipiirakka-vegaaninen",
+    "question": {
+      "fi": "Onko riisipiirakka vegaaninen?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "vegaaniset-ja-maidottomat"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "teetteko-vegaanisia-piirakoita",
+    "question": {
+      "fi": "Teettekö vegaanisia piirakoita?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "vegaaniset-ja-maidottomat"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "ovatko-kaikki-piirakat-vegaanisia",
+    "question": {
+      "fi": "Ovatko kaikki piirakat vegaanisia?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "vegaaniset-ja-maidottomat"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-gobisamosa-vegaaninen",
+    "question": {
+      "fi": "Onko gobisamosa vegaaninen?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "vegaaniset-ja-maidottomat"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-kanelipullat-vegaanisia",
+    "question": {
+      "fi": "Onko kanelipullat vegaanisia?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "vegaaniset-ja-maidottomat"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-teilla-vegaanisia-tai-maidottomia-tuotteita",
+    "question": {
+      "fi": "Onko teillä vegaanisia tai maidottomia tuotteita?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "vegaaniset-ja-maidottomat"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "kaytatteko-munaa-tuotteissa",
+    "question": {
+      "fi": "Käytättekö munaa tuotteissa?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "muut-allergeenit"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "kaytatteko-soijaa-tuotteissa",
+    "question": {
+      "fi": "Käytättekö soijaa tuotteissa?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "muut-allergeenit"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-tuotteissa-pahkinoita",
+    "question": {
+      "fi": "Onko tuotteissa pähkinöitä?"
+    },
+    "category_path": [
+      "menu",
+      "ruokavaliot",
+      "muut-allergeenit"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "mita-tuotteita-teilla-on-tanaan-myynnissa",
+    "question": {
+      "fi": "Mitä tuotteita teillä on tänään myynnissä?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "minkalaisia-leipia-leivonnaisia-kakkuja-myytte",
+    "question": {
+      "fi": "Minkälaisia leipiä/leivonnaisia/kakkuja myytte?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "leivotteko-kaiken-tuoreena-paivittain",
+    "question": {
+      "fi": "Leivotteko kaiken tuoreena päivittäin?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "valmistatteko-tuotteet-alusta-asti-vai-kaytatteko-valmisseoksia",
+    "question": {
+      "fi": "Valmistatteko tuotteet alusta asti vai käytättekö valmisseoksia?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "mita-karjalanpiirakoiden-taytteita-on-tarjolla",
+    "question": {
+      "fi": "Mitä karjalanpiirakoiden täytteitä on tarjolla?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-teilla-perunapiirakoita",
+    "question": {
+      "fi": "Onko teillä perunapiirakoita?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "loytyyko-valikoimasta-ohrapiirakoita",
+    "question": {
+      "fi": "Löytyykö valikoimasta ohrapiirakoita?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "kaytatteko-perunahiutaleita-perunapiirakoissa",
+    "question": {
+      "fi": "Käytättekö perunahiutaleita perunapiirakoissa?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "myytteko-karjalanpiirakoita-irtona-vai-pakkauksissa",
+    "question": {
+      "fi": "Myyttekö karjalanpiirakoita irtona vai pakkauksissa?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kuinka-monta-piirakkaa-tulee-yhdessa-pussissa",
+    "question": {
+      "fi": "Kuinka monta piirakkaa tulee yhdessä pussissa?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "voinko-ostaa-piirakoita-paistovalmiina",
+    "question": {
+      "fi": "Voinko ostaa piirakoita paistovalmiina?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "ovatko-piirakat-kasin-tehtyja",
+    "question": {
+      "fi": "Ovatko piirakat käsin tehtyjä?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "myytteko-suolaisia-piirakoita-muiden-taytteilla-kuin-riisi-peruna-tai-ohra",
+    "question": {
+      "fi": "Myyttekö suolaisia piirakoita muiden täytteillä kuin riisi, peruna tai ohra?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-teilla-samosoja-aina-saatavilla",
+    "question": {
+      "fi": "Onko teillä samosoja aina saatavilla?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "mita-samosojen-taytteita-on",
+    "question": {
+      "fi": "Mitä samosojen täytteitä on?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "ovatko-samosat-tulisia",
+    "question": {
+      "fi": "Ovatko samosat tulisia?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "ovatko-samosat-hyvin-tulisia-vai-miedompia",
+    "question": {
+      "fi": "Ovatko samosat hyvin tulisia vai miedompia?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kaytatteko-perinteisia-intialaisia-mausteita-samosoissa",
+    "question": {
+      "fi": "Käytättekö perinteisiä intialaisia mausteita samosoissa?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kuinka-monta-samosaa-on-yhdessa-annoksessa",
+    "question": {
+      "fi": "Kuinka monta samosaa on yhdessä annoksessa?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "ovatko-samosat-isoja-vai-pienia",
+    "question": {
+      "fi": "Ovatko samosat isoja vai pieniä?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "saako-samosoihin-dippikastiketta",
+    "question": {
+      "fi": "Saako samosoihin dippikastiketta?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "minka-maan-reseptilla-samosat-on-tehty",
+    "question": {
+      "fi": "Minkä maan reseptillä samosat on tehty?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-samosoissa-vehnaa",
+    "question": {
+      "fi": "Onko samosoissa vehnää?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-teilla-makeita-leivonnaisia",
+    "question": {
+      "fi": "Onko teillä makeita leivonnaisia?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "myytteko-pullaa",
+    "question": {
+      "fi": "Myyttekö pullaa?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "loytyyko-valikoimasta-kahvileipia",
+    "question": {
+      "fi": "Löytyykö valikoimasta kahvileipiä?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "mita-pullia-on-yleensa-vitriinissa",
+    "question": {
+      "fi": "Mitä pullia on yleensä vitriinissä?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kaytatteko-voita-vai-margariinia-pullissa",
+    "question": {
+      "fi": "Käytättekö voita vai margariinia pullissa?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "myytteko-korvapuusteja",
+    "question": {
+      "fi": "Myyttekö korvapuusteja?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kuinka-isoja-pullat-ovat",
+    "question": {
+      "fi": "Kuinka isoja pullat ovat?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kaytatteko-aitoa-kardemummaa",
+    "question": {
+      "fi": "Käytättekö aitoa kardemummaa?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "milla-kardemummalla-pullat-on-maustettu",
+    "question": {
+      "fi": "Millä kardemummalla pullat on maustettu?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-pullissa-sokerikuorrutetta",
+    "question": {
+      "fi": "Onko pullissa sokerikuorrutetta?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kuinka-kauan-pullat-sailyvat-tuoreina",
+    "question": {
+      "fi": "Kuinka kauan pullat säilyvät tuoreina?"
+    },
+    "category_path": [
+      "tuotteet"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "voinko-tilata-tuotteita-etukateen",
+    "question": {
+      "fi": "Voinko tilata tuotteita etukäteen?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "miten-teen-tilauksen-nettisivujen-kautta",
+    "question": {
+      "fi": "Miten teen tilauksen nettisivujen kautta?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "voinko-tehda-tilauksia-puhelimitse-tai-verkossa",
+    "question": {
+      "fi": "Voinko tehdä tilauksia puhelimitse tai verkossa?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "voinko-tilata-tuotteita-sahkopostilla",
+    "question": {
+      "fi": "Voinko tilata tuotteita sähköpostilla?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kuinka-tilaan-raakapakasteet",
+    "question": {
+      "fi": "Kuinka tilaan raakapakasteet?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "onko-minimitilausmaaraa",
+    "question": {
+      "fi": "Onko minimitilausmäärää?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "full",
+      "business"
+    ]
+  },
+  {
+    "id": "pystynko-tilaamaan-pelkastaan-muutaman-tuotteen",
+    "question": {
+      "fi": "Pystynkö tilaamaan pelkästään muutaman tuotteen?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "voinko-tulla-ostoksille-ilman-tilausta",
+    "question": {
+      "fi": "Voinko tulla ostoksille ilman tilausta?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "voinko-muuttaa-tilaustani-jalkikateen",
+    "question": {
+      "fi": "Voinko muuttaa tilaustani jälkikäteen?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kuinka-aikaisin-minun-pitaa-tehda-tilaus",
+    "question": {
+      "fi": "Kuinka aikaisin minun pitää tehdä tilaus?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "kuinka-ajoissa-minun-tulee-tehda-tilaus",
+    "question": {
+      "fi": "Kuinka ajoissa minun tulee tehdä tilaus?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "voinko-tilata-tuotteita-juhliin",
+    "question": {
+      "fi": "Voinko tilata tuotteita juhliin?"
+    },
+    "category_path": [
+      "tilaus",
+      "suuret-ja-rateloidyt",
+      "juhlat-ja-catering"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "teetteko-catering-tilauksia",
+    "question": {
+      "fi": "Teettekö catering-tilauksia?"
+    },
+    "category_path": [
+      "tilaus",
+      "suuret-ja-rateloidyt",
+      "juhlat-ja-catering"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "kuinka-kauan-ennen-juhlia-pitaa-tehda-tilaus",
+    "question": {
+      "fi": "Kuinka kauan ennen juhlia pitää tehdä tilaus?"
+    },
+    "category_path": [
+      "tilaus",
+      "suuret-ja-rateloidyt",
+      "juhlat-ja-catering"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "kuinka-iso-tilaus-onnistuu-kerralla",
+    "question": {
+      "fi": "Kuinka iso tilaus onnistuu kerralla?"
+    },
+    "category_path": [
+      "tilaus",
+      "suuret-ja-rateloidyt",
+      "juhlat-ja-catering"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "pystynko-tilaamaan-suuremman-eran-yritykselle",
+    "question": {
+      "fi": "Pystynkö tilaamaan suuremman erän yritykselle?"
+    },
+    "category_path": [
+      "tilaus",
+      "suuret-ja-rateloidyt",
+      "yritys-ja-tapahtumatilaukset"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "teetteko-yhteistyota-koulujen-tai-paivakotien-kanssa",
+    "question": {
+      "fi": "Teettekö yhteistyötä koulujen tai päiväkotien kanssa?"
+    },
+    "category_path": [
+      "tilaus",
+      "suuret-ja-rateloidyt",
+      "yritys-ja-tapahtumatilaukset"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "teetteko-yhteistyota-tapahtumien-kanssa",
+    "question": {
+      "fi": "Teettekö yhteistyötä tapahtumien kanssa?"
+    },
+    "category_path": [
+      "tilaus",
+      "suuret-ja-rateloidyt",
+      "yritys-ja-tapahtumatilaukset"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "mista-voin-noutaa-tilaukseni",
+    "question": {
+      "fi": "Mistä voin noutaa tilaukseni?"
+    },
+    "category_path": [
+      "tilaus",
+      "nouto-ja-toimitus"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "tarjoatteko-kotiinkuljetusta-tai-noutoa",
+    "question": {
+      "fi": "Tarjoatteko kotiinkuljetusta tai noutoa?"
+    },
+    "category_path": [
+      "tilaus",
+      "nouto-ja-toimitus"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "onko-teilla-kotiinkuljetusta",
+    "question": {
+      "fi": "Onko teillä kotiinkuljetusta?"
+    },
+    "category_path": [
+      "tilaus",
+      "nouto-ja-toimitus"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "voinko-tilata-woltin-tai-foodoran-kautta",
+    "question": {
+      "fi": "Voinko tilata Woltin tai Foodoran kautta?"
+    },
+    "category_path": [
+      "tilaus",
+      "nouto-ja-toimitus"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "toimitatteko-koko-helsinkiin",
+    "question": {
+      "fi": "Toimitatteko koko Helsinkiin?"
+    },
+    "category_path": [
+      "tilaus",
+      "nouto-ja-toimitus"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "voiko-tilauksen-toimittaa-yritykselle",
+    "question": {
+      "fi": "Voiko tilauksen toimittaa yritykselle?"
+    },
+    "category_path": [
+      "tilaus",
+      "nouto-ja-toimitus"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-minimitilausmaaraa-kotiinkuljetukseen",
+    "question": {
+      "fi": "Onko minimitilausmäärää kotiinkuljetukseen?"
+    },
+    "category_path": [
+      "tilaus",
+      "nouto-ja-toimitus"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "paljonko-kotiinkuljetus-maksaa",
+    "question": {
+      "fi": "Paljonko kotiinkuljetus maksaa?"
+    },
+    "category_path": [
+      "tilaus",
+      "nouto-ja-toimitus"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "kuinka-kauan-tilausten-toimitusaika-on",
+    "question": {
+      "fi": "Kuinka kauan tilausten toimitusaika on?"
+    },
+    "category_path": [
+      "tilaus",
+      "nouto-ja-toimitus"
+    ],
+    "sources": [
+      "full (overlaps: Tilaamisen Peruspolku / Tilauksen eteneminen)"
+    ]
+  },
+  {
+    "id": "voinko-maksaa-kortilla",
+    "question": {
+      "fi": "Voinko maksaa kortilla?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "hyvaksytteko-maksukortit-ja-mobiilimaksut",
+    "question": {
+      "fi": "Hyväksyttekö maksukortit ja mobiilimaksut?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "hyvaksytteko-kateisen-maksuvalineena",
+    "question": {
+      "fi": "Hyväksyttekö käteisen maksuvälineenä?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "toimiiko-mobilepay-maksuvalineena",
+    "question": {
+      "fi": "Toimiiko MobilePay maksuvälineenä?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "onko-mahdollista-maksaa-laskulla-yritysasiakkaana",
+    "question": {
+      "fi": "Onko mahdollista maksaa laskulla yritysasiakkaana?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "vaaditteko-ennakkomaksua-tilaustuotteista",
+    "question": {
+      "fi": "Vaaditteko ennakkomaksua tilaustuotteista?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "business (overlaps: Suuret & Räätälöidyt Tilaukset / Ennakkovaatimukset)"
+    ]
+  },
+  {
+    "id": "tarjoatteko-alennuksia-suur-tai-tukkutilauksista",
+    "question": {
+      "fi": "Tarjoatteko alennuksia suur- tai tukkutilauksista?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "mika-on-hintatasonne",
+    "question": {
+      "fi": "Mikä on hintatasonne?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "myytteko-lahjakortteja",
+    "question": {
+      "fi": "Myyttekö lahjakortteja?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "full",
+      "business"
+    ]
+  },
+  {
+    "id": "saako-tilauksesta-kuitin-sahkopostiin",
+    "question": {
+      "fi": "Saako tilauksesta kuitin sähköpostiin?"
+    },
+    "category_path": [
+      "maksaminen"
+    ],
+    "sources": [
+      "products"
+    ]
+  },
+  {
+    "id": "saako-asiakkaat-tuoda-omia-uudelleenkaytettavia-pakkauksia",
+    "question": {
+      "fi": "Saako asiakkaat tuoda omia uudelleenkäytettäviä pakkauksia?"
+    },
+    "category_path": [
+      "kestavyys",
+      "pakkaukset-ja-ymparisto"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "kaytatteko-ymparistoystavallisia-pakkauksia",
+    "question": {
+      "fi": "Käytättekö ympäristöystävällisiä pakkauksia?"
+    },
+    "category_path": [
+      "kestavyys",
+      "pakkaukset-ja-ymparisto"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "kaytatteko-paikallisia-tai-luomuraaka-aineita",
+    "question": {
+      "fi": "Käytättekö paikallisia tai luomuraaka-aineita?"
+    },
+    "category_path": [
+      "kestavyys",
+      "pakkaukset-ja-ymparisto"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "lahjoitatteko-myymatta-jaaneet-tuotteet",
+    "question": {
+      "fi": "Lahjoitatteko myymättä jääneet tuotteet?"
+    },
+    "category_path": [
+      "kestavyys",
+      "havikki-ja-lahjoitukset"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "teetteko-yhteistyota-paikallisten-tuottajien-kanssa",
+    "question": {
+      "fi": "Teettekö yhteistyötä paikallisten tuottajien kanssa?"
+    },
+    "category_path": [
+      "kestavyys",
+      "yhteistyo-ja-yhteiso"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "tarjoatteko-maistiaisia",
+    "question": {
+      "fi": "Tarjoatteko maistiaisia?"
+    },
+    "category_path": [
+      "kestavyys",
+      "yhteistyo-ja-yhteiso"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "jarjestatteko-leivontakursseja-tai-tapahtumia",
+    "question": {
+      "fi": "Järjestättekö leivontakursseja tai tapahtumia?"
+    },
+    "category_path": [
+      "kestavyys",
+      "yhteistyo-ja-yhteiso"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "miten-voin-antaa-palautetta-tai-arvostelun",
+    "question": {
+      "fi": "Miten voin antaa palautetta tai arvostelun?"
+    },
+    "category_path": [
+      "kestavyys",
+      "palaute-ja-arvostelut"
+    ],
+    "sources": [
+      "business"
+    ]
+  }
+]

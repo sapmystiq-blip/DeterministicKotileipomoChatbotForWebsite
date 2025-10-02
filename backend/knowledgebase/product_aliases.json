@@ -1,45 +1,58 @@
 {
   "items": [
-    { "name": "Karjalanpiirakka", "aliases": [
-      "karjalan piirakka",
-      "karjalan piirakat",
-      "karjalanpiiras",
-      "karjalan piiras",
-      "karjalanpiiraat",
-      "karjalan piiraat",
-      "karjalapiirakka",
-      "karjalapiirakat",
-      "riisipiiras",
-      "riisipiiraat",
-      "karelian pie",
-      "karelianpie",
-      "karelian pies",
-      "karelian pasty",
-      "karelian pasties",
-      "karelian pastry",
-      "karelian pastries",
-      "karelianpastry",
-      "karelianpastie",
-      "piirakka",
-      "piirakat",
-      "riisi piirakka",
-      "riisi piirakat",
-      "riisipiirakka",
-      "karjalanpiirakat",
-      "rice pie",
-      "rice pies",
-      "rice pasty",
-      "rice pastry",
-      "rice pastries",
-      "karelska piroger",
-      "karelsk pirog",
-      "karjalanpiiraka"
-    ] },
-    { "name": "Samosa", "aliases": ["samosas", "samosa curry", "gobi samosa", "kana samosa", "kanasamosa"] },
-    { "name": "Vegaanipiirakka", "aliases": ["vegaaninen riisipiirakka", "vegaani riisipiirakka", "vegaanipiirakka", "vegan rice pie", "vegan karelian pie"] },
-    { "name": "Perunapiirakka", "aliases": ["peruna piirakka", "potato pie", "potatispirog"] },
-    { "name": "Curry twist", "aliases": ["mung curry twist", "currytwist", "twist curry", "twist"] },
-    { "name": "Pasteija", "aliases": ["lihapasteija", "pasteija curry", "curry pasteija", "pasties", "pastry"] },
-    { "name": "Mustikkakukko", "aliases": ["blueberry pie", "mustikka"] }
+    {
+      "name": "Karjalanpiirakka",
+      "aliases": [
+        "karjalanpiirakat",
+        "riisipiirakka",
+        "vegaaninen riisipiirakka",
+        "ohrapiirakka",
+        "perunapiirakka"
+      ]
+    },
+    {
+      "name": "Samosa",
+      "aliases": [
+        "samosat",
+        "gobisamosa",
+        "kana samosa",
+        "shingara"
+      ]
+    },
+    {
+      "name": "Curry-twist",
+      "aliases": [
+        "curry twist",
+        "currytwist",
+        "curry-twistit",
+        "mungpapu twist",
+        "lihacurry twist"
+      ]
+    },
+    {
+      "name": "Pullat",
+      "aliases": [
+        "kanelipulla",
+        "kinuskipulla",
+        "voisilmäpulla",
+        "sesonkipulla"
+      ]
+    },
+    {
+      "name": "Marjapiirakka",
+      "aliases": [
+        "marjapiirakat",
+        "puolukkapiirakka",
+        "mustikkapiirakka",
+        "raparperipiirakka"
+      ]
+    },
+    {
+      "name": "Mustikkakukko",
+      "aliases": [
+        "mustikkakukkonen",
+        "rättänä"
+      ]
+    }
   ]
 }

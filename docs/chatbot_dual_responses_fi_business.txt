@@ -4,7 +4,7 @@ A (new): Olemme avoinna torstaisin ja perjantaisin klo 11-17 ja lauantaisin klo 
 
 Q: Missä sijaitsette?
 A (legacy): Leipomomyymälämme sijaitsee osoitteessa Kumpulantie 15, 00520 Helsinki
-A (new): Myymälämme sijaitsee Vallilassa osoitteessa Kumpulantie 15, 00520 Helsinki.
+A (new): Leipomomyymälämme sijaitsee Vallilassa osoitteessa Kumpulantie 15, 00520 Helsinki.
 
 Q: Tarjoatteko kotiinkuljetusta tai noutoa?
 A (legacy): 
@@ -37,7 +37,10 @@ A (legacy): Otamme vastaan verkkotilauksia. Katso verkkokauppa alta.
   </div>
 </div>
 
-A (new): <p>Tilaukset kannattaa tehdä vähintään päivää ennen noutoa (suuremmat määrät 2–3 päivää etukäteen).</p><div class="order-ui">
+A (new): <p>Otamme vastaan verkkotilauksia. Katso verkkokauppa alta.
+
+
+<div class="order-ui">
   <div class="order-title">Tilaa verkkokaupasta</div>
   <div class="order-sub">Nouto myymälästä, maksu paikan päällä.</div>
   <div class="order-buttons">

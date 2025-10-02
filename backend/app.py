@@ -23,6 +23,10 @@ try:
     from .routers.orders import router as orders_router
 except Exception:
     orders_router = None
+try:
+    from .routers.faq import router as faq_router
+except Exception:
+    faq_router = None
 
 # Load .env before reading any environment variables
 try:
@@ -47,6 +51,7 @@ LOCAL_TZ = os.getenv("LOCAL_TZ", "Europe/Helsinki")
 # Ordering time constraints (fallbacks if not discoverable from Ecwid)
 ECWID_MAX_ORDER_DAYS = int(os.getenv("ECWID_MAX_ORDER_DAYS", "60"))
 ECWID_MIN_LEAD_MINUTES = int(os.getenv("ECWID_MIN_LEAD_MINUTES", "720"))
+CHAT_ENABLED = os.getenv("CHAT_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 # Weekly pickup hours (imported from shared time rules)
 SHOP_HOURS: Dict[int, List[Tuple[str, str]]] = TR_SHOP_HOURS
@@ -115,26 +120,30 @@ KB_FILES = [p.name for p in sorted(LEGACY_KB_DIR.glob("*.json"))]
 # Optional RAG (external repo): kotileipomo-rag
 # ============================================================
 RAG_ENABLED = False
-try:
-    import sys as _sys
-    _RAG_SRC = (REPO_ROOT / "kotileipomo-rag" / "src")
-    if _RAG_SRC.exists():
-        _sys.path.insert(0, str(_RAG_SRC))
-        from rag.ingest import load_kb_docs as _rag_load, chunk_docs as _rag_chunk
-        from rag.index_bm25 import BM25Index as _RagBM
-        from rag.index_embeddings import EmbIndex as _RagEmb
-        from rag.retrieve import Retriever as _RagRet
-        from rag.generate import compose_answer as _rag_compose, _special_answer as _rag_special
-        _RAG_DOCS = _rag_chunk(_rag_load())
-        _RAG_BM = _RagBM(_RAG_DOCS)
-        _RAG_EMB = _RagEmb()
-        _RAG_RET = _RagRet(_RAG_BM, _RAG_EMB)
-        RAG_ENABLED = True
-        logger.info(f"RAG ready: {len(_RAG_DOCS)} docs")
-    else:
-        logger.info("RAG not found (kotileipomo-rag/src missing)")
-except Exception as e:
-    logger.exception(f"RAG init failed: {e}")
+_RAG_FLAG = os.getenv("ENABLE_RAG", "0").strip().lower() in {"1", "true", "yes", "on"}
+if _RAG_FLAG:
+    try:
+        import sys as _sys
+        _RAG_SRC = (REPO_ROOT / "kotileipomo-rag" / "src")
+        if _RAG_SRC.exists():
+            _sys.path.insert(0, str(_RAG_SRC))
+            from rag.ingest import load_kb_docs as _rag_load, chunk_docs as _rag_chunk
+            from rag.index_bm25 import BM25Index as _RagBM
+            from rag.index_embeddings import EmbIndex as _RagEmb
+            from rag.retrieve import Retriever as _RagRet
+            from rag.generate import compose_answer as _rag_compose, _special_answer as _rag_special
+            _RAG_DOCS = _rag_chunk(_rag_load())
+            _RAG_BM = _RagBM(_RAG_DOCS)
+            _RAG_EMB = _RagEmb()
+            _RAG_RET = _RagRet(_RAG_BM, _RAG_EMB)
+            RAG_ENABLED = True
+            logger.info(f"RAG ready: {len(_RAG_DOCS)} docs")
+        else:
+            logger.info("RAG not found (kotileipomo-rag/src missing)")
+    except Exception as e:
+        logger.exception(f"RAG init failed: {e}")
+else:
+    logger.info("RAG disabled (set ENABLE_RAG=1 to enable)")
 
 # ============================================================
 # Database (optional; e.g., Railway Postgres)
@@ -1962,7 +1971,14 @@ def llm_like_answer(query: str, kb_items: List[Dict[str, Any]], respond_lang: st
             )
     best = kb_items[0]
     ans = (best.get("answer") or "").strip()
-    return ans or "I found a related item, but it had no answer text."
+    if ans:
+        return ans
+    lang = (respond_lang or PRIMARY_LANG)
+    if lang == "fi":
+        return "En löytänyt tietopankissa valmista vastausta tähän kysymykseen."
+    if lang == "sv":
+        return "Jag hittade ingen färdig kunskapsbas-svar på frågan."
+    return "I could not find a prepared knowledge-base answer for that question."
 
 def generate_llm_answer(query: str, kb_items: List[Dict[str, Any]], respond_lang: str) -> str:
     """Use OpenAI to compose a KB-grounded answer in the requested language.
@@ -1991,33 +2007,31 @@ def generate_llm_answer(query: str, kb_items: List[Dict[str, Any]], respond_lang
     lang_name = LANG_NAMES.get(respond_lang, respond_lang)
     if respond_lang == "fi":
         system = (
-            "Olet Piirakkabotti, ystävällinen ja asiantunteva Raka's kotileipomon avustaja Helsingissä. "
-            "Käytä ensisijaisesti annettua tietopankkia. "
-            "Jos vastausta ei löydy tietopankista, voit vastata varovasti yleisellä tiedolla, mutta kerro selvästi, kun menet leipomon virallisen tiedon ulkopuolelle. "
-            "Voit antaa pieniä, ystävällisiä ehdotuksia, jos ne ovat selvästi aiheeseen liittyviä. "
-            f"Pidä vastaukset napakoina, lämpiminä ja täsmällisinä. Vastaa kielellä {lang_name}."
+            "Olet Piirakkabotti, Raka's kotileipomon asiakaspalvelija Helsingissä. "
+            "Tunnet vain kahdesta lähteestä kerätyn tiedon: Bakery_faqs_fi.xlsx ja rakaskotileipomo.fi -sivuston sisällön. "
+            "Vastaa ainoastaan näiden katkelmien perusteella ja aina suomeksi. "
+            "Jos tieto puuttuu katkelmista, kerro lyhyesti ettet valitettavasti tiedä. "
+            "Pidä vastaukset napakoina, ystävällisinä ja asiallisina."
         )
     elif respond_lang == "sv":
         system = (
-            "Du är Piirakkabotti, en vänlig och kunnig assistent för Raka's kotileipomo i Helsingfors. "
-            "Använd den givna kunskapsbasen som primär källa. "
-            "Om svaret inte finns i kunskapsbasen kan du svara hjälpsamt med allmän kunskap, men gör tydligt när du går utanför bageriets officiella information. "
-            "Du får lägga till små, vänliga förslag om de tydligt är relevanta. "
-            f"Håll svaren korta, varma och korrekta. Svara på {lang_name}."
+            "Du är Piirakkabotti, Raka's kotileipomos kundtjänst i Helsingfors. "
+            "Du får endast använda utdragen från Bakery_faqs_fi.xlsx och rakaskotileipomo.fi. "
+            "Om informationen saknas ska du förklara kort att du inte vet. "
+            f"Svara på {lang_name}."
         )
     else:
         system = (
-            "You are Piirakkabotti, a friendly and knowledgeable assistant for Raka's kotileipomo bakery in Helsinki. "
-            "Use the provided knowledge base as your primary source. "
-            "If the answer is not in the knowledge base, try to respond helpfully using general knowledge, but make clear when you are going beyond the bakery’s official information. "
-            "You may add small, friendly suggestions if they are clearly relevant. "
-            f"Keep responses concise, warm, and accurate. Respond in {lang_name}."
+            "You are Piirakkabotti, the customer assistant for Raka's kotileipomo in Helsinki. "
+            "You may only use the provided excerpts sourced from Bakery_faqs_fi.xlsx and rakaskotileipomo.fi. "
+            "If the information is missing, reply briefly that you do not know. "
+            f"Always respond in {lang_name}."
         )
     context = "\n\n".join(context_blocks)
     user = (
         f"User question: {query}\n\n"
         f"Knowledge base excerpts:\n{context}\n\n"
-        "Compose the best possible answer using only the excerpts above."
+        "Compose a concise answer in Finnish using only the excerpts above. If the excerpts do not contain the answer, reply in Finnish that the information is not available."
     )
 
     try:
@@ -2056,6 +2070,8 @@ def health():
 
 @app.post("/api/chat", response_model=ChatResponse)
 def chat(req: ChatRequest, request: Request, response: Response):
+    if not CHAT_ENABLED:
+        raise HTTPException(status_code=403, detail="Chat is disabled. Please use the FAQ menu.")
     user_msg = (req.message or "").strip()
     if not user_msg:
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
@@ -2070,14 +2086,11 @@ def chat(req: ChatRequest, request: Request, response: Response):
 
     # Language handling
     # Language preference: explicit from client, cookie, else policy/detection
-    chosen_lang = (req.lang or request.cookies.get("chat_lang") or "").strip().lower()
-    if chosen_lang not in {"fi","sv","en"}:
-        chosen_lang = None
+    # Detect user language but always respond in Finnish per bakery policy
     user_lang = detect_lang(user_msg)
-    respond_lang = chosen_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else user_lang)
-    if req.lang and chosen_lang:
-        # persist choice for session via cookie
-        response.set_cookie("chat_lang", chosen_lang, max_age=60*60*24*30, httponly=False, samesite="Lax")
+    respond_lang = "fi"
+    if req.lang:
+        response.set_cookie("chat_lang", "fi", max_age=60*60*24*30, httponly=False, samesite="Lax")
 
     # Log user message
     try:
@@ -2198,6 +2211,8 @@ def _answer_legacy(user_msg: str, respond_lang: str | None, session_id: str | No
 
 @app.post("/api/chat_dual", response_model=ChatDualResponse)
 def chat_dual(req: ChatDualRequest, request: Request, response: Response):
+    if not CHAT_ENABLED:
+        raise HTTPException(status_code=403, detail="Chat is disabled. Please use the FAQ menu.")
     user_msg = (req.message or "").strip()
     if not user_msg:
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
@@ -2213,11 +2228,8 @@ def chat_dual(req: ChatDualRequest, request: Request, response: Response):
     except Exception:
         logger.debug("Failed to log user message for chat_dual", exc_info=True)
 
-    chosen_lang = (req.lang or request.cookies.get("chat_lang") or "").strip().lower()
-    if chosen_lang not in {"fi","sv","en"}:
-        chosen_lang = None
     user_lang = detect_lang(user_msg)
-    respond_lang = chosen_lang or (PRIMARY_LANG if LANGUAGE_POLICY == "always_primary" else user_lang)
+    respond_lang = "fi"
 
     # Which answers to compute/show (default both True)
     want_legacy = True if req.legacy is None else bool(req.legacy)
@@ -2806,6 +2818,8 @@ def root():
 # Include API routers before mounting static files
 if orders_router is not None:
     app.include_router(orders_router)
+if faq_router is not None:
+    app.include_router(faq_router)
 # Mount ALL static assets at site root (keep AFTER API routes)
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
