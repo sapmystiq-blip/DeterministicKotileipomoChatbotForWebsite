@@ -42,6 +42,7 @@ class FaqItem(BaseModel):
     q: Dict[str, str]  # {"fi": "...", "en": "...", "sv": "..."}
     a: Dict[str, str]
     tags: List[str] = Field(default_factory=list)
+    category_path: List[str] = Field(default_factory=list)
 
     def text_for(self, lang: str, kind: Literal["q", "a"]) -> str:
         src = self.q if kind == "q" else self.a

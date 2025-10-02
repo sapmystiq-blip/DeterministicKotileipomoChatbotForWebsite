@@ -1,0 +1,363 @@
+[
+  {
+    "id": "tutustu",
+    "path": [
+      "tutustu"
+    ],
+    "label": {
+      "fi": "Tutustu leipomoon",
+      "en": "Discover the bakery",
+      "sv": "Lär känna bageriet"
+    },
+    "children": []
+  },
+  {
+    "id": "menu",
+    "path": [
+      "menu"
+    ],
+    "label": {
+      "fi": "Menu",
+      "en": "Menu",
+      "sv": "Meny"
+    },
+    "children": [
+      {
+        "id": "menu-tuoreet",
+        "path": [
+          "menu",
+          "menu-tuoreet"
+        ],
+        "label": {
+          "fi": "Uunituoreet",
+          "en": "Fresh items",
+          "sv": "Färska produkter"
+        },
+        "children": []
+      },
+      {
+        "id": "menu-pakasteet",
+        "path": [
+          "menu",
+          "menu-pakasteet"
+        ],
+        "label": {
+          "fi": "Pakasteet",
+          "en": "Frozen",
+          "sv": "Frysta produkter"
+        },
+        "children": [
+          {
+            "id": "pakasteet-ja-raakapakasteet",
+            "path": [
+              "menu",
+              "menu-pakasteet",
+              "pakasteet-ja-raakapakasteet"
+            ],
+            "label": {
+              "fi": "Pakasteet & raakapakasteet",
+              "en": "Frozen & bake-at-home",
+              "sv": "Fryst & färdig att grädda"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "kakut-ja-rateloidyt",
+        "path": [
+          "menu",
+          "kakut-ja-rateloidyt"
+        ],
+        "label": {
+          "fi": "Kakut & räätälöidyt tuotteet",
+          "en": "Cakes & custom items",
+          "sv": "Tårtor & specialprodukter"
+        },
+        "children": []
+      },
+      {
+        "id": "ruokavaliot",
+        "path": [
+          "menu",
+          "ruokavaliot"
+        ],
+        "label": {
+          "fi": "Ainesosat ja ruokavaliot",
+          "en": "Dietary needs & ingredients",
+          "sv": "Kostbehov & ingredienser"
+        },
+        "children": [
+          {
+            "id": "allergeenilistat",
+            "path": [
+              "menu",
+              "ruokavaliot",
+              "allergeenilistat"
+            ],
+            "label": {
+              "fi": "Allergeenilistat",
+              "en": "Allergen lists",
+              "sv": "Allergenlistor"
+            },
+            "children": []
+          },
+          {
+            "id": "viljat-ja-gluteeni",
+            "path": [
+              "menu",
+              "ruokavaliot",
+              "viljat-ja-gluteeni"
+            ],
+            "label": {
+              "fi": "Viljat & gluteeni",
+              "en": "Grains & gluten",
+              "sv": "Spannmål & gluten"
+            },
+            "children": []
+          },
+          {
+            "id": "maito-ja-muna",
+            "path": [
+              "menu",
+              "ruokavaliot",
+              "maito-ja-muna"
+            ],
+            "label": {
+              "fi": "Maito & muna",
+              "en": "Milk & eggs",
+              "sv": "Mjölk & ägg"
+            },
+            "children": []
+          },
+          {
+            "id": "vegaaniset-ja-maidottomat",
+            "path": [
+              "menu",
+              "ruokavaliot",
+              "vegaaniset-ja-maidottomat"
+            ],
+            "label": {
+              "fi": "Vegaaniset & maidottomat",
+              "en": "Vegan & dairy-free",
+              "sv": "Veganska & mjölkfria"
+            },
+            "children": []
+          },
+          {
+            "id": "muut-allergeenit",
+            "path": [
+              "menu",
+              "ruokavaliot",
+              "muut-allergeenit"
+            ],
+            "label": {
+              "fi": "Muut allergeenit",
+              "en": "Other allergens",
+              "sv": "Övriga allergener"
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tuotteet",
+    "path": [
+      "tuotteet"
+    ],
+    "label": {
+      "fi": "Tuotteet",
+      "en": "Products",
+      "sv": "Produkter"
+    },
+    "children": []
+  },
+  {
+    "id": "tilaus",
+    "path": [
+      "tilaus"
+    ],
+    "label": {
+      "fi": "Tilaus",
+      "en": "Ordering",
+      "sv": "Beställning"
+    },
+    "children": [
+      {
+        "id": "tilaamisen-peruspolku",
+        "path": [
+          "tilaus",
+          "tilaamisen-peruspolku"
+        ],
+        "label": {
+          "fi": "Tilaamisen peruspolku",
+          "en": "Everyday ordering",
+          "sv": "Beställningsflöde"
+        },
+        "children": []
+      },
+      {
+        "id": "suuret-ja-rateloidyt",
+        "path": [
+          "tilaus",
+          "suuret-ja-rateloidyt"
+        ],
+        "label": {
+          "fi": "Suuret & räätälöidyt tilaukset",
+          "en": "Large & custom orders",
+          "sv": "Stora & skräddarsydda beställningar"
+        },
+        "children": [
+          {
+            "id": "juhlat-ja-catering",
+            "path": [
+              "tilaus",
+              "suuret-ja-rateloidyt",
+              "juhlat-ja-catering"
+            ],
+            "label": {
+              "fi": "Juhlat & catering",
+              "en": "Parties & catering",
+              "sv": "Fester & catering"
+            },
+            "children": []
+          },
+          {
+            "id": "yritys-ja-tapahtumatilaukset",
+            "path": [
+              "tilaus",
+              "suuret-ja-rateloidyt",
+              "yritys-ja-tapahtumatilaukset"
+            ],
+            "label": {
+              "fi": "Yritys- ja tapahtumatilaukset",
+              "en": "Corporate & events",
+              "sv": "Företag & evenemang"
+            },
+            "children": []
+          },
+          {
+            "id": "kakut-ja-rateloidyt",
+            "path": [
+              "tilaus",
+              "suuret-ja-rateloidyt",
+              "kakut-ja-rateloidyt"
+            ],
+            "label": {
+              "fi": "Kakut & räätälöidyt tuotteet",
+              "en": "Cakes & custom items",
+              "sv": "Tårtor & specialprodukter"
+            },
+            "children": []
+          },
+          {
+            "id": "ennakkovaatimukset",
+            "path": [
+              "tilaus",
+              "suuret-ja-rateloidyt",
+              "ennakkovaatimukset"
+            ],
+            "label": {
+              "fi": "Ennakkovaatimukset & sopiminen",
+              "en": "Prerequisites & agreements",
+              "sv": "Förutsättningar & överenskommelser"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "nouto-ja-toimitus",
+        "path": [
+          "tilaus",
+          "nouto-ja-toimitus"
+        ],
+        "label": {
+          "fi": "Nouto & toimitus",
+          "en": "Pickup & delivery",
+          "sv": "Avhämtning & leverans"
+        },
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "maksaminen",
+    "path": [
+      "maksaminen"
+    ],
+    "label": {
+      "fi": "Maksaminen & hinnoittelu",
+      "en": "Payment & pricing",
+      "sv": "Betalning & prissättning"
+    },
+    "children": []
+  },
+  {
+    "id": "kestavyys",
+    "path": [
+      "kestavyys"
+    ],
+    "label": {
+      "fi": "Kestävyys & yhteisö",
+      "en": "Sustainability & community",
+      "sv": "Hållbarhet & gemenskap"
+    },
+    "children": [
+      {
+        "id": "pakkaukset-ja-ymparisto",
+        "path": [
+          "kestavyys",
+          "pakkaukset-ja-ymparisto"
+        ],
+        "label": {
+          "fi": "Pakkaukset & ympäristö",
+          "en": "Packaging & environment",
+          "sv": "Förpackningar & miljö"
+        },
+        "children": []
+      },
+      {
+        "id": "havikki-ja-lahjoitukset",
+        "path": [
+          "kestavyys",
+          "havikki-ja-lahjoitukset"
+        ],
+        "label": {
+          "fi": "Hävikki & lahjoitukset",
+          "en": "Waste & donations",
+          "sv": "Svinn & donationer"
+        },
+        "children": []
+      },
+      {
+        "id": "yhteistyo-ja-yhteiso",
+        "path": [
+          "kestavyys",
+          "yhteistyo-ja-yhteiso"
+        ],
+        "label": {
+          "fi": "Yhteistyö & yhteisö",
+          "en": "Partnerships & community",
+          "sv": "Samarbeten & gemenskap"
+        },
+        "children": []
+      },
+      {
+        "id": "palaute-ja-arvostelut",
+        "path": [
+          "kestavyys",
+          "palaute-ja-arvostelut"
+        ],
+        "label": {
+          "fi": "Palaute & arvostelut",
+          "en": "Feedback & reviews",
+          "sv": "Feedback & recensioner"
+        },
+        "children": []
+      }
+    ]
+  }
+]

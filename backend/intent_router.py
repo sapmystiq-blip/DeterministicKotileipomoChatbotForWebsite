@@ -576,10 +576,13 @@ def resolve_menu(lang: str, query: Optional[str] = None) -> str:
             unit_each = {"fi": "/kpl", "sv": "/st", "en": "/each"}[lang]
             unit_pack = {"fi": "/kpl", "sv": "/st", "en": "/pcs"}[lang]
             lines: list[str] = []
-            # Exception: Mustikkakukko shows only per-piece price for oven-fresh (include_instore=True)
-            if include_instore and "mustikkakukko" in nm_l:
-                if p_each is not None:
-                    lines.append(f"{_fmt_eur(p_each, lang)} {unit_each}")
+            if "mustikkakukko" in nm_l:
+                if is_frozen:
+                    unit_five = {"fi": "/5kpl", "sv": "/5st", "en": "/5pcs"}[lang]
+                    lines.append(f"{_fmt_eur(19.90, lang)}{unit_five}")
+                else:
+                    unit_two = {"fi": "/2kpl", "sv": "/2st", "en": "/2pcs"}[lang]
+                    lines.append(f"{_fmt_eur(9.0, lang)}{unit_two}")
             else:
                 if include_instore and p_each is not None:
                     lines.append(f"{_fmt_eur(p_each, lang)} {unit_each}")
@@ -614,7 +617,6 @@ def resolve_menu(lang: str, query: Optional[str] = None) -> str:
 
         uuni_savory, uuni_sweet = _collect_fmt_split(uuni_ids, include_instore=True)
         paka_savory, paka_sweet = _collect_fmt_split(pakaste_ids, include_instore=False)
-        title = {"fi": "Tuotteet ja hinnat", "sv": "Produkter och priser", "en": "Products and prices"}[lang]
         lf_note = {
             "fi": "Kaikki tuotteemme ovat laktoosittomia.",
             "sv": "Alla våra produkter är laktosfria.",
@@ -644,15 +646,14 @@ def resolve_menu(lang: str, query: Optional[str] = None) -> str:
             s_html = savory_html if savory_html is not None else ("".join([f"<li>{ln}</li>" for ln in savory_items]) or "<li>—</li>")
             m_html = "".join([f"<li>{ln}</li>" for ln in sweet_items]) or "<li>—</li>"
             return (
-                f"<div class=\"menu-two-col\" style=\"display:grid;grid-template-columns:1fr;gap:6px;align-items:start;width:100%;\">"
-                f"<div class=\"title\" style=\"grid-column:1/-1;font-weight:700;margin:0;\">{title}</div>"
-                f"<div class=\"note\" style=\"grid-column:1/-1;color:#6b5e57;font-size:12px;margin:0 0 1px 0;\">{lf_note}</div>"
-                f"<div class=\"cat center\" style=\"grid-column:1/-1;text-align:center;margin:0 0 1px 0;font-size:19px;font-weight:700\">{cat_label}</div>"
-                f"<div class=\"cols\" style=\"grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;\">"
+                f"<div class=\"menu-two-col\" style=\"display:grid;grid-template-columns:1fr;gap:4px;align-items:start;width:100%;\">"
+                f"<div class=\"note\" style=\"grid-column:1/-1;color:#6b5e57;font-size:11px;margin:0;text-align:center;padding:0 0 2px 0;border-top:1px solid #e7ddd4;\">{lf_note}</div>"
+                f"<div class=\"cat center\" style=\"grid-column:1/-1;text-align:center;margin:0 0 1px 0;font-size:18px;font-weight:700\">{cat_label}</div>"
+                f"<div class=\"cols\" style=\"grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;\">"
                   f"<div class=\"col\"><div class=\"subcat\"><strong>{s_header}</strong></div></div>"
                   f"<div class=\"col\"><div class=\"subcat\"><strong>{m_header}</strong></div></div>"
-                  f"<div class=\"cols-body\" style=\"grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;\">"
-                    f"<div class=\"col\"><ul class=\"items\">{s_html}</ul></div>"
+                  f"<div class=\"cols-body\" style=\"grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;\">"
+                    f"<div class=\"col\"><ul class=\"items items-left\">{s_html}</ul></div>"
                     f"<div class=\"col\"><ul class=\"items\">{m_html}</ul></div>"
                   f"</div>"
                 f"</div>"
@@ -798,29 +799,21 @@ def resolve_menu(lang: str, query: Optional[str] = None) -> str:
             ".menu-two-col, .menu-two-col *{box-sizing:border-box}"
             ".menu-two-col .cols-body{position:relative}"
             ".menu-two-col .cols-body::before{content:'';position:absolute;top:0;bottom:0;left:calc(50% + 6px);border-left:1px solid #e7ddd4}"
-            ".menu-two-col .items{margin:1px 0 0;padding-left:0;list-style:none;font-size:12px;line-height:1.2}"
+            ".menu-two-col .items{margin:1px 0 0;padding-left:0;list-style:none;font-size:11px;line-height:1.2}"
             ".menu-two-col .items li{margin:2px 0 4px 10px;}"
-            ".menu-two-col .cat{margin-top:0;margin-bottom:1px;font-size:19px;font-weight:700}"
-            ".menu-two-col .subcat{margin-top:1px;margin-bottom:0;font-size:15px;font-weight:600}"
-            ".menu-two-col .subsubcat{margin:4px 0 2px;font-size:14px;font-weight:700}"
+            ".menu-two-col .items-left li{margin-left:0;}"
+            ".menu-two-col .cat{margin-top:0;margin-bottom:1px;font-size:18px;font-weight:700}"
+            ".menu-two-col .subcat{margin-top:1px;margin-bottom:0;font-size:14px;font-weight:600}"
+            ".menu-two-col .subsubcat{margin:8px 0 2px;font-size:13px;font-weight:700}"
             ".menu-two-col .col{min-width:0}"
-            ".menu-two-col .item .nm{font-size:14px;font-weight:600;margin-bottom:1px;word-break:break-word;overflow-wrap:anywhere}"
-            ".menu-two-col .item .pl{font-size:12px;color:#6b5e57;word-break:break-word;overflow-wrap:anywhere}"
+            ".menu-two-col .item .nm{font-size:13px;font-weight:600;margin-bottom:1px;word-break:break-word;overflow-wrap:anywhere}"
+            ".menu-two-col .item .pl{font-size:11px;color:#6e3d1e;font-weight:700;word-break:break-word;overflow-wrap:anywhere}"
+            ".menu-two-col .pl{font-size:11px;color:#6e3d1e;font-weight:700;word-break:break-word;overflow-wrap:anywhere}"
             ".menu-two-col .col + .col{padding-left:0}"
             "@media (max-width: 420px){.menu-two-col{grid-template-columns:1fr}.menu-two-col .cols-body::before{display:none}.menu-two-col .col + .col{border-left:0;padding-left:0;border-top:1px solid #e7ddd4;padding-top:8px}}"
             "</style>"
         )
 
-        # When rendering the default Uunituoreet view, append a suggestion button to show frozen items
-        if not want_pakaste and (paka_savory or paka_sweet):
-            frozen_btn = {"fi": "Pakastetuotteet", "sv": "Frysta delikatesser", "en": "Frozen goodies"}[lang]
-            html += (
-                "<div class=\"suggest\" style=\"margin-top:8px\">"
-                "<div class=\"buttons\">"
-                f"<button type=\"button\" class=\"btn suggest-btn\" data-suggest=\"{frozen_btn}\">{frozen_btn}</button>"
-                "</div>"
-                "</div>"
-            )
         return html
 
     static = _static_menu_html(lang)
@@ -932,6 +925,694 @@ def _extract_attr_text(it: Dict[str, Any], keys: List[str]) -> Optional[str]:
             return val
     return None
 
+
+def _clean_product_name(n: str) -> str:
+    import re as _re
+    if not n:
+        return ""
+    n = _re.split(r"\s+[–—]-?\s+", n)[0]
+    n = _re.sub(r",?\s*\b\d+\s*(kpl|pcs)\b", "", n, flags=_re.IGNORECASE)
+    n = _re.sub(r"\s{2,}", " ", n).strip().strip(", ")
+    return n
+
+
+def _name_has_vegan_marker(name: str) -> bool:
+    n = (name or "").lower()
+    return any(tag in n for tag in ['vega', 'vegansk', 'vegan', 'vegaan'])
+
+
+def _normalize_ingredient_terms_fi(s: str) -> str:
+    import re as _re
+    t = _re.sub(r"\s+", " ", s or "").strip()
+    t = _re.sub(r"\btäys\s*maito\s*juoma\b", "täysmaitojuoma", t, flags=_re.IGNORECASE)
+    t = _re.sub(r"\bruis\s*jauho\b", "ruisjauho", t, flags=_re.IGNORECASE)
+    t = _re.sub(r"\bvehnä\s*jauho\b", "vehnäjauho", t, flags=_re.IGNORECASE)
+    t = _re.sub(r"\brypsi\s*öljy\b", "rypsiöljy", t, flags=_re.IGNORECASE)
+    return t
+
+
+def _format_ingredient_output(text: Optional[str]) -> Optional[str]:
+    if not text:
+        return text
+    import re as _re
+
+    def _merge_vehnajauho(match):
+        segment = match.group(0)
+        leading = match.group(1) or ""
+        core = segment[len(leading):]
+        stripped = core.lstrip()
+        first_char = stripped[0] if stripped else 'v'
+        replacement = "Vehnäjauho" if first_char.isupper() else "vehnäjauho"
+        return f"{leading}{replacement}"
+
+    cleaned = text.strip()
+    pattern = r"(\s*)v\s*e\s*h\s*n[aä]\s*jauho"
+    cleaned = _re.sub(pattern, _merge_vehnajauho, cleaned, flags=_re.IGNORECASE)
+
+    def _capitalize_first_alpha(value: str) -> str:
+        for idx, ch in enumerate(value):
+            if ch.isalpha():
+                return value[:idx] + ch.upper() + value[idx + 1 :]
+        return value
+
+    # Trim excess spaces just inside parentheses: ( maito ) -> (maito)
+    def _trim_parentheses(m):
+        inner = (m.group(1) or "").strip()
+        # collapse repeated spaces inside as well
+        inner = _re.sub(r"\s{2,}", " ", inner)
+        return f"({inner})"
+
+    cleaned = _re.sub(r"\(\s*([^)]*?)\s*\)", _trim_parentheses, cleaned)
+
+    # Bold known allergen-related tokens inside the ingredient list
+    # Handle common Finnish + English + Swedish words
+    allergens = [
+        # Finnish
+        "vehnäjauho", "vehnä", "ruis", "ohra", "maito", "muna", "kananmuna",
+        # English
+        "wheat flour", "wheat", "rye", "barley", "milk", "egg",
+        # Swedish
+        "vetemjöl", "vete", "råg", "korn", "mjölk", "ägg",
+    ]
+    # Sort longest first to avoid partial replacement (e.g., vehnäjauho vs vehnä)
+    allergens.sort(key=len, reverse=True)
+    for token in allergens:
+        # word boundaries around the token; allow diacritics
+        pattern = r"(?i)(?<![A-Za-zÅÄÖåäö])(" + _re.escape(token) + r")(?![A-Za-zÅÄÖåäö])"
+        cleaned = _re.sub(pattern, r"<strong>\1</strong>", cleaned)
+
+    cleaned = _capitalize_first_alpha(cleaned)
+    return cleaned
+
+
+def _match_first_letter_case(src: str, dst: str) -> str:
+    src_upper = None
+    for ch in src:
+        if ch.isalpha():
+            src_upper = ch.isupper()
+            break
+    if src_upper is None:
+        return dst
+    dst_list = list(dst)
+    for i, ch in enumerate(dst_list):
+        if ch.isalpha():
+            dst_list[i] = ch.upper() if src_upper else ch.lower()
+            break
+    return "".join(dst_list)
+
+
+def _translate_ingredients_list(s: str, lang_code: str) -> str:
+    import re as _re
+    if not s:
+        return s
+    base = _normalize_ingredient_terms_fi(s)
+    if lang_code == "fi":
+        return base
+    fi_en = {
+        "vesi": "Water",
+        "laktoositon": "Lactose-free",
+        "täysmaitojuoma": "whole milk",
+        "vehnäjauho": "Wheat flour",
+        "ruisjauho": "Rye flour",
+        "puuroriisi": "Porridge-rice",
+        "riisi": "Rice",
+        "suola": "Salt",
+        "sokeri": "Sugar",
+        "voi": "Butter",
+        "maito": "Milk",
+        "kerma": "Cream",
+        "kasvimargariini": "Vegetable margarine",
+        "rapsi": "Rapeseed",
+        "palmu": "Palm",
+        "kookos": "Coconut",
+        "rypsiöljy": "Rapeseed oil",
+        "inkivääri": "Ginger",
+        "mausteet": "Spices",
+        "kukkakaali": "Cauliflower",
+        "lisäaineeton": "Additive-free",
+        "perunahiutale": "Potato flakes",
+        "kana": "Chicken",
+        "jogurtti": "Yogurt",
+        "sipuli": "Onion",
+        "valkosipuli": "Garlic",
+    }
+    fi_sv = {
+        "vesi": "Vatten",
+        "laktoositon": "Laktosfri",
+        "täysmaitojuoma": "helmjölksdryck",
+        "vehnäjauho": "Vetemjöl",
+        "ruisjauho": "Rågmjöl",
+        "puuroriisi": "Grötris",
+        "riisi": "Ris",
+        "suola": "Salt",
+        "sokeri": "Socker",
+        "voi": "Smör",
+        "maito": "Mjölk",
+        "kerma": "Grädde",
+        "kasvimargariini": "Vegetabiliskt margarin",
+        "rapsi": "Raps",
+        "palmu": "Palm",
+        "kookos": "Kokos",
+        "rypsiöljy": "Rapsolja",
+        "inkivääri": "Ingefära",
+        "mausteet": "Kryddor",
+        "kukkakaali": "Blomkål",
+        "lisäaineeton": "Tillsatsfri",
+        "perunahiutale": "Potatisflingor",
+        "kana": "Kyckling",
+        "jogurtti": "Yoghurt",
+        "sipuli": "Lök",
+        "valkosipuli": "Vitlök",
+    }
+    mapping = fi_en if lang_code == "en" else fi_sv
+
+    def _map_token(word: str) -> str:
+        m = _re.match(r"^([^A-Za-zÅÄÖåäö]*)([A-Za-zÅÄÖåäö]+)([^A-Za-zÅÄÖåäö]*)$", word)
+        if not m:
+            return word
+        pre, core, post = m.groups()
+        dst_core = mapping.get(core.lower(), core)
+        dst_core = _match_first_letter_case(core, dst_core)
+        return f"{pre}{dst_core}{post}"
+
+    parts = [p.strip() for p in _re.split(r",\s*", base) if p.strip()]
+    out: List[str] = []
+    for p in parts:
+        low = p.lower()
+        if low == "laktoositon täysmaitojuoma":
+            phrase = "Lactose-free whole milk" if lang_code == "en" else "Laktosfri helmjölksdryck"
+            out.append(_match_first_letter_case(p, phrase))
+            continue
+        if low == "laktoositon jogurtti":
+            phrase = "Lactose-free yogurt" if lang_code == "en" else "Laktosfri yoghurt"
+            out.append(_match_first_letter_case(p, phrase))
+            continue
+        if low in mapping:
+            out.append(_match_first_letter_case(p, mapping[low]))
+            continue
+        words = _re.split(r"\s+", p)
+        trans = [_map_token(w) for w in words]
+        out.append(" ".join(trans))
+    return ", ".join(out)
+
+
+def _extract_nutrition_from_description(desc_html: Optional[str], lang: str) -> Optional[str]:
+    if not desc_html:
+        return None
+    text = _strip_html(desc_html)
+    text = text.replace('\r\n', '\n')
+    low = text.lower()
+    labels_per_lang = {
+        'fi': ['ravintosisältö', 'ravintoarvot', 'ravintotiedot'],
+        'sv': ['näringsvärde', 'näringsvärden', 'näringsinnehåll'],
+        'en': ['nutrition facts', 'nutritional values', 'nutrition'],
+    }
+    search = []
+    for key in (lang,) + tuple(label for label in ('fi', 'sv', 'en') if label != lang):
+        search.extend(labels_per_lang.get(key, []))
+    seen: set[str] = set()
+    ordered_labels = [lbl for lbl in search if not (lbl in seen or seen.add(lbl))]
+    for label in ordered_labels:
+        idx = low.find(label)
+        if idx == -1:
+            continue
+        segment = text[idx:].strip()
+        # cut at double newline or next heading cues
+        for sep in ['\n\n', '\r\n\r\n']:
+            cut = segment.find(sep)
+            if cut != -1 and cut > 0:
+                segment = segment[:cut].strip()
+                break
+        return segment.strip()
+    return None
+
+
+def _localize_allergen_labels(allergens: List[str], lang: str) -> List[str]:
+    name_map = {
+        "fi": {"milk": "Maito", "gluten": "Gluteeni", "egg": "Kananmuna"},
+        "sv": {"milk": "Mjölk", "gluten": "Gluten", "egg": "Ägg"},
+        "en": {"milk": "Milk", "gluten": "Gluten", "egg": "Egg"},
+    }
+    mapping = name_map.get(lang, name_map['fi'])
+    return [mapping.get(k, k) for k in allergens]
+
+
+def _product_detail_bundle(it: Dict[str, Any], lang: str) -> Dict[str, Optional[str]]:
+    desc_translated = None
+    try:
+        desc_tr = it.get('descriptionTranslated') or {}
+        if isinstance(desc_tr, dict):
+            lang_key = {'fi': 'fi', 'sv': 'sv', 'en': 'en'}.get(lang, lang)
+            desc_translated = desc_tr.get(lang_key)
+    except Exception:
+        desc_translated = None
+    desc_base = it.get('description') or ''
+    desc_for_lang = desc_translated or desc_base
+
+    ingredients = _extract_attr_text(it, ["ingredients", "aines", "ainesosat"]) or _extract_ingredients_from_description(desc_base)
+    ingredients_local = _translate_ingredients_list(ingredients, lang) if ingredients else None
+    ingredients_local = _format_ingredient_output(ingredients_local)
+
+    allergens = _extract_attr_text(it, ["allergens", "aller", "allerg"])
+    if not allergens:
+        text_block = (desc_base or "") + "\n" + (ingredients or "")
+        inferred_fi = _detect_allergens_fi(text_block)
+        inferred_sv = _detect_allergens_sv(text_block)
+        inferred = []
+        for key in inferred_fi + inferred_sv:
+            if key not in inferred:
+                inferred.append(key)
+        name_l = ((it.get('name') or "") + " " + desc_base).lower()
+        if any(tag in name_l for tag in ["vegaani", "vegan"]):
+            inferred = [k for k in inferred if k not in ("milk", "egg")]
+        if inferred:
+            allergens = ", ".join(_localize_allergen_labels(inferred, lang))
+
+    intro = _intro_for_item(it, lang)
+    nutrition = _extract_nutrition_from_description(desc_for_lang, lang)
+    if not nutrition and desc_for_lang is not desc_base:
+        nutrition = _extract_nutrition_from_description(desc_base, 'fi')
+
+    return {
+        'name': _clean_product_name(it.get('name') or ''),
+        'intro': intro,
+        'ingredients': ingredients_local,
+        'allergens': allergens,
+        'nutrition': nutrition,
+    }
+
+
+CURATED_DIETARY_GROUPS = [
+    {
+        "id": "karjalanpiirakat",
+        "labels": {
+            "fi": "Karjalanpiirakat",
+            "sv": "Karelska piroger",
+            "en": "Karelian pies",
+        },
+        "items": [
+            {
+                "id": "riisi",
+                "labels": {"fi": "Riisi", "sv": "Ris", "en": "Rice"},
+                "tokens": ["karjalanpiirakka", "riisi"],
+                "search": "Karjalanpiirakka riisi",
+                "prefer_fresh": True,
+            },
+            {
+                "id": "peruna",
+                "labels": {"fi": "Peruna", "sv": "Potatis", "en": "Potato"},
+                "tokens": ["perunapiirakka"],
+                "search": "Karjalanpiirakka peruna",
+                "prefer_fresh": True,
+            },
+            {
+                "id": "ohra",
+                "labels": {"fi": "Ohra", "sv": "Korn", "en": "Barley"},
+                "tokens": ["ohrapiirakka"],
+                "search": "Karjalanpiirakka ohra",
+                "prefer_fresh": True,
+            },
+            {
+                "id": "vegaani",
+                "labels": {"fi": "Vegaani", "sv": "Vegan", "en": "Vegan"},
+                "tokens": ["vegaanipiirakka", "vegaani"],
+                "search": "Karjalanpiirakka vegaaninen",
+                "prefer_fresh": True,
+            },
+        ],
+    },
+    {
+        "id": "intialaiset",
+        "labels": {
+            "fi": "Intialaiset suolaiset",
+            "sv": "Indiska delikatesser",
+            "en": "Indian savouries",
+        },
+        "items": [
+            {
+                "id": "gobi-samosa",
+                "labels": {"fi": "Gobi-samosa", "sv": "Gobi-samosa", "en": "Gobi samosa"},
+                "tokens": ["gobi", "samosa"],
+                "search": "Gobi samosa",
+                "prefer_fresh": True,
+            },
+            {
+                "id": "kanasamosa",
+                "labels": {"fi": "Kanasamosa", "sv": "Kycklingsamosa", "en": "Chicken samosa"},
+                "tokens": ["kanasamosa"],
+                "search": "Kanasamosa",
+                "prefer_fresh": True,
+            },
+            {
+                "id": "mungcurry-twist",
+                "labels": {"fi": "MungCurry-twist", "sv": "Mung curry twist", "en": "Mung curry twist"},
+                "tokens": ["mungcurry", "twist"],
+                "search": "Mungcurry twist",
+                "prefer_fresh": True,
+            },
+            {
+                "id": "lihacurry-pasteija",
+                "labels": {"fi": "Liha-CurryPasteija", "sv": "Kött currypastej", "en": "Meat curry pastry"},
+                "tokens": ["lihacurry", "pasteija"],
+                "search": "Liha curry pasteija",
+                "prefer_fresh": True,
+            },
+        ],
+    },
+    {
+        "id": "makeat",
+        "labels": {
+            "fi": "Makeat",
+            "sv": "Sötsaker",
+            "en": "Sweet treats",
+        },
+        "items": [
+            {
+                "id": "kanelipulla",
+                "labels": {"fi": "Kanelipulla", "sv": "Kanelbulle", "en": "Cinnamon bun"},
+                "tokens": ["kanelipulla"],
+                "search": "Kanelipulla",
+                "prefer_fresh": True,
+                "fallback": {
+                    "detail": {
+                        "fi": {
+                            "name": "Kanelipulla",
+                            "intro": "Perinteinen kanelipulla, jonka taikinassa on reilusti kardemummaa ja voista tehty täyte.",
+                            "ingredients": "Vehnäjauho, maito, voi, sokeri, hiiva, kardemumma, suola",
+                            "allergens": "Gluteeni, maito",
+                            "nutrition": "Ravintotiedot saatavilla pyynnöstä.",
+                        },
+                        "sv": {
+                            "name": "Kanelbulle",
+                            "intro": "Klassisk kanelbulle med rikligt med kardemumma i degen och smörig fyllning.",
+                            "ingredients": "Vetemjöl, mjölk, smör, socker, jäst, kardemumma, salt",
+                            "allergens": "Gluten, mjölk",
+                            "nutrition": "Näringsvärden lämnas på begäran.",
+                        },
+                        "en": {
+                            "name": "Cinnamon bun",
+                            "intro": "Classic Finnish cinnamon bun with plenty of cardamom in the dough and a buttery filling.",
+                            "ingredients": "Wheat flour, milk, butter, sugar, yeast, cardamom, salt",
+                            "allergens": "Gluten, milk",
+                            "nutrition": "Nutrition facts available on request.",
+                        },
+                    },
+                },
+            },
+            {
+                "id": "voisilmapulla",
+                "labels": {"fi": "Voisilmäpulla", "sv": "Smörbulle", "en": "Butter bun"},
+                "tokens": ["voisilmäpulla"],
+                "search": "Voisilmäpulla",
+                "prefer_fresh": True,
+                "fallback": {
+                    "detail": {
+                        "fi": {
+                            "name": "Voisilmäpulla",
+                            "intro": "Perinteinen voisilmäpulla, jossa pehmeän vehnätaikinan keskellä sulaa voinen täyte.",
+                            "ingredients": "vehnäjauho, voi, maito, sokeri, hiiva, kardemumma, suola",
+                            "allergens": "Gluteeni, maito",
+                            "nutrition": "Ravintotiedot saatavilla pyynnöstä.",
+                        },
+                        "sv": {
+                            "name": "Smörbulle",
+                            "intro": "Klassisk smörbulle med ett smält smöröga i mitten, bakad samma morgon.",
+                            "ingredients": "vetemjöl, smör, mjölk, socker, jäst, kardemumma, salt",
+                            "allergens": "Gluten, mjölk",
+                            "nutrition": "Näringsvärden lämnas på begäran.",
+                        },
+                        "en": {
+                            "name": "Butter bun",
+                            "intro": "Classic Finnish butter bun with a molten buttery center, baked fresh in the morning.",
+                            "ingredients": "wheat flour, butter, milk, sugar, yeast, cardamom, salt",
+                            "allergens": "Gluten, milk",
+                            "nutrition": "Nutrition facts available on request.",
+                        },
+                    },
+                    "variants": [
+                        {
+                            "id": "vegan",
+                            "labels": {"fi": "Vegaaninen versio", "sv": "Vegansk version", "en": "Vegan version"},
+                            "detail": {
+                                "fi": {
+                                    "name": "Voisilmäpulla (vegaaninen)",
+                                    "intro": "Kasvipohjainen voisilmäpulla, jossa kookos- ja kaurapohjainen täyte.",
+                                    "ingredients": "vehnäjauho, kookoskerma, kaurajuoma (kaura, rypsi, E401, E440), sokeri, margariini (rypsi, kookos, shea), hiiva, suola, kardemumma",
+                                    "allergens": "Gluteeni",
+                                    "nutrition": "Ravintotiedot saatavilla pyynnöstä.",
+                                },
+                                "sv": {
+                                    "name": "Smörbulle (vegansk)",
+                                    "intro": "Vegansk smörbulle med fyllning av kokos- och havrebaserade ingredienser.",
+                                    "ingredients": "vetemjöl, kokosgrädde, havredryck (havre, raps, E401, E440), socker, margarin (raps, kokos, shea), jäst, salt, kardemumma",
+                                    "allergens": "Gluten",
+                                    "nutrition": "Näringsvärden lämnas på begäran.",
+                                },
+                                "en": {
+                                    "name": "Butter bun (vegan)",
+                                    "intro": "Plant-based butter bun made with coconut and oat-based filling.",
+                                    "ingredients": "wheat flour, coconut cream, oat drink (oat, rapeseed, E401, E440), sugar, margarine (rapeseed, coconut, shea), yeast, salt, cardamom",
+                                    "allergens": "Gluten",
+                                    "nutrition": "Nutrition facts available on request.",
+                                },
+                            },
+                        }
+                    ],
+                },
+            },
+            {
+                "id": "mustikkakukko",
+                "labels": {"fi": "Mustikkakukko", "sv": "Blåbärspaj", "en": "Blueberry pie"},
+                "tokens": ["mustikkakukko"],
+                "search": "Mustikkakukko",
+                "prefer_fresh": True,
+                "fallback": {
+                    "detail": {
+                        "fi": {
+                            "name": "Mustikkakukko",
+                            "intro": "Rukiinen klassikko, jossa runsaasti metsämustikoita ja voinen kuori.",
+                            "ingredients": "mustikka, sokeri, ruisjauho, vehnäjauho, voi, kananmuna, suola",
+                            "allergens": "Gluteeni, maito, kananmuna",
+                            "nutrition": "Ravintotiedot saatavilla pyynnöstä.",
+                        },
+                        "sv": {
+                            "name": "Blåbärskaka",
+                            "intro": "Traditionell rågpaj med riklig mängd blåbär och smörig deg.",
+                            "ingredients": "blåbär, socker, rågmjöl, vetemjöl, smör, ägg, salt",
+                            "allergens": "Gluten, mjölk, ägg",
+                            "nutrition": "Näringsvärden lämnas på begäran.",
+                        },
+                        "en": {
+                            "name": "Blueberry mustikkakukko",
+                            "intro": "Traditional rye crust packed with wild blueberries and a buttery finish.",
+                            "ingredients": "blueberries, sugar, rye flour, wheat flour, butter, egg, salt",
+                            "allergens": "Gluten, milk, egg",
+                            "nutrition": "Nutrition facts available on request.",
+                        },
+                    },
+                    "variants": [
+                        {
+                            "id": "vegan",
+                            "labels": {"fi": "Vegaaninen versio", "sv": "Vegansk version", "en": "Vegan version"},
+                            "detail": {
+                                "fi": {
+                                    "name": "Mustikkakukko (vegaaninen)",
+                                    "intro": "Vegaaninen mustikkakukko kasvipohjaisella margariinilla ja runsaalla täytteellä.",
+                                    "ingredients": "mustikka, sokeri, ruisjauho, vehnäjauho, kasvimargariini (rypsi, kookos, shea), sitruunamehu, suola",
+                                    "allergens": "Gluteeni",
+                                    "nutrition": "Ravintotiedot saatavilla pyynnöstä.",
+                                },
+                                "sv": {
+                                    "name": "Blåbärskaka (vegansk)",
+                                    "intro": "Vegansk blåbärspaj bakad med vegetabiliskt margarin och riklig fyllning.",
+                                    "ingredients": "blåbär, socker, rågmjöl, vetemjöl, vegetabiliskt margarin (raps, kokos, shea), citronjuice, salt",
+                                    "allergens": "Gluten",
+                                    "nutrition": "Näringsvärden lämnas på begäran.",
+                                },
+                                "en": {
+                                    "name": "Blueberry mustikkakukko (vegan)",
+                                    "intro": "Vegan-friendly mustikkakukko made with plant margarine and a generous blueberry filling.",
+                                    "ingredients": "blueberries, sugar, rye flour, wheat flour, plant margarine (rapeseed, coconut, shea), lemon juice, salt",
+                                    "allergens": "Gluten",
+                                    "nutrition": "Nutrition facts available on request.",
+                                },
+                            },
+                        }
+                    ],
+                },
+            },
+        ],
+    },
+]
+
+
+def _find_product_by_tokens(
+    products: List[Dict[str, Any]],
+    tokens: List[str],
+    prefer_fresh: bool = False,
+    fallback_query: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    matches: List[Dict[str, Any]] = []
+    lowered_tokens = [tok.lower() for tok in tokens]
+    for it in products:
+        name = (it.get('name') or '').lower()
+        if all(tok in name for tok in lowered_tokens):
+            matches.append(it)
+    if matches:
+        prefer_non_vegan = not any('vega' in tok for tok in lowered_tokens)
+        ordered = matches
+        if prefer_non_vegan:
+            non_vegan = [it for it in matches if not _name_has_vegan_marker(it.get('name') or '')]
+            if non_vegan:
+                ordered = non_vegan + [it for it in matches if it not in non_vegan]
+
+        def _is_fresh(name: str) -> bool:
+            n = name.lower()
+            return 'paistettu' in n or 'tuore' in n or 'uunituore' in n
+
+        def _is_frozen(name: str) -> bool:
+            n = name.lower()
+            return 'raakapakaste' in n or 'pakaste' in n
+
+        if prefer_fresh:
+            for it in ordered:
+                if _is_fresh(it.get('name') or '') and not _is_frozen(it.get('name') or ''):
+                    return it
+        for it in ordered:
+            if not _is_frozen(it.get('name') or ''):
+                return it
+        return ordered[0]
+
+    # Fallback matching via aliases and individual tokens
+    query = fallback_query or " ".join(tokens)
+    alt = _find_product_by_name_or_alias(query, products) if query else None
+    if alt:
+        return alt
+    for tok in tokens:
+        alt = _find_product_by_name_or_alias(tok, products)
+        if alt:
+            return alt
+    return None
+
+
+def build_dietary_menu(lang: str) -> Dict[str, Any]:
+    lang = (lang or 'fi').lower()
+    if lang not in {'fi', 'sv', 'en'}:
+        lang = 'fi'
+
+    products = _get_products_cached(limit=200)
+    groups_payload: List[Dict[str, Any]] = []
+    for spec in CURATED_DIETARY_GROUPS:
+        items_payload: List[Dict[str, Any]] = []
+        for item_spec in spec['items']:
+            tokens = [tok for tok in item_spec.get('tokens', []) if isinstance(tok, str)]
+            tokens_lower = [tok.lower() for tok in tokens]
+            product = _find_product_by_tokens(
+                products,
+                tokens,
+                prefer_fresh=item_spec.get('prefer_fresh', False),
+                fallback_query=item_spec.get('search'),
+            )
+
+            fallback_spec = item_spec.get('fallback') or {}
+            fallback_detail_map = fallback_spec.get('detail') if isinstance(fallback_spec.get('detail'), dict) else {}
+            fallback_detail_lang = None
+            if fallback_detail_map:
+                fallback_detail_lang = (
+                    fallback_detail_map.get(lang)
+                    or fallback_detail_map.get('fi')
+                    or fallback_detail_map.get('en')
+                    or fallback_detail_map.get('sv')
+                )
+
+            if not product and not fallback_detail_lang:
+                items_payload.append({
+                    'id': item_spec['id'],
+                    'title': item_spec['labels'].get(lang, item_spec['labels'].get('fi', item_spec['id'])),
+                    'missing': True,
+                })
+                continue
+
+            prefer_non_vegan = not any('vega' in tok for tok in tokens_lower)
+            vegan_product = bool(product and _name_has_vegan_marker(product.get('name') or ''))
+            use_fallback_override = bool(fallback_detail_lang) and (not product or (prefer_non_vegan and vegan_product))
+
+            base_detail = _product_detail_bundle(product, lang) if product and not use_fallback_override else {}
+            merged_detail: Dict[str, Optional[str]] = {}
+            for field in ['name', 'intro', 'ingredients', 'allergens', 'nutrition']:
+                fallback_val = None
+                if isinstance(fallback_detail_lang, dict):
+                    fallback_val = fallback_detail_lang.get(field)
+                base_val = base_detail.get(field) if base_detail else None
+                if use_fallback_override:
+                    merged_detail[field] = fallback_val or None
+                else:
+                    merged_detail[field] = base_val or fallback_val
+
+            display_name = merged_detail.get('name')
+            if not display_name:
+                if product and not use_fallback_override:
+                    display_name = _clean_product_name(product.get('name') or '')
+                elif isinstance(fallback_detail_lang, dict) and fallback_detail_lang.get('name'):
+                    display_name = fallback_detail_lang.get('name')
+                else:
+                    display_name = item_spec['labels'].get(lang, item_spec['labels'].get('fi', item_spec['id']))
+            merged_detail['name'] = display_name
+            if merged_detail.get('ingredients'):
+                merged_detail['ingredients'] = _format_ingredient_output(merged_detail.get('ingredients'))
+
+            variants_payload: List[Dict[str, Any]] = []
+            for idx, variant_spec in enumerate(fallback_spec.get('variants') or []):
+                detail_map = variant_spec.get('detail') if isinstance(variant_spec.get('detail'), dict) else {}
+                variant_detail_lang = None
+                if detail_map:
+                    variant_detail_lang = (
+                        detail_map.get(lang)
+                        or detail_map.get('fi')
+                        or detail_map.get('en')
+                        or detail_map.get('sv')
+                    )
+                if not isinstance(variant_detail_lang, dict):
+                    continue
+                ingredients_val = _format_ingredient_output(variant_detail_lang.get('ingredients'))
+                variants_payload.append({
+                    'id': variant_spec.get('id') or f"variant-{idx}",
+                    'label': (variant_spec.get('labels') or {}).get(
+                        lang,
+                        (variant_spec.get('labels') or {}).get('fi', variant_spec.get('id') or f"Variant {idx + 1}")
+                    ),
+                    'detail': {
+                        'name': variant_detail_lang.get('name'),
+                        'intro': variant_detail_lang.get('intro'),
+                        'ingredients': ingredients_val,
+                        'allergens': variant_detail_lang.get('allergens'),
+                        'nutrition': variant_detail_lang.get('nutrition'),
+                    },
+                })
+
+            item_payload: Dict[str, Any] = {
+                'id': item_spec['id'],
+                'title': item_spec['labels'].get(lang, item_spec['labels'].get('fi', item_spec['id'])),
+                'displayName': merged_detail.get('name'),
+                'intro': merged_detail.get('intro'),
+                'ingredients': merged_detail.get('ingredients'),
+                'allergens': merged_detail.get('allergens'),
+                'nutrition': merged_detail.get('nutrition'),
+            }
+            if variants_payload:
+                item_payload['variants'] = variants_payload
+            items_payload.append(item_payload)
+        groups_payload.append({
+            'id': spec['id'],
+            'title': spec['labels'].get(lang, spec['labels'].get('fi', spec['id'])),
+            'items': items_payload,
+        })
+
+    disclaimer = load_allergens().disclaimer_for('allergens', lang)
+    return {
+        'groups': groups_payload,
+        'disclaimer': disclaimer,
+    }
 
 def _strip_html(text: str) -> str:
     if not text:
@@ -1124,172 +1805,22 @@ def resolve_product_detail(query: str, lang: str) -> Optional[str]:
     it = _find_product_by_name_or_alias(q_clean, items)
     if not it:
         return None
-    name = it.get("name") or "Product"
-    ing_keys = ["ingredients", "aines", "ainesosat"]
-    all_keys = ["allergens", "aller", "allerg"]
-    ingredients = _extract_attr_text(it, ing_keys) or _extract_ingredients_from_description(it.get("description") or "")
-    allergens = _extract_attr_text(it, all_keys)
-    def _clean_product_name(n: str) -> str:
-        # Drop trailing price dashes and piece counts like "— 19.90 €" or ", 20 kpl"
-        n = re.split(r"\s+[–—]-?\s+", n)[0]
-        n = re.sub(r",?\s*\b\d+\s*(kpl|pcs)\b", "", n, flags=re.IGNORECASE)
-        n = re.sub(r"\s{2,}", " ", n).strip().strip(", ")
-        return n
-
-    name = _clean_product_name(name)
+    bundle = _product_detail_bundle(it, lang)
 
     lines: List[str] = []
-    header = name  # do not append price
-    lines.append(header)
-    def _normalize_ingredient_terms_fi(s: str) -> str:
-        t = re.sub(r"\s+", " ", s).strip()
-        # Join common compounds that sometimes break due to HTML/formatting
-        t = re.sub(r"\btäys\s*maito\s*juoma\b", "täysmaitojuoma", t, flags=re.IGNORECASE)
-        t = re.sub(r"\bruis\s*jauho\b", "ruisjauho", t, flags=re.IGNORECASE)
-        t = re.sub(r"\bvehnä\s*jauho\b", "vehnäjauho", t, flags=re.IGNORECASE)
-        t = re.sub(r"\brypsi\s*öljy\b", "rypsiöljy", t, flags=re.IGNORECASE)
-        return t
-
-    def _translate_ingredients_list(s: str, lang_code: str) -> str:
-        if not s:
-            return s
-        base = _normalize_ingredient_terms_fi(s)
-        if lang_code == "fi":
-            return base
-        # Simple dictionary-based translation for common terms
-        fi_en = {
-            "vesi": "Water",
-            "laktoositon": "Lactose-free",
-            "täysmaitojuoma": "whole milk",
-            "vehnäjauho": "Wheat flour",
-            "ruisjauho": "Rye flour",
-            "puuroriisi": "Porridge-rice",
-            "riisi": "Rice",
-            "suola": "Salt",
-            "sokeri": "Sugar",
-            "voi": "Butter",
-            "maito": "Milk",
-            "kerma": "Cream",
-            "kasvimargariini": "Vegetable margarine",
-            "rapsi": "Rapeseed",
-            "palmu": "Palm",
-            "kookos": "Coconut",
-            "rypsiöljy": "Rapeseed oil",
-            "inkivääri": "Ginger",
-            "mausteet": "Spices",
-            "kukkakaali": "Cauliflower",
-            "lisäaineeton": "Additive-free",
-            "perunahiutale": "Potato flakes",
-            "kana": "Chicken",
-            "jogurtti": "Yogurt",
-            "sipuli": "Onion",
-            "valkosipuli": "Garlic",
-        }
-        fi_sv = {
-            "vesi": "Vatten",
-            "laktoositon": "Laktosfri",
-            "täysmaitojuoma": "helmjölksdryck",
-            "vehnäjauho": "Vetemjöl",
-            "ruisjauho": "Rågmjöl",
-            "puuroriisi": "Grötris",
-            "riisi": "Ris",
-            "suola": "Salt",
-            "sokeri": "Socker",
-            "voi": "Smör",
-            "maito": "Mjölk",
-            "kerma": "Grädde",
-            "kasvimargariini": "Vegetabiliskt margarin",
-            "rapsi": "Raps",
-            "palmu": "Palm",
-            "kookos": "Kokos",
-            "rypsiöljy": "Rapsolja",
-            "inkivääri": "Ingefära",
-            "mausteet": "Kryddor",
-            "kukkakaali": "Blomkål",
-            "lisäaineeton": "Tillsatsfri",
-            "perunahiutale": "Potatisflingor",
-            "kana": "Kyckling",
-            "jogurtti": "Yoghurt",
-            "sipuli": "Lök",
-            "valkosipuli": "Vitlök",
-        }
-        mapping = fi_en if lang_code == "en" else fi_sv
-        def _match_first_letter_case(src: str, dst: str) -> str:
-            # Match the case of the first alphabetic character from src to dst
-            src_upper = None
-            for ch in src:
-                if ch.isalpha():
-                    src_upper = ch.isupper()
-                    break
-            if src_upper is None:
-                return dst
-            dst_list = list(dst)
-            for i, ch in enumerate(dst_list):
-                if ch.isalpha():
-                    dst_list[i] = ch.upper() if src_upper else ch.lower()
-                    break
-            return "".join(dst_list)
-        parts = [p.strip() for p in re.split(r",\s*", base) if p.strip()]
-        out: List[str] = []
-        for p in parts:
-            # Try phrase mapping first
-            low = p.lower()
-            if low == "laktoositon täysmaitojuoma":
-                phrase = "Lactose-free whole milk" if lang_code == "en" else "Laktosfri helmjölksdryck"
-                out.append(_match_first_letter_case(p, phrase))
-                continue
-            if low == "laktoositon jogurtti":
-                phrase = "Lactose-free yogurt" if lang_code == "en" else "Laktosfri yoghurt"
-                out.append(_match_first_letter_case(p, phrase))
-                continue
-            if low in mapping:
-                out.append(_match_first_letter_case(p, mapping[low]))
-                continue
-            # Token-map words within the phrase
-            def _map_token(word: str) -> str:
-                m = re.match(r"^([^A-Za-zÅÄÖåäö]*)([A-Za-zÅÄÖåäö]+)([^A-Za-zÅÄÖåäö]*)$", word)
-                if not m:
-                    return word
-                pre, core, post = m.groups()
-                dst_core = mapping.get(core.lower(), core)
-                dst_core = _match_first_letter_case(core, dst_core)
-                return f"{pre}{dst_core}{post}"
-            words = re.split(r"\s+", p)
-            trans = [_map_token(w) for w in words]
-            out.append(" ".join(trans))
-        return ", ".join(out)
-
-    if ingredients:
-        ing_render = _translate_ingredients_list(ingredients, lang)
+    if bundle.get('name'):
+        lines.append(bundle['name'])
+    if bundle.get('intro'):
+        lines.append(bundle['intro'])
+    if bundle.get('ingredients'):
         heading = {"fi": "Ainesosat:", "sv": "Ingredienser:", "en": "Ingredients:"}[lang]
-        lines.append(f"<strong>{heading}</strong> {ing_render}")
-    if allergens:
+        lines.append(f"<strong>{heading}</strong> {bundle['ingredients']}")
+    if bundle.get('allergens'):
         heading_all = {"fi": "Allergeenit:", "sv": "Allergener:", "en": "Allergens:"}[lang]
-        lines.append(f"<strong>{heading_all}</strong> {allergens}")
-    else:
-        # Try to infer allergens heuristically from description/ingredients (FI + SV tokens)
-        desc = it.get("description") or ""
-        text_block = desc + "\n" + (ingredients or "")
-        inferred_fi = _detect_allergens_fi(text_block)
-        inferred_sv = _detect_allergens_sv(text_block)
-        inferred = []
-        for k in (inferred_fi + inferred_sv):
-            if k not in inferred:
-                inferred.append(k)
-        # Vegan hint: if product name/description indicates vegan, suppress milk and egg
-        name_l = (name or "").lower()
-        if any(tag in (name_l + " " + desc.lower()) for tag in ["vegaani", "vegan"]):
-            inferred = [k for k in inferred if k not in ("milk", "egg")]
-        if inferred:
-            name_map = {
-                "fi": {"milk": "Maito", "gluten": "Gluteeni", "egg": "Kananmuna"},
-                "sv": {"milk": "Mjölk", "gluten": "Gluten", "egg": "Ägg"},
-                "en": {"milk": "Milk", "gluten": "Gluten", "egg": "Egg"},
-            }
-            labels = [name_map[lang].get(k, k) for k in inferred]
-            heading_all = {"fi": "Allergeenit:", "sv": "Allergener:", "en": "Allergens:"}[lang]
-            lines.append(f"<strong>{heading_all}</strong> {', '.join(labels)}")
-    # Add standard disclaimer
+        lines.append(f"<strong>{heading_all}</strong> {bundle['allergens']}")
+    if bundle.get('nutrition'):
+        lines.append(bundle['nutrition'])
+
     amap = load_allergens()
     disclaimer = amap.disclaimer_for("allergens", lang)
     if disclaimer:

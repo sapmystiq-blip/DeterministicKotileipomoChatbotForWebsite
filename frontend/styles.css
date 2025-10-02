@@ -36,6 +36,7 @@
   --radius: 16px;
   --shadow: 0 12px 32px rgba(43, 26, 18, 0.18);
   --ring: 0 0 0 3px rgba(242, 194, 0, 0.25); /* amber focus ring */
+  --chat-vh: 1vh;
 }
 
 /* Typography reset */
@@ -191,7 +192,8 @@ body {
 .chat-widget[aria-hidden="false"]{ display: block; }
 .chat-card{
   display: grid; grid-template-rows: auto 1fr auto;
-  height: clamp(320px, 56vh, 520px); /* shorter on desktop */
+  height: min(680px, calc(var(--chat-vh, 1vh) * 90));
+  max-height: calc(var(--chat-vh, 1vh) * 94);
   background: var(--surface); border: var(--border); border-radius: var(--radius);
   box-shadow: var(--shadow); overflow: hidden;
 }
@@ -265,6 +267,7 @@ body {
 /* Feedback UI */
 .feedback-ui{ font-size: 14px; }
 .feedback-ui .title{ font-weight: 800; margin-bottom: 6px; }
+.feedback-ui p{ margin: 4px 0 10px; color: var(--muted); }
 .feedback-form .row{ margin-bottom: 6px; }
 .feedback-form input, .feedback-form textarea{
   width: 100%; border: var(--border); border-radius: 10px;
@@ -471,9 +474,8 @@ body {
 .send-btn:focus-visible{ outline: none; box-shadow: var(--ring); }
 
 @media (max-width: 480px){
-  .chat-widget{ right: 8px; left: 8px; width: auto; }
-  /* Mobile: let the chat grow with content up to viewport */
-  .chat-card{ height: auto; min-height: 280px; max-height: calc(var(--vh, 1vh) * 88); }
+  .chat-widget{ right: 8px; left: 8px; width: auto; bottom: 10px; }
+  .chat-card{ height: min(560px, calc(var(--chat-vh, 1vh) * 86)); max-height: calc(var(--chat-vh, 1vh) * 90); }
 }
 
 /* ===========================================================
@@ -573,3 +575,205 @@ body {
 .chat-header #changeLang svg{ fill: var(--brand-white); }
 .chat-header #changeLang:hover{ filter: brightness(1.05); }
 .chat-header #changeLang:focus-visible{ outline: none; box-shadow: var(--ring); }
+
+.chat-card.readonly{ grid-template-rows: auto 1fr; }
+.chat-card.readonly .chat-form{ display:none; }
+
+.faq-panel{
+  background: var(--brand-white);
+  border: var(--border);
+  border-radius: 18px;
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 15px;
+}
+.faq-crumbs{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.faq-crumb{
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  border-radius: 8px;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color .15s ease;
+}
+.faq-crumb:hover{ background: rgba(122, 69, 34, 0.08); }
+.faq-crumb:focus-visible{ outline: none; box-shadow: var(--ring); }
+.faq-crumb.current{
+  cursor: default;
+  font-weight: 600;
+  background: rgba(122, 69, 34, 0.12);
+}
+.faq-sep{ color: var(--muted); }
+.faq-intro{ font-size: 14px; color: var(--muted); }
+.faq-list{ display: grid; gap: 8px; }
+.faq-list.faq-categories{ grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+.faq-list.faq-categories.ordering-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+.faq-list.faq-categories.ordering-grid .faq-item{ font-size: 13px; }
+.faq-item, .faq-question{
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, transform .03s ease;
+  text-align: left;
+}
+.faq-item-label{ flex: 1 1 auto; }
+.faq-item:hover, .faq-question:hover{ background: var(--brand-white); }
+.faq-item:active, .faq-question:active{ transform: translateY(1px); }
+.faq-item:focus-visible, .faq-question:focus-visible{ outline: none; box-shadow: var(--ring); }
+.faq-item-count{
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(122, 69, 34, 0.12);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: auto;
+}
+.faq-actions{
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.faq-actions button{
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: var(--brand-white);
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter .15s ease, transform .05s ease;
+}
+.faq-actions button:hover{ filter: brightness(1.05); }
+.faq-actions button:active{ transform: translateY(1px); }
+.faq-actions button:focus-visible{ outline: none; box-shadow: var(--ring); }
+.faq-back{ margin-top: 4px; }
+.faq-back button{
+  background: transparent;
+  border: var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--primary-strong);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .15s ease;
+}
+.faq-back button:hover{ background: rgba(122, 69, 34, 0.08); }
+.faq-back button:focus-visible{ outline: none; box-shadow: var(--ring); }
+.faq-empty{
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(122, 69, 34, 0.08);
+  color: var(--muted);
+  font-size: 14px;
+}
+.faq-answer{
+  background: var(--brand-white);
+  border: var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.faq-menu-html{ margin-top: 2px; }
+.faq-menu-html iframe{ width: 100%; border: 0; border-radius: 12px; height: 220px; margin-top: 8px; }
+.faq-menu-html .menu-two-col{ margin-top: 8px; }
+.faq-answer-question{
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--primary-strong);
+}
+.faq-answer-body{ font-size: 15px; line-height: 1.55; }
+.faq-answer-body p{ margin: 0 0 0.75em 0; }
+.faq-answer-body p:last-child{ margin-bottom: 0; }
+.faq-answer-body .map-embed{
+  position: relative;
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e6ecef;
+  padding-top: 56.25%; /* 16:9 aspect ratio */
+  min-height: 220px;
+}
+.faq-answer-body .map-embed iframe{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.faq-answer-actions{
+  display: flex;
+  justify-content: flex-end;
+}
+.faq-answer-actions button{
+  background: var(--primary);
+  color: var(--brand-white);
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.faq-answer-actions button:hover{ filter: brightness(1.05); }
+.faq-answer-actions button:focus-visible{ outline: none; box-shadow: var(--ring); }
+
+@media (max-width: 520px){
+  .faq-panel{ padding: 14px; }
+  .faq-list.faq-categories{ grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+.dietary-panel{ display: flex; flex-direction: column; gap: 16px; margin-top: 6px; }
+.diet-group{ background: var(--brand-white); border: var(--border); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; }
+.diet-group-header{ font-weight: 700; font-size: 16px; color: var(--primary-strong); }
+.diet-group-buttons{ display: flex; flex-wrap: wrap; gap: 8px; }
+.diet-button{ border: var(--border); background: var(--surface); border-radius: 12px; padding: 8px 12px; font-weight: 600; cursor: pointer; transition: background-color .15s ease, box-shadow .15s ease, transform .04s ease; display:inline-flex; align-items:center; justify-content:center; }
+.diet-button:hover{ background: var(--brand-white); }
+.diet-button.active{ background: linear-gradient(135deg, var(--accent), var(--accent-strong)); color: var(--brand-white); border-color: transparent; }
+.diet-button:disabled{ opacity: .5; cursor: not-allowed; }
+.diet-empty{ font-size: 14px; color: var(--muted); }
+.diet-group-detail{ display: flex; flex-direction: column; gap: 10px; }
+.diet-card{ background: var(--surface); border: var(--border); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.diet-card-title{ font-weight: 700; font-size: 15px; color: var(--text); }
+.diet-detail-intro{ margin: 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
+.diet-detail-section{ font-size: 14px; line-height: 1.5; }
+.diet-detail-label{ font-weight: 600; margin-bottom: 2px; }
+.diet-detail-text{ color: var(--text); }
+.diet-detail-nutrition{ margin-top: 4px; }
+.diet-toggle{ border: var(--border); background: var(--brand-white); border-radius: 10px; padding: 6px 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: box-shadow .15s ease, transform .04s ease; }
+.diet-toggle:hover{ box-shadow: var(--ring); }
+.diet-toggle:focus-visible{ outline: none; box-shadow: var(--ring); }
+.diet-nutrition-content{ margin-top: 6px; font-size: 14px; line-height: 1.45; color: var(--text); }
+.diet-card-empty{ background: rgba(122, 69, 34, 0.08); border: var(--border); border-radius: 12px; padding: 10px 12px; font-size: 14px; color: var(--muted); }
+.diet-disclaimer{ font-size: 12px; color: var(--muted); margin-top: 8px; }
+.diet-variant-section{ display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+.diet-variant-item{ display:flex; flex-direction:column; gap:6px; }
+.diet-variant-button{ border: var(--border); background: var(--brand-white); border-radius: 10px; padding: 6px 12px; font-size: 14px; font-weight: 600; cursor: pointer; align-self:flex-start; transition: box-shadow .15s ease, transform .04s ease; }
+.diet-variant-button:hover{ box-shadow: var(--ring); }
+.diet-variant-button:focus-visible{ outline: none; box-shadow: var(--ring); }
+.diet-variant-content{ font-size: 14px; }
+.diet-card-variant{ background: var(--brand-white); }
+
+@media (max-width: 520px){
+  .diet-group{ padding: 12px; }
+  .diet-group-buttons{ gap: 6px; }
+  .diet-button{ flex: 1 1 auto; justify-content: center; }
+}
