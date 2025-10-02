@@ -988,13 +988,13 @@ def _format_ingredient_output(text: Optional[str]) -> Optional[str]:
     # Handle common Finnish + English + Swedish words
     allergens = [
         # Finnish
-        "vehnäjauho", "vehnä", "ruis", "ohra", "maito", "muna", "kananmuna",
+        "vehnäjauho", "vehnä", "ruisjauho", "ruis", "ohra", "maito", "muna", "kananmuna",
         # Finnish compound forms that should bold as milk
         "täysmaitojuoma", "maitojuoma", "laktoositon täysmaitojuoma",
         # English
-        "wheat flour", "wheat", "rye", "barley", "milk", "egg",
+        "wheat flour", "wheat", "rye flour", "rye", "barley", "milk", "egg",
         # Swedish
-        "vetemjöl", "vete", "råg", "korn", "mjölk", "ägg",
+        "vetemjöl", "vete", "rågmjöl", "råg", "korn", "mjölk", "ägg",
         # Swedish compound forms that should bold as milk
         "helmjölksdryck", "mjölkdryck", "laktosfri helmjölksdryck",
     ]
