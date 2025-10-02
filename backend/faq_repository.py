@@ -157,8 +157,23 @@ class FaqRepository:
 
     def entries_for(self, path: List[str], lang: Optional[str] = None) -> List[dict]:
         key = tuple(path)
-        items = self._items_by_path.get(key, [])
+        # Collect items for the exact node; if there are no items directly,
+        # include items from descendant paths so parent tabs can aggregate
+        # grandchildren when the tree hides intermediate nodes.
+        items = list(self._items_by_path.get(key, []))
+        if not items:
+            gathered: List[FaqItem] = []
+            for p, lst in self._items_by_path.items():
+                if len(p) > len(key) and p[: len(key)] == key:
+                    gathered.extend(lst)
+            items = gathered
         results: List[dict] = []
+        # Sort combined items by the global entry order when available
+        def _order_of(it: FaqItem) -> int:
+            rec = self._records_by_question.get(it.q.get("fi", ""))
+            return rec.order if rec else 10_000_000
+        items = sorted(items, key=lambda it: (_order_of(it), it.q.get("fi", "")))
+
         for item in items:
             question = item.text_for(lang or "", "q")
             answer = item.text_for(lang or "", "a")
