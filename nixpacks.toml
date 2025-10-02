@@ -8,7 +8,7 @@ cmds = [
   "virtualenv -p python /app/venv || python -m venv /app/venv",
   # Install dependencies inside the venv
   "/app/venv/bin/pip install --no-cache-dir --upgrade pip setuptools wheel",
-  "/app/venv/bin/pip install --no-cache-dir -r backend/requirements.txt"
+  "/app/venv/bin/pip install --no-cache-dir -r requirements.txt"
 ]
 
 [variables]
