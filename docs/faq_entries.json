@@ -12,6 +12,48 @@
     ]
   },
   {
+    "id": "miten-teihin-saa-yhteyden",
+    "question": {
+      "fi": "Miten teihin saa yhteyden?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku",
+      "tilauskanavat"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
+    "id": "milloin-verkkokauppatilaukset-tulee-tehda",
+    "question": {
+      "fi": "Milloin verkkokauppatilaukset tulee tehdä?"
+    },
+    "category_path": [
+      "tilaus",
+      "tilaamisen-peruspolku",
+      "aikataulut"
+    ],
+    "sources": [
+      "business"
+    ]
+  },
+  {
+    "id": "myyko-joku-muu-tuotteitanne",
+    "question": {
+      "fi": "Myykö joku muu tuotteitanne?"
+    },
+    "category_path": [
+      "tilaus",
+      "suuret-ja-rateloidyt",
+      "yritys-ja-tapahtumatilaukset"
+    ],
+    "sources": [
+      "full"
+    ]
+  },
+  {
     "id": "paaseeko-perille-julkisilla-helposti",
     "question": {
       "fi": "Pääseekö perille julkisilla helposti?"
