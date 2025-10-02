@@ -196,7 +196,50 @@
           "en": "Everyday ordering",
           "sv": "Beställningsflöde"
         },
-        "children": []
+        "children": [
+          {
+            "id": "tilauskanavat",
+            "path": [
+              "tilaus",
+              "tilaamisen-peruspolku",
+              "tilauskanavat"
+            ],
+            "label": {
+              "fi": "Tilauskanavat",
+              "en": "Order channels",
+              "sv": "Beställningskanaler"
+            },
+            "children": []
+          },
+          {
+            "id": "minimimaarat-ja-saatavuus",
+            "path": [
+              "tilaus",
+              "tilaamisen-peruspolku",
+              "minimimaarat-ja-saatavuus"
+            ],
+            "label": {
+              "fi": "Minimimäärät & saatavuus",
+              "en": "Minimums & availability",
+              "sv": "Minimikrav & tillgänglighet"
+            },
+            "children": []
+          },
+          {
+            "id": "aikataulut",
+            "path": [
+              "tilaus",
+              "tilaamisen-peruspolku",
+              "aikataulut"
+            ],
+            "label": {
+              "fi": "Aikataulut",
+              "en": "Timing",
+              "sv": "Tidtabeller"
+            },
+            "children": []
+          }
+        ]
       },
       {
         "id": "suuret-ja-rateloidyt",
