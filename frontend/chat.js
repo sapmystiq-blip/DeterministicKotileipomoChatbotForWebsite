@@ -1027,6 +1027,7 @@ const FAQ_TEXT = {
     rootMenu: 'Menu',
     rootOrdering: 'Tilaaminen',
     rootFeedback: 'Palaute',
+    faqOrders: 'Tilaukset',
     orderingIntro: 'Valitse tilauksiin liittyvä aihe.',
     feedbackIntro: 'Jätä palautteesi alla olevalla lomakkeella.',
     otherLabel: 'Muut',
@@ -1060,6 +1061,7 @@ const FAQ_TEXT = {
     rootMenu: 'Meny',
     rootOrdering: 'Beställning',
     rootFeedback: 'Feedback',
+    faqOrders: 'Beställningar',
     orderingIntro: 'Välj vilket beställningsområde du behöver hjälp med.',
     feedbackIntro: 'Lämna din feedback via formuläret nedan.',
     otherLabel: 'Övrigt',
@@ -1093,6 +1095,7 @@ const FAQ_TEXT = {
     rootMenu: 'Menu',
     rootOrdering: 'Ordering',
     rootFeedback: 'Feedback',
+    faqOrders: 'Orders',
     orderingIntro: 'Pick the ordering topic you need.',
     feedbackIntro: 'Share your feedback with the form below.',
     otherLabel: 'Other',
@@ -1587,6 +1590,8 @@ async function renderFaqTopicMenu(){
   const topics = [
     { path: ['tutustu'], label: labelForPath(['tutustu']) },
     { path: ['tuotteet'], label: labelForPath(['tuotteet']) },
+    // Expose ordering subsections under UKK as "Tilaukset"
+    { path: ['tilaus'], label: trFaq('faqOrders') },
     { path: ['maksaminen'], label: labelForPath(['maksaminen']) },
     { path: ['kestavyys'], label: trFaq('otherLabel') },
   ];
