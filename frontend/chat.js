@@ -1569,10 +1569,11 @@ function renderFaqMainMenu(){
   faqState.currentPath = [];
   const crumb = buildBreadcrumb([]);
   const intro = `<div class="faq-intro">${escapeHtml(trFaq('chooseRoot'))}</div>`;
+  // Show FAQ (UKK) first in the main actions
   const actions = `<div class="faq-actions faq-root-actions">
+    <button type="button" data-action="root-open-faq">${escapeHtml(trFaq('rootFaq'))}</button>
     <button type="button" data-action="root-open-menu">${escapeHtml(trFaq('rootMenu'))}</button>
     <button type="button" data-action="root-open-ordering">${escapeHtml(trFaq('rootOrdering'))}</button>
-    <button type="button" data-action="root-open-faq">${escapeHtml(trFaq('rootFaq'))}</button>
     <button type="button" data-action="root-open-feedback">${escapeHtml(trFaq('rootFeedback'))}</button>
   </div>`;
   renderFaqPanel(`${crumb}${intro}${actions}`, []);
