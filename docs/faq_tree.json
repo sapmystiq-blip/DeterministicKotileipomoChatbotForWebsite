@@ -196,64 +196,7 @@
           "en": "Large & custom orders",
           "sv": "Stora & skräddarsydda beställningar"
         },
-        "children": [
-          {
-            "id": "juhlat-ja-catering",
-            "path": [
-              "tilaus",
-              "suuret-ja-rateloidyt",
-              "juhlat-ja-catering"
-            ],
-            "label": {
-              "fi": "Juhlat & catering",
-              "en": "Parties & catering",
-              "sv": "Fester & catering"
-            },
-            "children": []
-          },
-          {
-            "id": "yritys-ja-tapahtumatilaukset",
-            "path": [
-              "tilaus",
-              "suuret-ja-rateloidyt",
-              "yritys-ja-tapahtumatilaukset"
-            ],
-            "label": {
-              "fi": "Yritys- ja tapahtumatilaukset",
-              "en": "Corporate & events",
-              "sv": "Företag & evenemang"
-            },
-            "children": []
-          },
-          {
-            "id": "kakut-ja-rateloidyt",
-            "path": [
-              "tilaus",
-              "suuret-ja-rateloidyt",
-              "kakut-ja-rateloidyt"
-            ],
-            "label": {
-              "fi": "Kakut & räätälöidyt tuotteet",
-              "en": "Cakes & custom items",
-              "sv": "Tårtor & specialprodukter"
-            },
-            "children": []
-          },
-          {
-            "id": "ennakkovaatimukset",
-            "path": [
-              "tilaus",
-              "suuret-ja-rateloidyt",
-              "ennakkovaatimukset"
-            ],
-            "label": {
-              "fi": "Ennakkovaatimukset & sopiminen",
-              "en": "Prerequisites & agreements",
-              "sv": "Förutsättningar & överenskommelser"
-            },
-            "children": []
-          }
-        ]
+        "children": []
       },
       {
         "id": "nouto-ja-toimitus",
